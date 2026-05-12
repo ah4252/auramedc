@@ -1,0 +1,9 @@
+{
+  "maintenanceMode": false,
+  "allowRegistration": true,
+  "siteName": "MedGpa",
+  "primaryColor": "#00ccff",
+  "secondaryColor": "#323cc3",
+  "darkBg": "#000000",
+  "lightBg": "#f8fafc"
+}
