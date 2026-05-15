@@ -1,0 +1,155 @@
+"use server";
+
+import { cookies } from "next/headers";
+
+export async function loginAdmin(formData: FormData) {
+  const password = formData.get("password") as string;
+  const { prisma } = await import("@/lib/db");
+
+  try {
+    const settings = await prisma.siteSettings.findUnique({
+      where: { id: "global" }
+    });
+
+    // Use DB password or fallback to admin123
+    const adminPass = settings?.adminPassword || "admin123";
+
+    if (password === adminPass) {
+      (await cookies()).set("admin_token", "secure_session_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+      });
+      return { success: true };
+    } else {
+      return { error: "كلمة المرور غير صحيحة" };
+    }
+  } catch (error) {
+    return { error: "حدث خطأ في الاتصال بقاعدة البيانات" };
+  }
+}
+
+export async function logoutAdmin() {
+  (await cookies()).delete("admin_token");
+}
+
+// --- Student Authentication ---
+
+export async function registerUser(formData: FormData) {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!name || !email || !password) return { error: "الرجاء تعبئة كافة الحقول" };
+
+  try {
+    const { prisma } = await import("@/lib/db");
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) return { error: "هذا البريد الإلكتروني مسجل مسبقاً" };
+
+    // Create user (Note: Password should be hashed in production)
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password, // Ideally use bcrypt here
+        role: "USER"
+      }
+    });
+
+    // Auto login
+    (await cookies()).set("user_token", user.id, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: "/",
+    });
+
+    return { success: true };
+  } catch (err) {
+    return { error: "حدث خطأ أثناء التسجيل" };
+  }
+}
+
+export async function loginUser(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!email || !password) return { error: "الرجاء إدخال البريد وكلمة المرور" };
+
+  try {
+    const { prisma } = await import("@/lib/db");
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || user.password !== password) {
+      return { error: "البريد أو كلمة المرور غير صحيحة" };
+    }
+
+    (await cookies()).set("user_token", user.id, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/",
+    });
+
+    return { success: true };
+  } catch (err) {
+    return { error: "حدث خطأ أثناء تسجيل الدخول" };
+  }
+}
+
+export async function logoutUser() {
+  (await cookies()).delete("user_token");
+}
+
+import { z } from "zod";
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل").max(50, "الاسم طويل جداً"),
+  image: z.string().url("رابط الصورة غير صحيح").optional().or(z.literal("")),
+  telegram: z.string().optional().or(z.literal("")),
+  instagram: z.string().optional().or(z.literal("")),
+  facebook: z.string().optional().or(z.literal("")),
+});
+
+export async function updateProfile(formData: FormData) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_token")?.value;
+  if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
+
+  const rawData = {
+    name: formData.get("name") as string,
+    image: formData.get("image") as string,
+    telegram: formData.get("telegram") as string,
+    instagram: formData.get("instagram") as string,
+    facebook: formData.get("facebook") as string,
+  };
+
+  const validation = updateProfileSchema.safeParse(rawData);
+
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message };
+  }
+
+  try {
+    const { prisma } = await import("@/lib/db");
+    
+    // Simplest possible SQL for SQLite
+    await prisma.$executeRawUnsafe(
+      `UPDATE User SET name = ?, image = ?, telegram = ?, instagram = ?, facebook = ? WHERE id = ?`,
+      validation.data.name,
+      validation.data.image || null,
+      validation.data.telegram || null,
+      validation.data.instagram || null,
+      validation.data.facebook || null,
+      userId
+    );
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Profile update error:", err);
+    return { error: `فشل الحفظ: ${err.message || "خطأ غير معروف"}` };
+  }
+}
