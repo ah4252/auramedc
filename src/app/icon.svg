@@ -1,0 +1,18 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark background circle -->
+  <circle cx="50" cy="50" r="50" fill="#0f172a"/>
+  <!-- Golden outer ring -->
+  <circle cx="50" cy="50" r="47" stroke="#f59e0b" stroke-width="3" fill="none"/>
+  <!-- Blue inner ring -->
+  <circle cx="50" cy="50" r="41" stroke="#38bdf8" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- Stethoscope tube -->
+  <path d="M30 28 C30 28 22 28 22 40 L22 56 C22 67 32 74 42 74 C52 74 60 67 60 56 L60 52"
+        stroke="#38bdf8" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- Stethoscope chest piece -->
+  <circle cx="68" cy="46" r="9" stroke="#f59e0b" stroke-width="3" fill="#0f172a"/>
+  <circle cx="68" cy="46" r="4" fill="#f59e0b"/>
+  <!-- Letter A -->
+  <path d="M36 70 L50 38 L64 70" stroke="#38bdf8" stroke-width="4.5"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M41 58 L59 58" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+</svg>
