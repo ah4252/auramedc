@@ -19,11 +19,13 @@ export async function getSettings() {
   };
 
   try {
-    const settings = await prisma.siteSettings.upsert({
+    const settings = await prisma.siteSettings.findUnique({
       where: { id: "global" },
-      update: {},
-      create: defaultSettings,
     });
+
+    if (!settings) {
+      return defaultSettings;
+    }
 
     return settings;
   } catch (error) {
