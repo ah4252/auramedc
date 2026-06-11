@@ -2,6 +2,8 @@ import { getNews } from "@/app/actions/news";
 import { Sparkles } from "lucide-react";
 import { cookies } from "next/headers";
 import NewsClient from "./NewsClient";
+import NewsLoginRequired from "./NewsLoginRequired";
+import { prisma } from "@/lib/db";
 
 export const metadata = {
   title: "أخبار المنصة | AuraMed Elite",
@@ -13,6 +15,28 @@ export default async function NewsPage() {
   const userId = cookieStore.get("user_token")?.value;
   const adminToken = cookieStore.get("admin_token")?.value;
   const isAdmin = !!adminToken;
+
+  if (!userId && !isAdmin) {
+    return <NewsLoginRequired />;
+  }
+
+  let isValid = false;
+  if (adminToken === "secure_session_token") {
+    isValid = true;
+  } else if (userId) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true }
+      });
+      if (user) isValid = true;
+    } catch (e) {}
+  }
+
+  if (!isValid) {
+    return <NewsLoginRequired />;
+  }
+
   const news = await getNews(true); // Fetch only published news
 
   return (
