@@ -69,6 +69,9 @@ export default function AdminSubjectsPage() {
     filterYearId === "all" || sub.categoryId === filterYearId
   );
 
+  const selectedCategoryName = categories.find(c => c.id === filterYearId)?.name || "";
+  const isFirstYear = selectedCategoryName.match(/أولى|اولى/);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -134,52 +137,66 @@ export default function AdminSubjectsPage() {
                  </div>
               </div>
 
-              <form action={activeTab === "YEARS" ? handleAddCategory : handleAddSubject} className="space-y-8 relative z-10">
-                 {activeTab === "YEARS" ? (
-                   <>
-                     <input type="hidden" name="type" value="YEAR" />
-                     <div className="space-y-3">
-                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم السنة / التخصص</label>
-                        <input name="name" required placeholder="مثلاً: السنة الثانية - طب بشري" className="admin-input" />
-                     </div>
-                     <div className="space-y-3">
-                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">وصف قصير</label>
-                        <textarea name="description" placeholder="نبذة عن هذه المرحلة الدراسية..." className="admin-input min-h-[120px]" />
-                     </div>
-                   </>
-                 ) : (
-                   <>
-                     <div className="space-y-3">
-                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">تابع لِلسنة الدراسية</label>
-                        <select 
-                          name="categoryId" 
-                          title="السنة الدراسية"
-                          required 
-                          className="admin-input appearance-none cursor-pointer"
-                          value={filterYearId === "all" ? "" : filterYearId}
-                          onChange={(e) => setFilterYearId(e.target.value || "all")}
-                        >
-                           <option value="">اختر السنة الدراسية المناسبة...</option>
-                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                        <p className="text-[10px] text-amber-500 font-bold px-1">بِمجرد الاختيار، ستظهر فقط مواد هذه السنة في القائمة المجاورة.</p>
-                     </div>
-                     <div className="space-y-3">
-                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم المادة</label>
-                        <input name="name" required placeholder="مثلاً: علم الأنسجة (Histology)" className="admin-input" />
-                     </div>
-                     <div className="space-y-3">
-                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">وصف المادة</label>
-                        <textarea name="description" placeholder="ماذا سيدرس الطالب في هذه المادة؟" className="admin-input min-h-[120px]" />
-                     </div>
-                   </>
-                 )}
+              {/* YEARS FORM */}
+              {activeTab === "YEARS" && (
+                <form action={handleAddCategory} className="space-y-8 relative z-10">
+                  <input type="hidden" name="type" value="YEAR" />
+                  <div className="space-y-3">
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم السنة / التخصص</label>
+                     <input name="name" required placeholder="مثلاً: السنة الثانية - طب بشري" className="admin-input" />
+                  </div>
+                  <div className="space-y-3">
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">وصف قصير</label>
+                     <textarea name="description" placeholder="نبذة عن هذه المرحلة الدراسية..." className="admin-input min-h-[120px]" />
+                  </div>
+                  <button disabled={loading} className="admin-btn-primary w-full py-5 rounded-[2rem]">
+                     {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                     <span className="text-xl">حفظ البيانات في النظام</span>
+                  </button>
+                </form>
+              )}
 
-                 <button disabled={loading} className={`admin-btn-primary w-full py-5 rounded-[2rem] ${activeTab === "SUBJECTS" ? "bg-indigo-600 dark:bg-indigo-600 text-white dark:text-white hover:bg-indigo-700 shadow-indigo-500/20" : ""}`}>
-                    {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
-                    <span className="text-xl">حفظ البيانات في النظام</span>
-                 </button>
-              </form>
+              {/* SUBJECTS FORM */}
+              {activeTab === "SUBJECTS" && (
+                <form action={handleAddSubject} className="space-y-8 relative z-10">
+                  <div className="space-y-3">
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">تابع لِلسنة الدراسية</label>
+                     <select
+                       name="categoryId"
+                       title="السنة الدراسية"
+                       required
+                       className="admin-input appearance-none cursor-pointer"
+                       value={filterYearId === "all" ? "" : filterYearId}
+                       onChange={(e) => setFilterYearId(e.target.value || "all")}
+                     >
+                        <option value="">اختر السنة الدراسية المناسبة...</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                     </select>
+                     <p className="text-[10px] text-amber-500 font-bold px-1">بِمجرد الاختيار، ستظهر فقط مواد هذه السنة في القائمة المجاورة.</p>
+                  </div>
+                  {filterYearId !== "all" && isFirstYear && (
+                    <div className="space-y-3">
+                       <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">الفصل الدراسي</label>
+                       <select name="semester" className="admin-input appearance-none cursor-pointer">
+                          <option value="1">📚 الفصل الأول</option>
+                          <option value="2">📖 الفصل الثاني</option>
+                       </select>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم المادة</label>
+                     <input name="name" required placeholder="مثلاً: علم الأنسجة (Histology)" className="admin-input" />
+                  </div>
+                  <div className="space-y-3">
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">وصف المادة</label>
+                     <textarea name="description" placeholder="ماذا سيدرس الطالب في هذه المادة؟" className="admin-input min-h-[120px]" />
+                  </div>
+                  <button disabled={loading} className="admin-btn-primary w-full py-5 rounded-[2rem] bg-indigo-600 dark:bg-indigo-600 text-white dark:text-white hover:bg-indigo-700 shadow-indigo-500/20">
+                     {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                     <span className="text-xl">حفظ البيانات في النظام</span>
+                  </button>
+                </form>
+              )}
            </div>
         </div>
 
@@ -254,6 +271,11 @@ export default function AdminSubjectsPage() {
                                <h4 className="text-lg font-black text-slate-900 dark:text-white mb-1">{sub.name}</h4>
                                <div className="flex items-center gap-2">
                                   <span className="text-[10px] font-black text-medical-600 bg-medical-50 dark:bg-medical-500/10 px-2 py-1 rounded-md">{sub.category?.name}</span>
+                                  {sub.semester && (
+                                    <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-md">
+                                      {sub.semester === "1" ? "الفصل الأول" : "الفصل الثاني"}
+                                    </span>
+                                  )}
                                   <span className="text-[10px] font-bold text-slate-400">{sub.lessons?.length || 0} درس</span>
                                 </div>
                             </div>

@@ -72,56 +72,40 @@ export default function SubjectsClient({ category }: { category: any }) {
 
       <AnimatePresence mode="popLayout">
         {filteredSubjects.length > 0 ? (
-          <motion.div 
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            {filteredSubjects.map((subject: any, idx: number) => (
-              <motion.div
-                key={subject.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: idx * 0.05 }}
-              >
-                <Link 
-                  href={`/courses/s/${subject.slug}`}
-                  className="group flex flex-col md:flex-row items-center gap-6 bg-white dark:bg-dark-card p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-medical-500 transition-all duration-500"
-                >
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center shrink-0 group-hover:bg-medical-600 group-hover:text-white transition-all duration-500 shadow-inner">
-                    <Book className="w-10 h-10 sm:w-14 sm:h-14 transition-transform duration-500 group-hover:scale-110" />
-                  </div>
-                  
-                  <div className="flex-1 text-center md:text-right">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
-                      <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white group-hover:text-medical-600 transition-colors">
-                        {subject.name}
-                      </h3>
-                      {search && subject.name.toLowerCase().includes(search.toLowerCase()) && (
-                        <span className="text-[9px] bg-medical-500 text-white px-2 py-0.5 rounded-full font-black animate-pulse">تطابق</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 font-medium leading-relaxed">
-                      {subject.description || "استكشف الدروس والمحاضرات والمصادر التعليمية الخاصة بهذه المادة."}
-                    </p>
-                    
-                    <div className="flex items-center justify-center md:justify-start gap-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                        <PlayCircle className="w-4 h-4 text-medical-500" />
-                        {subject.lessons?.length || 0} درس
-                      </div>
-                      <div className="w-1 h-1 rounded-full bg-slate-300"></div>
-                      <span className="text-xs font-black text-medical-600 dark:text-medical-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                        دخول المحتوى
-                        <ChevronLeft className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+          category.name.match(/أولى|اولى/) ? (
+            <div className="space-y-12">
+              <div>
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-6 border-b-2 border-medical-500/20 pb-3 inline-block">الفصل الدراسي الأول</h2>
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {filteredSubjects.filter((s: any) => s.semester === "1" || !s.semester).map((subject: any, idx: number) => (
+                    <SubjectCard key={subject.id} subject={subject} idx={idx} search={search} />
+                  ))}
+                </motion.div>
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-6 border-b-2 border-medical-500/20 pb-3 inline-block">الفصل الدراسي الثاني</h2>
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {filteredSubjects.filter((s: any) => s.semester === "2").length > 0 ? (
+                    filteredSubjects.filter((s: any) => s.semester === "2").map((subject: any, idx: number) => (
+                      <SubjectCard key={subject.id} subject={subject} idx={idx} search={search} />
+                    ))
+                  ) : (
+                    <p className="text-slate-400 font-bold italic">لا توجد مواد مضافة للفصل الدراسي الثاني حتى الآن.</p>
+                  )}
+                </motion.div>
+              </div>
+            </div>
+          ) : (
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            >
+              {filteredSubjects.map((subject: any, idx: number) => (
+                <SubjectCard key={subject.id} subject={subject} idx={idx} search={search} />
+              ))}
+            </motion.div>
+          )
         ) : (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -138,5 +122,52 @@ export default function SubjectsClient({ category }: { category: any }) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SubjectCard({ subject, idx, search }: { subject: any, idx: number, search: string }) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ delay: idx * 0.05 }}
+    >
+      <Link 
+        href={`/courses/s/${subject.slug}`}
+        className="group flex flex-col md:flex-row items-center gap-6 bg-white dark:bg-dark-card p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:border-medical-500 transition-all duration-500"
+      >
+        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-slate-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center shrink-0 group-hover:bg-medical-600 group-hover:text-white transition-all duration-500 shadow-inner">
+          <Book className="w-10 h-10 sm:w-14 sm:h-14 transition-transform duration-500 group-hover:scale-110" />
+        </div>
+        
+        <div className="flex-1 text-center md:text-right">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white group-hover:text-medical-600 transition-colors">
+              {subject.name}
+            </h3>
+            {search && subject.name.toLowerCase().includes(search.toLowerCase()) && (
+              <span className="text-[9px] bg-medical-500 text-white px-2 py-0.5 rounded-full font-black animate-pulse">تطابق</span>
+            )}
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 font-medium leading-relaxed">
+            {subject.description || "استكشف الدروس والمحاضرات والمصادر التعليمية الخاصة بهذه المادة."}
+          </p>
+          
+          <div className="flex items-center justify-center md:justify-start gap-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+              <PlayCircle className="w-4 h-4 text-medical-500" />
+              {subject.lessons?.length || 0} درس
+            </div>
+            <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+            <span className="text-xs font-black text-medical-600 dark:text-medical-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              دخول المحتوى
+              <ChevronLeft className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
