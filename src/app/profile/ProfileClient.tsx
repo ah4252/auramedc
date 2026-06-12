@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
 import { useSearchParams, useRouter } from "next/navigation";
-import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X } from "lucide-react";
+import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar } from "lucide-react";
+
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getYoutubeThumbnail, getSocialUrl } from "@/lib/utils";
