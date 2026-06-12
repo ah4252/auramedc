@@ -5,6 +5,7 @@ import { Clock, Plus, Trash2, Save, LogIn, AlertCircle, ChevronRight, ChevronLef
 import { saveTimetable } from "@/app/actions/timetable";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import html2canvas from "html2canvas";
 
 export default function TimetableClient({ initialData, isUser }: { initialData: any, isUser: boolean }) {
   const days = [
@@ -90,21 +91,20 @@ export default function TimetableClient({ initialData, isUser }: { initialData: 
     if (!certificateRef.current) return;
     setExportLoading(true);
     try {
-      const h2c = (window as any).html2canvas;
-      if (!h2c) {
-        setMessage({ type: 'error', text: "جاري تحميل محرك التصدير..." });
-        setExportLoading(false);
-        return;
-      }
       const element = certificateRef.current;
+      element.classList.remove("hidden");
       element.style.display = "block"; 
-      const canvas = await h2c(element, {
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(element, {
         scale: 2, 
         useCORS: true,
         backgroundColor: "#ffffff",
-        logging: false,
+        logging: true,
       });
       element.style.display = "none";
+      element.classList.add("hidden");
       const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement("a");
       link.href = image;

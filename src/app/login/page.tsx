@@ -474,6 +474,8 @@ export default function LoginPage() {
                         type="text"
                         disabled
                         value={resetEmail}
+                        title="البريد الإلكتروني"
+                        placeholder="البريد الإلكتروني"
                         className="w-full px-4 py-4 rounded-2xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold text-left outline-none"
                         dir="ltr"
                       />

@@ -16,11 +16,35 @@ function getEmbedUrl(url: string | null) {
         return `https://www.youtube-nocookie.com/embed/videoseries?list=${match[1]}&rel=0`;
       }
     }
+    
     if (cleanUrl.includes("youtube.com") || cleanUrl.includes("youtu.be")) {
-      const videoRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/;
-      const match = cleanUrl.match(videoRegExp);
-      if (match && match[2] && match[2].length === 11) {
-        return `https://www.youtube-nocookie.com/embed/${match[2]}?rel=0&modestbranding=1`;
+      // More robust regex for YouTube IDs (handles /watch?v=, /embed/, /shorts/, /live/, and youtu.be/)
+      const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+      const match = cleanUrl.match(ytRegex);
+      if (match && match[1]) {
+        return `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0&modestbranding=1`;
+      }
+    }
+    
+    // Google Drive
+    if (cleanUrl.includes("drive.google.com")) {
+      // Check for Google Drive folders
+      const folderRegExp = /\/folders\/([^\/\?]+)/;
+      const folderMatch = cleanUrl.match(folderRegExp);
+      if (folderMatch && folderMatch[1]) {
+        return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid`;
+      }
+
+      const driveRegExp = /\/file\/d\/([^\/\?]+)/;
+      const match = cleanUrl.match(driveRegExp);
+      if (match && match[1]) {
+        return `https://drive.google.com/file/d/${match[1]}/preview`;
+      }
+      
+      const driveIdRegExp = /id=([^&]+)/;
+      const idMatch = cleanUrl.match(driveIdRegExp);
+      if (idMatch && idMatch[1]) {
+        return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
       }
     }
   } catch (e) {

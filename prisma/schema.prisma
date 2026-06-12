@@ -33,6 +33,7 @@ model User {
   newsComments  NewsComment[]
   friendshipsInitiated Friendship[] @relation("UserFriendships")
   friendshipsReceived  Friendship[] @relation("FriendFriendships")
+  subscriptionRequests SubscriptionRequest[]
 }
 
 model Category {
@@ -293,4 +294,16 @@ model Friendship {
 
   @@unique([userId, friendId])
 }
+
+model SubscriptionRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionId String
+  paymentDate   DateTime
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 

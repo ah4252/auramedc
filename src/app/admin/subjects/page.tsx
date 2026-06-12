@@ -177,7 +177,7 @@ export default function AdminSubjectsPage() {
                   {filterYearId !== "all" && isFirstYear && (
                     <div className="space-y-3">
                        <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">الفصل الدراسي</label>
-                       <select name="semester" className="admin-input appearance-none cursor-pointer">
+                       <select name="semester" title="الفصل الدراسي" aria-label="الفصل الدراسي" className="admin-input appearance-none cursor-pointer">
                           <option value="1">📚 الفصل الأول</option>
                           <option value="2">📖 الفصل الثاني</option>
                        </select>

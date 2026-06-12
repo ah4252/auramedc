@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Settings, Video, 
   FileEdit, Calculator, Menu, X, Heart, 
   Database, LayoutPanelLeft, Bell, MessageSquare, Share2,
-  Lock, ShieldCheck, KeyRound
+  Lock, ShieldCheck, KeyRound, Zap
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -15,11 +15,13 @@ import { lockTools } from "@/app/actions/settings";
 export default function AdminSidebar({ 
   toolsProtected = false, 
   toolsUnlocked = true,
-  pendingRecoveryCount = 0
+  pendingRecoveryCount = 0,
+  pendingSubscriptionCount = 0
 }: { 
   toolsProtected?: boolean; 
   toolsUnlocked?: boolean;
   pendingRecoveryCount?: number;
+  pendingSubscriptionCount?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -77,6 +79,7 @@ export default function AdminSidebar({
         { href: "/admin/social", label: "مواقع التواصل", icon: Share2 },
         { href: "/admin/favorites", label: "تفاعلات المفضلة", icon: Heart },
         { href: "/admin/gpa", label: "سجلات المعدل", icon: Calculator },
+        { href: "/admin/subscriptions", label: "طلبات الاشتراك", icon: Zap },
       ]
     },
     {
@@ -166,6 +169,11 @@ export default function AdminSidebar({
                         {link.href === "/admin/recovery" && pendingRecoveryCount > 0 && (
                           <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/20">
                             {pendingRecoveryCount}
+                          </span>
+                        )}
+                        {link.href === "/admin/subscriptions" && pendingSubscriptionCount > 0 && (
+                          <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black bg-yellow-500 text-white animate-pulse shadow-sm shadow-yellow-500/20">
+                            {pendingSubscriptionCount}
                           </span>
                         )}
                         {isLocked && (

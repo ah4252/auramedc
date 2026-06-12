@@ -297,7 +297,7 @@ export default function GPAListClient({ initialCalculations }: { initialCalculat
                   <p className="text-sm text-white/80">{selectedCalc.user?.name}</p>
                 </div>
               </div>
-              <button onClick={closeModal} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+              <button title="إغلاق" aria-label="إغلاق" onClick={closeModal} className="p-2 hover:bg-white/20 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>

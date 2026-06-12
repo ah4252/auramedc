@@ -14,19 +14,21 @@ interface Subject {
   coefficient: number;
 }
 
-declare global {
-  interface Window {
-    html2canvas: any;
-  }
-}
+import html2canvas from "html2canvas";
 
-export default function GPACalculatorClient({ userId, initialData, gpaYears }: { userId: string | null, initialData: any, gpaYears: any[] }) {
+export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscription = false, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, hasActiveSubscription?: boolean, initialData: any, gpaYears: any[] }) {
   const [selectedYear, setSelectedYear] = useState<any>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [didRedirect, setDidRedirect] = useState(false);
   const [reportId, setReportId] = useState("MP-00000");
+
+  useEffect(() => {
+    setDidRedirect(localStorage.getItem("gpa_payment_redirected") === "true");
+  }, []);
   const certificateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,27 +114,49 @@ export default function GPACalculatorClient({ userId, initialData, gpaYears }: {
   };
 
   const handleExport = async () => {
-    if (!certificateRef.current) return;
+    if (!certificateRef.current || !selectedYear) return;
+    
+    // Check download limit (exclude specific account & active subscription with redirection history)
+    const isExcluded = userEmail === "abendakfal07@gmail.com";
+    const hasInfiniteDownloads = isExcluded || (hasActiveSubscription && didRedirect);
+    const storageKey = `gpa_downloads_${userId || 'guest'}_${selectedYear.id}`;
+    let downloads = parseInt(localStorage.getItem(storageKey) || "0");
+    
+    if (!hasInfiniteDownloads && downloads >= 2) {
+      setShowPaymentModal(true);
+      return;
+    }
+
     setExportLoading(true);
     
     try {
       const element = certificateRef.current;
-      element.style.display = "block"; 
       
-      const canvas = await window.html2canvas(element, {
+      // Temporarily ensure it is visible and positioned offscreen
+      element.classList.remove("hidden");
+      element.style.display = "block";
+      
+      // Allow browser to apply styles before rendering
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(element, {
         scale: 2, 
         useCORS: true,
         backgroundColor: "#ffffff",
-        logging: false,
+        logging: true, // helpful for debugging if it fails again
       });
       
       element.style.display = "none";
+      element.classList.add("hidden");
       
       const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement("a");
       link.href = image;
       link.download = `AuraMed_Result_${new Date().getTime()}.png`;
       link.click();
+      
+      // Increment download count after successful download
+      localStorage.setItem(storageKey, (downloads + 1).toString());
     } catch (error) {
       console.error("Export failed:", error);
       alert("حدث خطأ أثناء تصدير النتيجة");
@@ -320,6 +344,13 @@ export default function GPACalculatorClient({ userId, initialData, gpaYears }: {
                     <span className="text-5xl font-black text-slate-900 dark:text-white z-10">{gpa}</span>
                     <span className="text-sm font-bold text-slate-500 mt-2 z-10 uppercase tracking-widest">معدلك العام</span>
                   </div>
+
+                  {hasActiveSubscription && didRedirect && (
+                    <div className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 text-center flex items-center justify-center gap-2 font-bold text-sm">
+                      <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500 animate-bounce" />
+                      <span>تم تفعيل التحميل اللانهائي لنتائج المعدل بنجاح! 🎉</span>
+                    </div>
+                  )}
 
                   {!userId && (
                     <div className="mt-8 p-6 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl relative overflow-hidden group">
@@ -518,6 +549,57 @@ export default function GPACalculatorClient({ userId, initialData, gpaYears }: {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowPaymentModal(false)}
+              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-yellow-400 to-amber-600" />
+              
+              <div className="flex flex-col items-center text-center mt-2 mb-8">
+                <div className="w-20 h-20 bg-yellow-500/10 rounded-[2rem] flex items-center justify-center mb-5 border border-yellow-500/20">
+                  <Award className="w-10 h-10 text-yellow-500" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-3">تجاوزت الحد المجاني</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
+                  لقد استنفدت الحد الأقصى لتحميل النتيجة (مرتين) لهذه السنة. يرجى دفع اشتراك بقيمة <span className="text-yellow-500 font-black">500 د.ج</span> لمواصلة التحميل بلا حدود.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Link 
+                  href="/profile?tab=subscription"
+                  onClick={() => {
+                    localStorage.setItem("gpa_payment_redirected", "true");
+                    setDidRedirect(true);
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] text-lg hover:-translate-y-1 group"
+                >
+                  <span>الذهاب للدفع والتفعيل</span>
+                  <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform rotate-180" />
+                </Link>
+                <button 
+                  onClick={() => setShowPaymentModal(false)} 
+                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

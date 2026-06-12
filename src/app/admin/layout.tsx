@@ -29,6 +29,16 @@ export default async function AdminLayout({
     where: { status: "PENDING" }
   });
 
+  // جلب عدد طلبات الاشتراك المعلقة
+  let pendingSubscriptionCount = 0;
+  try {
+    pendingSubscriptionCount = await (prisma as any).subscriptionRequest.count({
+      where: { status: "PENDING" }
+    });
+  } catch (error) {
+    // Ignore error if table doesn't exist yet
+  }
+
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0f172a] text-slate-900 dark:text-white overflow-hidden font-sans">
       {/* Sidebar Component */}
@@ -36,6 +46,7 @@ export default async function AdminLayout({
         toolsProtected={settings.toolsProtectionEnabled} 
         toolsUnlocked={toolsUnlocked} 
         pendingRecoveryCount={pendingRecoveryCount}
+        pendingSubscriptionCount={pendingSubscriptionCount}
       />
 
       {/* Main Content Area */}

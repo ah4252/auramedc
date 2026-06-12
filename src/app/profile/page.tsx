@@ -63,6 +63,17 @@ export default async function ProfilePage() {
 
   const news = await getNews(true);
 
+  // Fetch latest subscription request for this user
+  let latestSubscription = null;
+  try {
+    latestSubscription = await (prisma as any).subscriptionRequest.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    // ignore if table doesn't exist yet
+  }
+
   return (
     <Suspense fallback={
       <div className="container mx-auto px-4 py-20 max-w-5xl flex flex-col md:flex-row gap-8">
@@ -81,7 +92,7 @@ export default async function ProfilePage() {
         </div>
       </div>
     }>
-      <ProfileClient user={JSON.parse(JSON.stringify(user))} news={news} />
+      <ProfileClient user={JSON.parse(JSON.stringify(user))} news={news} latestSubscription={latestSubscription ? JSON.parse(JSON.stringify(latestSubscription)) : null} />
     </Suspense>
   );
 }

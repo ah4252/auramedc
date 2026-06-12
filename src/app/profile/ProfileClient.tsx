@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
+import { submitSubscriptionRequest } from "@/app/actions/payment";
 import { useSearchParams, useRouter } from "next/navigation";
 import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar } from "lucide-react";
 
@@ -9,13 +10,19 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getYoutubeThumbnail, getSocialUrl } from "@/lib/utils";
 
-export default function ProfileClient({ user, news = [] }: { user: any, news?: any[] }) {
+export default function ProfileClient({ user, news = [], latestSubscription = null }: { user: any, news?: any[], latestSubscription?: any }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialTab = searchParams.get("tab") || "overview";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+
+  // Payment state
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentDate, setPaymentDate] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Password change state
   const [pwLoading, setPwLoading] = useState(false);
@@ -114,7 +121,7 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
     <div className="relative min-h-screen pb-24 overflow-hidden">
       {/* Dynamic Ambient Background Elements */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-medical-600/20 rounded-full blur-[120px] mix-blend-screen opacity-50 pointer-events-none animate-pulse" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen opacity-50 pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen opacity-50 pointer-events-none animate-pulse [animation-delay:2s]" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5 pointer-events-none" />
 
       <div className="container mx-auto px-4 py-16 max-w-6xl relative z-10">
@@ -179,6 +186,7 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
                 {[
                   { id: "overview", label: "نظرة عامة", icon: BookOpen },
                   { id: "favorites", label: "المفضلة", icon: Heart },
+                  { id: "subscription", label: "دفع الاشتراك", icon: Zap },
                   { id: "settings", label: "إعدادات الحساب", icon: User },
                 ].map((tab) => {
                   const isActive = activeTab === tab.id;
@@ -412,6 +420,197 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
                       <p className="text-slate-500 dark:text-slate-400 font-bold">أضف بعض الدروس للرجوع إليها لاحقاً بسهولة</p>
                     </div>
                   )}
+                </motion.div>
+              )}
+
+              {/* SUBSCRIPTION TAB */}
+              {activeTab === "subscription" && (
+                <motion.div
+                  key="subscription"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-600" />
+                    
+                    {/* Status Banner */}
+                    {latestSubscription?.status === "APPROVED" && (
+                      <div className="mb-8 flex items-start gap-4 bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl">
+                        <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 shrink-0">
+                          <CheckCircle className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">تم تفعيل اشتراكك! 🎉</h4>
+                          <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-1">تم استلام دفعتك وتفعيل حسابك بنجاح. استمتع بكافة المحتويات.</p>
+                        </div>
+                      </div>
+                    )}
+                    {latestSubscription?.status === "REJECTED" && (
+                      <div className="mb-8 flex items-start gap-4 bg-rose-500/10 border border-rose-500/30 p-5 rounded-2xl">
+                        <div className="p-2 bg-rose-500/20 rounded-xl text-rose-500 shrink-0">
+                          <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">تم رفض طلب الاشتراك</h4>
+                          <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">لم يتم التحقق من عملية الدفع. يرجى التواصل مع الدعم عبر تيليجرام أو إعادة إرسال طلب جديد.</p>
+                        </div>
+                      </div>
+                    )}
+                    {latestSubscription?.status === "PENDING" && (
+                      <div className="mb-8 flex items-start gap-4 bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl">
+                        <div className="p-2 bg-amber-500/20 rounded-xl text-amber-500 shrink-0">
+                          <Clock className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">طلبك قيد المراجعة</h4>
+                          <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">تم إرسال طلب التفعيل بنجاح. سيتم مراجعته وتفعيل حسابك قريباً إن شاء الله.</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-yellow-500/10 rounded-2xl text-yellow-500 shadow-inner">
+                        <Zap className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-black text-slate-800 dark:text-white">دفع الاشتراك</h2>
+                        <p className="text-slate-500 font-bold mt-1">قم بترقية حسابك للوصول إلى كافة المحتويات والمميزات</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* BaridiMob Info */}
+                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 text-white relative overflow-hidden border border-slate-700 shadow-xl">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 w-40 h-40 bg-medical-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+                        
+                        <div className="flex justify-between items-start mb-8 relative z-10">
+                          <div>
+                            <h3 className="text-2xl font-black mb-1 text-yellow-400">بريدي موب - BaridiMob</h3>
+                            <p className="text-slate-400 text-sm font-bold">الدفع عبر تطبيق بريدي موب</p>
+                          </div>
+                          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-inner">
+                            <Zap className="w-7 h-7 text-yellow-400" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 relative z-10">
+                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors group relative">
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-2 text-right flex items-center justify-between">
+                              <span>رقم الحساب (RIP)</span>
+                            </p>
+                            <div 
+                              className="relative cursor-pointer" 
+                              onClick={() => {
+                                navigator.clipboard.writeText("00799999004272170042");
+                                alert("تم نسخ رقم الحساب بنجاح! ✅");
+                              }}
+                              title="اضغط للنسخ"
+                            >
+                              <p className="font-mono text-lg md:text-xl font-bold tracking-widest text-center py-4 bg-black/30 rounded-xl select-all border border-white/5 group-hover:border-yellow-500/30 transition-colors" dir="ltr">
+                                007 99999 0042721700 42
+                              </p>
+                              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-400 transition-colors bg-white/5 p-2 rounded-lg backdrop-blur-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">الاسم واللقب</p>
+                            <p className="text-lg font-bold text-center py-1">Ahmed BD</p>
+                          </div>
+
+                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">مبلغ الاشتراك</p>
+                            <p className="text-3xl font-black text-yellow-400 text-center py-2">500 د.ج</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Form */}
+                      <div className="flex flex-col justify-center">
+                        <div className="bg-slate-50 dark:bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
+                          <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5 text-emerald-500" /> تأكيد الدفع
+                          </h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
+                            بعد إرسال المبلغ عبر التطبيق، يرجى إدخال رقم العملية (Transaction ID) لتأكيد وتفعيل حسابك.
+                          </p>
+                          
+                          <form className="space-y-5" onSubmit={async (e) => { 
+                            e.preventDefault(); 
+                            if (!transactionId || !paymentDate) return;
+                            setPaymentLoading(true);
+                            const res = await submitSubscriptionRequest(transactionId, paymentDate);
+                            setPaymentLoading(false);
+                            if (res?.success) {
+                              setPaymentSuccess(true);
+                              setTransactionId("");
+                              setPaymentDate("");
+                            } else {
+                              alert(res?.error || "حدث خطأ");
+                            }
+                          }}>
+                            {paymentSuccess || latestSubscription?.status === "PENDING" ? (
+                              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 text-center text-emerald-600 dark:text-emerald-400">
+                                <CheckCircle className="w-12 h-12 mx-auto mb-3" />
+                                <h4 className="font-black text-lg mb-1">تم إرسال طلبك بنجاح!</h4>
+                                <p className="text-sm font-bold">سيتم مراجعة الدفع وتفعيل حسابك قريباً.</p>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="space-y-2">
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">رقم العملية (Transaction ID)</label>
+                                  <input 
+                                    type="text" 
+                                    placeholder="مثال: 1234567890" 
+                                    required
+                                    value={transactionId}
+                                    onChange={(e) => setTransactionId(e.target.value)}
+                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">تاريخ الدفع</label>
+                                  <input 
+                                    type="date" 
+                                    required
+                                    title="تاريخ الدفع"
+                                    placeholder="تاريخ الدفع"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
+                                  />
+                                </div>
+
+                                <button 
+                                  type="submit" 
+                                  disabled={paymentLoading}
+                                  className="w-full py-4 mt-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2 text-lg hover:-translate-y-1 group disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {paymentLoading ? "جاري الإرسال..." : (
+                                    <><Send className="w-5 h-5 group-hover:scale-110 transition-transform" /> إرسال طلب التفعيل</>
+                                  )}
+                                </button>
+                              </>
+                            )}
+                          </form>
+
+                          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">أو أرسل وصل الدفع مباشرة عبر تيليجرام لتفعيل أسرع</p>
+                            <a href="https://t.me/Lio_nard0" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl font-black transition-all text-sm hover:shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
+                              <Send className="w-4 h-4" /> تواصل مع الدعم
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
@@ -656,7 +855,7 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
                 <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
                   <Camera className="w-5 h-5 text-medical-500" /> تغيير الصورة الشخصية
                 </h3>
-                <button onClick={() => setShowImageModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <button title="إغلاق" aria-label="إغلاق" onClick={() => setShowImageModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -717,6 +916,8 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
               <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-red-600 to-orange-500 rounded-t-[2.5rem]" />
 
               <button
+                title="إغلاق"
+                aria-label="إغلاق"
                 onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
                 className="absolute top-5 left-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
               >

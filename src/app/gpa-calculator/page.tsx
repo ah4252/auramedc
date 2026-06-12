@@ -7,8 +7,17 @@ export default async function GPACalculatorPage() {
   const userId = cookieStore.get("user_token")?.value;
   
   let initialData = null;
+  let userEmail = null;
   if (userId) {
     try {
+      const user = await (prisma as any).user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      });
+      if (user) {
+        userEmail = user.email;
+      }
+      
       const saved = await (prisma as any).gPACalculation.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" }
@@ -26,6 +35,23 @@ export default async function GPACalculatorPage() {
     }
   }
 
+  let hasActiveSubscription = false;
+  if (userId) {
+    try {
+      const activeSub = await (prisma as any).subscriptionRequest.findFirst({
+        where: {
+          userId,
+          status: "APPROVED"
+        }
+      });
+      if (activeSub) {
+        hasActiveSubscription = true;
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  }
+
   let gpaYears = [];
   try {
     gpaYears = await (prisma as any).gpaYear.findMany({
@@ -36,5 +62,5 @@ export default async function GPACalculatorPage() {
     console.error("Error fetching GPA years:", error);
   }
 
-  return <GPACalculatorClient userId={userId || null} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
+  return <GPACalculatorClient userId={userId || null} userEmail={userEmail || null} hasActiveSubscription={hasActiveSubscription} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
 }
