@@ -29,7 +29,11 @@ export default async function NewsPage() {
         where: { id: userId },
         select: { id: true }
       });
-      if (user) isValid = true;
+      if (user) {
+        isValid = true;
+        // Update lastReadNewsAt to clear the unread news badge
+        await prisma.$queryRaw`UPDATE "User" SET "lastReadNewsAt" = NOW() WHERE id = ${userId}`;
+      }
     } catch (e) {}
   }
 

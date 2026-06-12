@@ -4,12 +4,19 @@ import { useState, useEffect } from "react";
 import { Newspaper, Calendar, X, ChevronRight, Video, Link as LinkIcon, Send, MessageCircle, User as UserIcon, CornerDownLeft, Reply, Trash2, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { addNewsComment, deleteNewsComment } from "@/app/actions/news";
+import { useRouter } from "next/navigation";
 
 export default function NewsClient({ news, userId, isAdmin = false }: { news: any[], userId?: string, isAdmin?: boolean }) {
   const [selectedNews, setSelectedNews] = useState<any | null>(null);
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyTo, setReplyTo] = useState<{ id: string; userName: string } | null>(null);
+  const router = useRouter();
+
+  // Refresh to update the layout (clear the unread news badge)
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
 
   // لمنع التمرير في الخلفية عند فتح النافذة
   useEffect(() => {

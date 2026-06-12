@@ -43,20 +43,27 @@ export default async function RootLayout({
   
   let userName = null;
   let userImage = null;
+  let unreadNewsCount = 0;
   let incomingRequestsCount = 0;
   
   try {
     if (userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { name: true, image: true }
-      });
+      const users: any[] = await prisma.$queryRaw`SELECT id, name, image, "lastReadNewsAt" FROM "User" WHERE id = ${userId} LIMIT 1`;
+      const user = users[0];
       userName = user?.name || "طالب";
       userImage = user?.image || null;
 
       incomingRequestsCount = await prisma.friendship.count({
         where: { friendId: userId, status: "PENDING" }
       });
+
+      if (user?.lastReadNewsAt) {
+        unreadNewsCount = await (prisma as any).news.count({
+          where: { createdAt: { gt: user.lastReadNewsAt } }
+        });
+      } else {
+        unreadNewsCount = await (prisma as any).news.count();
+      }
     }
   } catch (error) {
     console.error("Layout DB Error (User fetch):", error);
@@ -97,7 +104,7 @@ export default async function RootLayout({
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
         <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
           <ActivePresencePing userId={userId || null} />
-          <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} />
+          <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
           <main className="flex-1 pb-20 md:pb-0">
             {children}
           </main>

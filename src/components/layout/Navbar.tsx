@@ -7,7 +7,7 @@ import { logoutAdmin, logoutUser } from "@/app/actions/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null, incomingRequestsCount = 0 }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null, incomingRequestsCount?: number }) {
+export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null, incomingRequestsCount = 0, unreadNewsCount = 0 }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null, incomingRequestsCount?: number, unreadNewsCount?: number }) {
   const pathname = usePathname();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [clicks, setClicks] = useState(0);
@@ -120,8 +120,13 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               المجتمع
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              الأخبار
+            <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0 flex items-center gap-1.5">
+              <span>الأخبار</span>
+              {unreadNewsCount > 0 && (
+                <span className="flex items-center justify-center min-w-[1.1rem] h-4 px-1 bg-medical-500 text-white text-[10px] font-black rounded-full shadow-md animate-bounce">
+                  {unreadNewsCount > 99 ? "+99" : unreadNewsCount}
+                </span>
+              )}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             {isUser && (
@@ -182,10 +187,16 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
 
             <button
               onClick={() => setShowMobileMenu(true)}
-              className="lg:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              className="lg:hidden relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
               title="القائمة"
             >
               <Menu className="w-6 h-6" />
+              {(incomingRequestsCount > 0 || unreadNewsCount > 0) && (
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+              )}
+              {(incomingRequestsCount > 0 || unreadNewsCount > 0) && (
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full" />
+              )}
             </button>
           </div>
         </div>
@@ -232,8 +243,15 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 <Link href="/community" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   المجتمع
                 </Link>
-                <Link href="/news" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  الأخبار
+                <Link href="/news" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
+                  <div className="flex items-center gap-3">
+                    الأخبار
+                  </div>
+                  {unreadNewsCount > 0 && (
+                    <span className="flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 bg-medical-500 text-white text-[11px] font-black rounded-full shadow-md animate-pulse">
+                      {unreadNewsCount > 99 ? "+99" : unreadNewsCount}
+                    </span>
+                  )}
                 </Link>
                 {isUser && (
                   <Link href="/friends" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">

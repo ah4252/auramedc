@@ -19,6 +19,7 @@ model User {
   facebook          String?
   passwordChangedAt DateTime?
   lastActiveAt      DateTime?
+  lastReadNewsAt    DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   
