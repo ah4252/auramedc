@@ -346,16 +346,19 @@ export async function updateLesson(id: string, formData: FormData) {
 export async function deleteUser(id: string) {
   await requireAdmin();
   try {
-    await prisma.comment.deleteMany({ where: { userId: id } });
-    await prisma.favorite.deleteMany({ where: { userId: id } });
-    await prisma.progress.deleteMany({ where: { userId: id } });
-    
-    // Check if gPACalculation model exists in prisma before trying to delete
-    if ((prisma as any).gPACalculation) {
-      await (prisma as any).gPACalculation.deleteMany({ where: { userId: id } });
-    }
-    
-    await prisma.user.delete({ where: { id } });
+    // حذف شامل لجميع البيانات المرتبطة بالمستخدم داخل transaction واحدة
+    await prisma.$transaction([
+      prisma.comment.deleteMany({ where: { userId: id } }),
+      prisma.favorite.deleteMany({ where: { userId: id } }),
+      prisma.progress.deleteMany({ where: { userId: id } }),
+      prisma.gPACalculation.deleteMany({ where: { userId: id } }),
+      prisma.discussionComment.deleteMany({ where: { userId: id } }),
+      prisma.discussion.deleteMany({ where: { userId: id } }),
+      prisma.like.deleteMany({ where: { userId: id } }),
+      prisma.newsComment.deleteMany({ where: { userId: id } }),
+      prisma.friendship.deleteMany({ where: { OR: [{ userId: id }, { friendId: id }] } }),
+      prisma.user.delete({ where: { id } }),
+    ]);
     revalidatePath("/admin/users");
     return { success: true };
   } catch (error) {
@@ -363,6 +366,7 @@ export async function deleteUser(id: string) {
     return { error: "حدث خطأ أثناء حذف المستخدم" };
   }
 }
+
 
 export async function searchContent(query: string) {
   if (!query) return { lessons: [], categories: [], subjects: [] };

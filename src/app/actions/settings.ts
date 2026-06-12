@@ -16,6 +16,10 @@ export async function getSettings() {
     adminPassword: "admin",
     toolsPassword: "tools123",
     toolsProtectionEnabled: false,
+    statLectures: "",
+    statSpecialties: "",
+    statStudents: "",
+    statSatisfaction: "99%",
   };
 
   try {
@@ -43,6 +47,10 @@ export async function updateSettings(data: any) {
     if (data.primaryColor !== undefined) updateData.primaryColor = data.primaryColor;
     if (data.secondaryColor !== undefined) updateData.secondaryColor = data.secondaryColor;
     if (data.darkBg !== undefined) updateData.darkBg = data.darkBg;
+    if (data.statLectures !== undefined) updateData.statLectures = data.statLectures;
+    if (data.statSpecialties !== undefined) updateData.statSpecialties = data.statSpecialties;
+    if (data.statStudents !== undefined) updateData.statStudents = data.statStudents;
+    if (data.statSatisfaction !== undefined) updateData.statSatisfaction = data.statSatisfaction;
 
     const updated = await prisma.siteSettings.update({
       where: { id: "global" },

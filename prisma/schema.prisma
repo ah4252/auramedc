@@ -18,6 +18,7 @@ model User {
   instagram         String?
   facebook          String?
   passwordChangedAt DateTime?
+  lastActiveAt      DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   
@@ -157,8 +158,14 @@ model SiteSettings {
   darkBg                  String? @default("#0f172a")
   toolsPassword           String? @default("tools123")
   toolsProtectionEnabled  Boolean @default(false)
+  // Homepage stats
+  statLectures            String? @default("")
+  statSpecialties         String? @default("")
+  statStudents            String? @default("")
+  statSatisfaction        String? @default("99%")
   updatedAt               DateTime @updatedAt
 }
+
 
 model Timetable {
   id        String   @id @default(cuid())

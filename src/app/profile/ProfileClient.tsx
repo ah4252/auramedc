@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { updateProfile, changePassword } from "@/app/actions/auth";
+import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
 import { useSearchParams, useRouter } from "next/navigation";
-import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
+import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getYoutubeThumbnail, getSocialUrl } from "@/lib/utils";
@@ -23,6 +23,16 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
   const [newPw, setNewPw] = useState("");
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
+
+  // Image modal state
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState(user.image || "");
+
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -52,378 +62,735 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
     setLoading(false);
   }
 
+  async function handleDeleteAccount() {
+    if (!deletePassword) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    const res = await deleteAccount(deletePassword);
+    if (res?.error) {
+      setDeleteError(res.error);
+      setDeleteLoading(false);
+    } else {
+      // تم الحذف - إعادة التوجيه للصفحة الرئيسية
+      router.push("/");
+      router.refresh();
+    }
+  }
+
+  async function handleImageUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("name", user.name);
+    formData.append("image", tempImageUrl);
+    formData.append("telegram", user.telegram || "");
+    formData.append("instagram", user.instagram || "");
+    formData.append("facebook", user.facebook || "");
+    
+    const res = await updateProfile(formData);
+    if (res?.error) {
+       alert(res.error);
+    } else {
+       setShowImageModal(false);
+       router.refresh();
+    }
+    setLoading(false);
+  }
+
+  const completedCount = user.progress?.filter((p: any) => p.completed).length || 0;
+  const favoritesCount = user.favorites?.length || 0;
+  const latestGpa = user.gpaCalculations?.[0]?.gpa || "0.00";
+  const watchHours = Math.round((user.progress?.reduce((acc: number, curr: any) => acc + curr.watchedSec, 0) || 0) / 3600);
+
   const stats = [
-    { label: "دروس مكتملة", value: user.progress?.filter((p: any) => p.completed).length || 0, icon: CheckCircle, color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
-    { label: "في المفضلة", value: user.favorites?.length || 0, icon: Heart, color: "text-red-600 bg-red-50 dark:bg-red-900/20" },
-    { label: "آخر معدل", value: user.gpaCalculations?.[0]?.gpa || "0.00", icon: GraduationCap, color: "text-medical-600 bg-medical-50 dark:bg-medical-900/20" },
-    { label: "ساعات المشاهدة", value: Math.round((user.progress?.reduce((acc: number, curr: any) => acc + curr.watchedSec, 0) || 0) / 3600), icon: Clock, color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20" },
+    { label: "دروس مكتملة", value: completedCount, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]" },
+    { label: "في المفضلة", value: favoritesCount, icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]" },
+    { label: "آخر معدل", value: latestGpa, icon: GraduationCap, color: "text-medical-500", bg: "bg-medical-500/10", border: "border-medical-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]" },
+    { label: "ساعات المشاهدة", value: watchHours, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]" },
   ];
 
   return (
-    <div className="container mx-auto px-4 py-20 max-w-5xl">
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        
-        {/* Sidebar Info */}
-        <aside className="w-full md:w-80 space-y-6">
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 text-center"
-          >
-            <div className="relative inline-block group mb-6">
-              <div className="w-24 h-24 rounded-full bg-medical-50 dark:bg-medical-900/30 flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden">
-                {user.image ? (
-                  <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-12 h-12 text-medical-600 dark:text-medical-400" />
+    <div className="relative min-h-screen pb-24 overflow-hidden">
+      {/* Dynamic Ambient Background Elements */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-medical-600/20 rounded-full blur-[120px] mix-blend-screen opacity-50 pointer-events-none animate-pulse" />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen opacity-50 pointer-events-none animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5 pointer-events-none" />
+
+      <div className="container mx-auto px-4 py-16 max-w-6xl relative z-10">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
+          {/* Sidebar Info */}
+          <aside className="w-full lg:w-80 flex flex-col gap-6">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl relative overflow-hidden text-center group"
+            >
+              {/* Card top glow */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-medical-500 to-transparent opacity-50" />
+              
+              <div className="relative inline-block mb-6">
+                <div className="relative w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-medical-600 via-purple-500 to-sky-400 group-hover:rotate-180 transition-transform duration-700 ease-in-out">
+                  <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden transform group-hover:-rotate-180 transition-transform duration-700 ease-in-out">
+                    {user.image ? (
+                      <img src={user.image} alt={user.name} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <User className="w-12 h-12 text-slate-400" />
+                    )}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowImageModal(true)}
+                  className="absolute bottom-1 right-1 p-2.5 bg-medical-500 hover:bg-medical-400 text-white rounded-full shadow-[0_0_20px_rgba(14,165,233,0.5)] border-2 border-white dark:border-slate-900 hover:scale-110 transition-all z-10"
+                  title="تغيير الصورة"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-1 tracking-tight">{user.name}</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-bold">{user.email}</p>
+              
+              {/* Social Badges */}
+              <div className="flex items-center justify-center gap-3 mb-8">
+                {user.telegram && (
+                  <a href={getSocialUrl(user.telegram, "telegram")} target="_blank" rel="noopener noreferrer" className="p-3 bg-sky-500/10 text-sky-500 rounded-2xl hover:bg-sky-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(14,165,233,0.4)]" title="Telegram">
+                    <Send className="w-5 h-5" />
+                  </a>
+                )}
+                {user.instagram && (
+                  <a href={getSocialUrl(user.instagram, "instagram")} target="_blank" rel="noopener noreferrer" className="p-3 bg-pink-500/10 text-pink-500 rounded-2xl hover:bg-pink-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(236,72,153,0.4)]" title="Instagram">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {user.facebook && (
+                  <a href={getSocialUrl(user.facebook, "facebook")} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-600/10 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(37,99,235,0.4)]" title="Facebook">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
+                {(!user.telegram && !user.instagram && !user.facebook) && (
+                  <div className="text-xs text-slate-400 font-bold bg-slate-100 dark:bg-slate-800/50 py-2 px-4 rounded-xl">لا يوجد حسابات تواصل مربوطة</div>
                 )}
               </div>
-              <button 
-                onClick={() => setActiveTab("settings")}
-                className="absolute bottom-0 right-0 p-2 bg-white dark:bg-slate-700 rounded-full shadow-md border border-slate-100 dark:border-slate-600 hover:scale-110 transition-transform"
-                title="تغيير الصورة"
-              >
-                <Camera className="w-4 h-4 text-medical-600 dark:text-medical-400" />
-              </button>
-            </div>
-            <h1 className="text-xl font-bold mb-1">{user.name}</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{user.email}</p>
-            
-            <div className="flex items-center justify-center gap-3 mb-6">
-              {user.telegram && (
-                <a href={getSocialUrl(user.telegram, "telegram")} target="_blank" rel="noopener noreferrer" className="p-2 bg-sky-500/10 text-sky-500 rounded-xl hover:bg-sky-500 hover:text-white transition-all shadow-sm" title="Telegram">
-                  <Send className="w-4 h-4" />
-                </a>
-              )}
-              {user.instagram && (
-                <a href={getSocialUrl(user.instagram, "instagram")} target="_blank" rel="noopener noreferrer" className="p-2 bg-pink-500/10 text-pink-500 rounded-xl hover:bg-pink-500 hover:text-white transition-all shadow-sm" title="Instagram">
-                  <Instagram className="w-4 h-4" />
-                </a>
-              )}
-              {user.facebook && (
-                <a href={getSocialUrl(user.facebook, "facebook")} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-600/10 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Facebook">
-                  <Facebook className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              {[
-                { id: "overview", label: "نظرة عامة", icon: BookOpen },
-                { id: "favorites", label: "المفضلة", icon: Heart },
-                { id: "settings", label: "الإعدادات", icon: User },
-              ].map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  whileHover={{ scale: 1.02, x: -5 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold w-full text-right ${
-                    activeTab === tab.id 
-                      ? "bg-medical-600 text-white shadow-lg shadow-medical-600/30" 
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  <span>{tab.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-
-          <Link href="/" className="flex items-center justify-center gap-2 text-slate-500 hover:text-medical-600 font-bold transition-colors">
-            <ArrowRight className="w-5 h-5" />
-            <span>العودة للرئيسية</span>
-          </Link>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 w-full min-h-[600px]">
-          <AnimatePresence mode="wait">
-            {activeTab === "overview" && (
-              <motion.div
-                key="overview"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-8"
-              >
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {stats.map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-dark-card p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${stat.color}`}>
-                        <stat.icon className="w-5 h-5" />
-                      </div>
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Recent Progress */}
-                <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-medical-600" />
-                    <span>آخر الدروس المشاهدة</span>
-                  </h2>
-                  <div className="space-y-4">
-                    {user.progress?.slice(0, 3).map((p: any) => (
-                      <Link 
-                        key={p.id} 
-                        href={`/courses/v/${p.lesson.slug}`}
-                        className="flex items-center gap-4 p-4 rounded-2xl border border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-medical-600">
-                          <PlayCircle className="w-6 h-6" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-sm group-hover:text-medical-600 transition-colors line-clamp-1">{p.lesson.title}</h3>
-                          <p className="text-xs text-slate-500">{p.lesson.subject.name}</p>
-                        </div>
-                        <div className="text-xs font-bold px-3 py-1 rounded-full bg-medical-50 dark:bg-medical-900/30 text-medical-600">
-                          {p.completed ? "مكتمل" : "قيد المشاهدة"}
-                        </div>
-                      </Link>
-                    ))}
-                    {!user.progress?.length && (
-                      <div className="text-center py-10 text-slate-400">لا يوجد نشاط مؤخراً</div>
-                    )}
-                  </div>
-                </div>
-
-                {/* GPA History */}
-                <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-medical-600" />
-                    <span>سجل المعدلات</span>
-                  </h2>
-                  <div className="space-y-4">
-                    {user.gpaCalculations?.map((calc: any) => (
-                      <div key={calc.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                        <div>
-                          <div className="font-bold text-medical-600">{calc.gpa}</div>
-                          <div className="text-xs text-slate-500">{new Date(calc.createdAt).toLocaleDateString('ar-EG')}</div>
-                        </div>
-                        <div className="text-xs text-slate-400">{calc.subjects.split(',').length} مواد</div>
-                      </div>
-                    ))}
-                    {!user.gpaCalculations?.length && (
-                      <div className="text-center py-10 text-slate-400">لم تقم بحساب معدلك بعد</div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeTab === "favorites" && (
-              <motion.div
-                key="favorites"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
-                {user.favorites?.map((fav: any) => {
-                  const thumbnailUrl = getYoutubeThumbnail(fav.lesson.videoUrl);
+              
+              {/* Tabs Navigation */}
+              <div className="flex flex-col gap-2 relative">
+                {[
+                  { id: "overview", label: "نظرة عامة", icon: BookOpen },
+                  { id: "favorites", label: "المفضلة", icon: Heart },
+                  { id: "settings", label: "إعدادات الحساب", icon: User },
+                ].map((tab) => {
+                  const isActive = activeTab === tab.id;
                   return (
-                    <Link 
-                      key={fav.id} 
-                      href={`/courses/v/${fav.lesson.slug}`}
-                      className="bg-white dark:bg-dark-card p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
+                    <motion.button
+                      key={tab.id}
+                      whileHover={{ scale: 1.02, x: -5 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative flex items-center gap-3 px-5 py-4 rounded-2xl transition-all font-black w-full text-right overflow-hidden group ${
+                        isActive 
+                          ? "text-white shadow-lg" 
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                      }`}
                     >
-                       {thumbnailUrl ? (
-                        <div className="aspect-video rounded-2xl bg-[#05070a] mb-4 overflow-hidden relative border border-slate-100 dark:border-slate-800/50 shadow-inner">
-                          <img 
-                            src={thumbnailUrl} 
-                            alt={fav.lesson.title}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <PlayCircle className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-                          </div>
-                          <div className="absolute inset-0 bg-medical-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      ) : (
-                        <div className="aspect-video rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 mb-4 overflow-hidden relative border border-slate-100 dark:border-slate-800/50 shadow-inner flex items-center justify-center">
-                          {/* Ambient glow */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-medical-500/10 rounded-full blur-xl pointer-events-none"></div>
-                          {/* Premium Grid Pattern */}
-                          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:1rem_1rem] opacity-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-                          
-                          <div className="relative flex flex-col items-center justify-center gap-1 z-10">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 dark:bg-medical-950/20 border border-white/10 dark:border-medical-500/20 flex items-center justify-center shadow-md backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-medical-500/40">
-                              <BookOpen className="w-5 h-5 text-medical-400 group-hover:text-medical-300 transition-colors" />
-                            </div>
-                          </div>
-                        </div>
+                      {isActive && (
+                        <motion.div 
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-gradient-to-r from-medical-600 to-medical-500"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
                       )}
-                      <h3 className="font-bold group-hover:text-medical-600 transition-colors line-clamp-1">{fav.lesson.title}</h3>
-                      <p className="text-xs text-slate-500">{fav.lesson.subject.name}</p>
-                    </Link>
+                      <tab.icon className={`w-5 h-5 relative z-10 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-medical-500 transition-colors'}`} />
+                      <span className="relative z-10">{tab.label}</span>
+                      
+                      {/* Optional Indicator/Badge */}
+                      {tab.id === 'favorites' && favoritesCount > 0 && (
+                        <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-[10px] py-0.5 px-2 rounded-full relative z-10 ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
+                          {favoritesCount}
+                        </span>
+                      )}
+                    </motion.button>
                   );
                 })}
-                {!user.favorites?.length && (
-                  <div className="col-span-full text-center py-20 bg-white dark:bg-dark-card rounded-[2.5rem] text-slate-400 font-bold">
-                    قائمتك المفضلة فارغة حالياً
-                  </div>
-                )}
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
 
+            <Link href="/" className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-medical-600 dark:hover:text-medical-400 font-bold transition-colors bg-white/50 dark:bg-slate-900/30 backdrop-blur-md py-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 hover:border-medical-500/30 group mt-6">
+              <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span>العودة للرئيسية</span>
+            </Link>
+          </aside>
 
-
-            {activeTab === "settings" && (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 md:p-12 border border-slate-100 dark:border-slate-800 shadow-sm"
-              >
-                <h2 className="text-2xl font-bold mb-8">إعدادات الحساب</h2>
-                
-                {message.text && (
-                  <div className={`mb-8 p-4 rounded-2xl flex items-center gap-3 font-bold ${
-                    message.type === "success" 
-                      ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" 
-                      : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-                  }`}>
-                    {message.type === "success" && <CheckCircle className="w-5 h-5" />}
-                    {message.text}
-                  </div>
-                )}
-
-                <form action={handleUpdate} className="space-y-6">
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-bold text-slate-700 dark:text-slate-300 mr-2">اسم العرض</label>
-                    <input 
-                      id="name"
-                      name="name"
-                      defaultValue={user.name || ""}
-                      required
-                      title="اسم العرض"
-                      placeholder="اسم العرض"
-                      className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-medical-500 outline-none transition-all"
-                    />
+          {/* Main Content Area */}
+          <main className="flex-1 w-full min-h-[700px]">
+            <AnimatePresence mode="wait">
+              
+              {/* OVERVIEW TAB */}
+              {activeTab === "overview" && (
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-6"
+                >
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {stats.map((stat, i) => (
+                      <motion.div 
+                        key={i} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`group bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-6 rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 ${stat.glow} transition-all duration-300 hover:-translate-y-1 relative overflow-hidden`}
+                      >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 border ${stat.bg} ${stat.color} ${stat.border} shadow-sm group-hover:scale-110 transition-transform`}>
+                          <stat.icon className="w-6 h-6" />
+                        </div>
+                        <div className="text-3xl font-black text-slate-800 dark:text-white mb-1">{stat.value}</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400 font-bold">{stat.label}</div>
+                      </motion.div>
+                    ))}
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mr-2">رابط الصورة الشخصية</label>
-                    <input 
-                      name="image"
-                      defaultValue={user.image || ""}
-                      placeholder="https://..."
-                      className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-medical-500 outline-none transition-all"
-                      dir="ltr"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                    <div className="space-y-2">
-                       <label className="text-xs font-black text-slate-400 mr-2 uppercase tracking-widest">Telegram</label>
-                       <input 
-                         name="telegram"
-                         defaultValue={user.telegram || ""}
-                         placeholder="@username"
-                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-sky-500 outline-none transition-all text-sm"
-                         dir="ltr"
-                       />
-                       {user.telegram && (
-                         <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black text-sky-500 animate-pulse">
-                            <Send className="w-3 h-3" />
-                            <span>مفعّل</span>
-                         </div>
-                       )}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {/* Recent Progress */}
+                    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-[2.5rem] p-8 border border-slate-200/50 dark:border-slate-700/50 shadow-lg relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-medical-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                      
+                      <div className="flex items-center justify-between mb-8 relative z-10">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-3">
+                          <div className="p-2 bg-medical-500/10 rounded-xl text-medical-500">
+                            <PlayCircle className="w-5 h-5" />
+                          </div>
+                          آخر الدروس المشاهدة
+                        </h2>
+                      </div>
+                      
+                      <div className="space-y-4 relative z-10">
+                        {user.progress?.slice(0, 4).map((p: any, i: number) => (
+                          <Link 
+                            key={p.id} 
+                            href={`/courses/v/${p.lesson.slug}`}
+                            className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 hover:border-medical-500/30 hover:shadow-lg hover:shadow-medical-500/5 transition-all group/item"
+                          >
+                            <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 group-hover/item:text-medical-500 group-hover/item:border-medical-500/30 transition-colors shadow-sm">
+                              <PlayCircle className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 group-hover/item:text-medical-500 transition-colors line-clamp-1">{p.lesson.title}</h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{p.lesson.subject.name}</p>
+                            </div>
+                            <div className={`text-[10px] font-black px-3 py-1.5 rounded-full border whitespace-nowrap ${p.completed ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
+                              {p.completed ? "مكتمل" : "قيد المشاهدة"}
+                            </div>
+                          </Link>
+                        ))}
+                        {(!user.progress || user.progress.length === 0) && (
+                          <div className="text-center py-12 flex flex-col items-center">
+                            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                              <Inbox className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <p className="text-slate-500 font-bold">لا يوجد نشاط مؤخراً</p>
+                            <p className="text-xs text-slate-400 mt-1">ابدأ بمشاهدة الدروس الآن!</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                       <label className="text-xs font-black text-slate-400 mr-2 uppercase tracking-widest">Instagram</label>
-                       <input 
-                         name="instagram"
-                         defaultValue={user.instagram || ""}
-                         placeholder="username"
-                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-pink-500 outline-none transition-all text-sm"
-                         dir="ltr"
-                       />
-                       {user.instagram && (
-                         <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black text-pink-500 animate-pulse">
-                            <Instagram className="w-3 h-3" />
-                            <span>مفعّل</span>
-                         </div>
-                       )}
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-xs font-black text-slate-400 mr-2 uppercase tracking-widest">Facebook</label>
-                       <input 
-                         name="facebook"
-                         defaultValue={user.facebook || ""}
-                         placeholder="profile_id"
-                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-blue-600 outline-none transition-all text-sm"
-                         dir="ltr"
-                       />
-                       {user.facebook && (
-                         <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black text-blue-600 animate-pulse">
-                            <Facebook className="w-3 h-3" />
-                            <span>مفعّل</span>
-                         </div>
-                       )}
+
+                    {/* GPA History */}
+                    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-[2.5rem] p-8 border border-slate-200/50 dark:border-slate-700/50 shadow-lg relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+                      
+                      <div className="flex items-center justify-between mb-8 relative z-10">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-3">
+                          <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500">
+                            <TrendingUp className="w-5 h-5" />
+                          </div>
+                          سجل المعدلات
+                        </h2>
+                      </div>
+                      
+                      <div className="space-y-4 relative z-10">
+                        {user.gpaCalculations?.slice(0, 5).map((calc: any, i: number) => (
+                          <div key={calc.id} className="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-amber-500/30 transition-colors">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-black shadow-lg shadow-amber-500/20 text-lg">
+                                {calc.gpa}
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm text-slate-800 dark:text-slate-200">معدل الفصل</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {new Date(calc.createdAt).toLocaleDateString('ar-EG', { month: 'short', year: 'numeric' })}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-xs font-black text-slate-500 bg-slate-200/50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full whitespace-nowrap">
+                              {calc.subjects.split(',').length} مواد
+                            </div>
+                          </div>
+                        ))}
+                        {(!user.gpaCalculations || user.gpaCalculations.length === 0) && (
+                          <div className="text-center py-12 flex flex-col items-center">
+                            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                              <Award className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <p className="text-slate-500 font-bold">لم تقم بحساب معدلك بعد</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                </motion.div>
+              )}
 
-                  <motion.button 
-                    type="submit"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    disabled={loading}
-                    className="w-full mt-8 bg-medical-600 hover:bg-medical-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-medical-600/30 flex items-center justify-center gap-2 group disabled:opacity-50"
-                  >
-                    <Save className="w-5 h-5" />
-                    {loading ? "جاري الحفظ..." : "حفظ التعديلات"}
-                  </motion.button>
-                </form>
+              {/* FAVORITES TAB */}
+              {activeTab === "favorites" && (
+                <motion.div
+                  key="favorites"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                  {user.favorites?.map((fav: any, i: number) => {
+                    const thumbnailUrl = getYoutubeThumbnail(fav.lesson.videoUrl);
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
+                        key={fav.id}
+                      >
+                        <Link 
+                          href={`/courses/v/${fav.lesson.slug}`}
+                          className="block bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl p-4 rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-2xl hover:shadow-rose-500/10 hover:border-rose-500/30 transition-all group"
+                        >
+                           {thumbnailUrl ? (
+                            <div className="aspect-video rounded-[1.5rem] bg-slate-900 mb-5 overflow-hidden relative border border-slate-200 dark:border-slate-800">
+                              <img 
+                                src={thumbnailUrl} 
+                                alt={fav.lesson.title}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors">
+                                <div className="w-14 h-14 rounded-full bg-rose-500/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all duration-300 shadow-[0_0_30px_rgba(244,63,94,0.6)] backdrop-blur-md">
+                                  <PlayCircle className="w-7 h-7 ml-1" />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="aspect-video rounded-[1.5rem] bg-gradient-to-br from-slate-800 to-slate-900 mb-5 overflow-hidden relative border border-slate-700/50 flex items-center justify-center">
+                              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+                              <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-lg backdrop-blur-md group-hover:scale-110 group-hover:border-rose-500/40 transition-all duration-500 relative z-10">
+                                <BookOpen className="w-6 h-6 text-rose-400" />
+                              </div>
+                            </div>
+                          )}
+                          <h3 className="font-black text-slate-800 dark:text-white group-hover:text-rose-500 transition-colors line-clamp-1 mb-2 px-1">{fav.lesson.title}</h3>
+                          <div className="flex items-center gap-2 px-1">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md">مفضلة</span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold line-clamp-1">{fav.lesson.subject.name}</span>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                  {(!user.favorites || user.favorites.length === 0) && (
+                    <div className="col-span-full flex flex-col items-center justify-center py-32 bg-white/50 dark:bg-slate-900/40 backdrop-blur-md rounded-[3rem] border border-slate-200/50 dark:border-slate-800/50">
+                      <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center mb-6 relative">
+                        <Heart className="w-12 h-12 text-rose-400 absolute z-10" />
+                        <div className="w-full h-full rounded-full animate-ping border-2 border-rose-500/50 absolute inset-0" />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">قائمتك المفضلة فارغة</h3>
+                      <p className="text-slate-500 dark:text-slate-400 font-bold">أضف بعض الدروس للرجوع إليها لاحقاً بسهولة</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
 
-                {/* --- Password Change Section --- */}
-                <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-500">
-                        <Lock className="w-5 h-5" />
+              {/* SETTINGS TAB */}
+              {activeTab === "settings" && (
+                <motion.div
+                  key="settings"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-medical-600 via-purple-500 to-sky-400" />
+                  
+                  <div className="flex items-center gap-4 mb-10">
+                    <div className="p-3 bg-medical-500/10 rounded-2xl text-medical-500 shadow-inner">
+                      <Sparkles className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-black text-slate-800 dark:text-white">إعدادات الحساب</h2>
+                      <p className="text-slate-500 font-bold mt-1">قم بتخصيص ملفك الشخصي وحسابات التواصل</p>
+                    </div>
+                  </div>
+                  
+                  <AnimatePresence>
+                    {message.text && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0, marginBottom: 0 }} 
+                        animate={{ opacity: 1, height: 'auto', marginBottom: 32 }} 
+                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className={`p-5 rounded-2xl flex items-center gap-3 font-bold border shadow-sm ${
+                          message.type === "success" 
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-500/30 dark:text-emerald-400" 
+                            : "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-900/20 dark:border-rose-500/30 dark:text-rose-400"
+                        }`}>
+                          {message.type === "success" ? <CheckCircle className="w-6 h-6 shrink-0" /> : <AlertCircle className="w-6 h-6 shrink-0" />}
+                          <span className="text-lg">{message.text}</span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <form action={handleUpdate} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label htmlFor="name" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
+                          <User className="w-4 h-4 text-medical-500" /> اسم العرض
+                        </label>
+                        <input 
+                          id="name" name="name" defaultValue={user.name || ""} required
+                          placeholder="الاسم الكامل"
+                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
+                          <Camera className="w-4 h-4 text-purple-500" /> رابط الصورة الشخصية
+                        </label>
+                        <input 
+                          name="image" defaultValue={user.image || ""} placeholder="https://example.com/image.jpg" dir="ltr"
+                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-8 rounded-[2rem] bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/50">
+                      <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                        <Inbox className="w-5 h-5 text-sky-500" /> حسابات التواصل الاجتماعي
+                      </h3>
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Telegram */}
+                        <div className="space-y-2 relative group">
+                           <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                             <Send className="w-4 h-4 text-sky-500" /> Telegram
+                           </label>
+                           <input 
+                             name="telegram" defaultValue={user.telegram || ""} placeholder="@username" dir="ltr"
+                             className="w-full p-4 pl-24 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm"
+                           />
+                           {user.telegram && (
+                             <div className="absolute top-10 left-4 bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
+                                مفعّل <CheckCircle className="w-3 h-3" />
+                             </div>
+                           )}
+                        </div>
+                        {/* Instagram */}
+                        <div className="space-y-2 relative group">
+                           <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                             <Instagram className="w-4 h-4 text-pink-500" /> Instagram
+                           </label>
+                           <input 
+                             name="instagram" defaultValue={user.instagram || ""} placeholder="username" dir="ltr"
+                             className="w-full p-4 pl-24 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm"
+                           />
+                           {user.instagram && (
+                             <div className="absolute top-10 left-4 bg-pink-500/10 text-pink-600 dark:text-pink-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
+                                مفعّل <CheckCircle className="w-3 h-3" />
+                             </div>
+                           )}
+                        </div>
+                        {/* Facebook */}
+                        <div className="space-y-2 relative group">
+                           <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                             <Facebook className="w-4 h-4 text-blue-600" /> Facebook
+                           </label>
+                           <input 
+                             name="facebook" defaultValue={user.facebook || ""} placeholder="profile_id" dir="ltr"
+                             className="w-full p-4 pl-24 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm"
+                           />
+                           {user.facebook && (
+                             <div className="absolute top-10 left-4 bg-blue-600/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
+                                مفعّل <CheckCircle className="w-3 h-3" />
+                             </div>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <motion.button 
+                        type="submit" disabled={loading}
+                        whileHover={{ scale: 1.02, translateY: -2 }} whileTap={{ scale: 0.98 }}
+                        className="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-medical-600 to-sky-500 hover:from-medical-500 hover:to-sky-400 text-white rounded-2xl font-black transition-all shadow-[0_10px_40px_-10px_rgba(14,165,233,0.5)] flex items-center justify-center gap-3 disabled:opacity-70 text-lg group"
+                      >
+                        {loading ? (
+                          <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <Save className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
+                            حفظ التعديلات
+                          </>
+                        )}
+                      </motion.button>
+                    </div>
+                  </form>
+
+                  {/* Password Change Section */}
+                  <div className="mt-16 pt-12 border-t-2 border-slate-100 dark:border-slate-800">
+                    <div className="flex items-start md:items-center gap-5 mb-8 flex-col md:flex-row">
+                      <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-inner">
+                        <Lock className="w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="font-black text-slate-800 dark:text-white">تغيير كلمة المرور</h3>
-                        <p className="text-xs text-slate-400 font-bold">مسموح بالتغيير مرة واحدة كل 30 يوماً</p>
+                        <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">تغيير كلمة المرور</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 inline-block px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 mt-1 shadow-sm">
+                          لأسباب أمنية، مسموح بالتغيير مرة واحدة فقط كل 30 يوماً
+                        </p>
                       </div>
                     </div>
+                    
                     <AnimatePresence>
                       {pwMessage.text && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-4">
-                          <div className={`flex items-center gap-2 p-3 rounded-xl text-sm font-bold ${pwMessage.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'}`}>
-                            {pwMessage.type === 'success' ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-6">
+                          <div className={`flex items-center gap-3 p-4 rounded-2xl text-sm font-bold border shadow-sm ${pwMessage.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-500/30 dark:text-emerald-400' : 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-900/20 dark:border-rose-500/30 dark:text-rose-400'}`}>
+                            {pwMessage.type === 'success' ? <ShieldCheck className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
                             <span>{pwMessage.text}</span>
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الحالية</label>
-                        <input type={showCurrentPw ? 'text' : 'password'} value={currentPw} onChange={e => setCurrentPw(e.target.value)} placeholder="••••••••" required className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all text-sm font-bold" dir="ltr" />
-                        <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-slate-600 transition-colors">{showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+
+                    <div className="bg-slate-50 dark:bg-slate-800/30 p-6 md:p-8 rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 max-w-2xl shadow-inner">
+                      <div className="space-y-6">
+                        <div className="relative">
+                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الحالية</label>
+                          <input type={showCurrentPw ? 'text' : 'password'} value={currentPw} onChange={e => setCurrentPw(e.target.value)} placeholder="••••••••" required className="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white tracking-widest text-lg shadow-sm" dir="ltr" />
+                          <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-amber-500 transition-colors bg-slate-100 dark:bg-slate-700 p-2 rounded-xl">{showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                        </div>
+                        
+                        <div className="relative">
+                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الجديدة</label>
+                          <input type={showNewPw ? 'text' : 'password'} value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="••••••••" required minLength={6} className="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white tracking-widest text-lg shadow-sm" dir="ltr" />
+                          <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-amber-500 transition-colors bg-slate-100 dark:bg-slate-700 p-2 rounded-xl">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                        </div>
+                        
+                        <motion.button 
+                          type="button" onClick={(e) => { e.preventDefault(); handleChangePassword(e as any); }} disabled={pwLoading || !currentPw || !newPw} 
+                          whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                          className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] mt-4 text-lg"
+                        >
+                          {pwLoading ? <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" /> : <><Lock className="w-5 h-5" /><span>تحديث كلمة المرور</span></>}
+                        </motion.button>
                       </div>
-                      <div className="relative">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الجديدة</label>
-                        <input type={showNewPw ? 'text' : 'password'} value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="••••••••" required minLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 outline-none transition-all text-sm font-bold" dir="ltr" />
-                        <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-slate-600 transition-colors">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
-                      </div>
-                      <button type="button" onClick={(e) => { e.preventDefault(); handleChangePassword(e as any); }} disabled={pwLoading || !currentPw || !newPw} className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-amber-500/20">
-                        {pwLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Lock className="w-4 h-4" /><span>تحديث كلمة المرور</span></>}
-                      </button>
                     </div>
                   </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
+
+                  {/* Danger Zone - Delete Account */}
+                  <div className="mt-16 pt-12 border-t-2 border-red-100 dark:border-red-900/30">
+                    <div className="flex items-start md:items-center gap-5 mb-8 flex-col md:flex-row">
+                      <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 shrink-0 border border-red-500/20 shadow-inner">
+                        <Trash2 className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-red-600 dark:text-red-400 mb-1">منطقة الخطر</h3>
+                        <p className="text-sm text-red-600/70 dark:text-red-400/70 font-bold">حذف حسابك نهائياً وبشكل لا رجعة منه</p>
+                      </div>
+                    </div>
+                    <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20 rounded-[2rem] p-6 md:p-8 max-w-2xl">
+                      <p className="text-sm text-red-700 dark:text-red-300 font-bold mb-6 leading-relaxed">
+                        ⚠️ سيتم حذف جميع بياناتك بما تشمل تعليقاتك ومفضلاتك وسجل تقدمك وكل معلوماتك. هذا الإجراء غير قابل للتراجع.
+                      </p>
+                      <motion.button
+                        type="button"
+                        onClick={() => setShowDeleteModal(true)}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-[0_10px_30px_-10px_rgba(239,68,68,0.5)] text-lg"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        حذف حسابي نهائياً
+                      </motion.button>
+                    </div>
+                  </div>
+
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </main>
+        </div>
       </div>
+
+      {/* Image Modal */}
+      <AnimatePresence>
+        {showImageModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowImageModal(false)}
+              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-medical-500" /> تغيير الصورة الشخصية
+                </h3>
+                <button onClick={() => setShowImageModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-6 flex justify-center">
+                <div className="w-32 h-32 rounded-full border-4 border-medical-500/20 overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                   {tempImageUrl ? (
+                      <img src={tempImageUrl} alt="Preview" className="w-full h-full object-cover" onError={() => setTempImageUrl("")} />
+                   ) : (
+                      <User className="w-12 h-12 text-slate-400" />
+                   )}
+                </div>
+              </div>
+
+              <form onSubmit={handleImageUpdate}>
+                <div className="space-y-2 mb-6">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">رابط الصورة الجديد</label>
+                  <input 
+                    type="url"
+                    value={tempImageUrl}
+                    onChange={(e) => setTempImageUrl(e.target.value)}
+                    placeholder="https://..."
+                    dir="ltr"
+                    className="w-full p-4 pl-4 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold"
+                  />
+                </div>
+                
+                <div className="flex gap-3">
+                  <button type="submit" disabled={loading} className="flex-1 py-4 bg-medical-500 hover:bg-medical-600 text-white rounded-2xl font-black transition-all shadow-[0_10px_20px_-10px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 disabled:opacity-50">
+                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> حفظ الصورة</>}
+                  </button>
+                  <button type="button" onClick={() => setShowImageModal(false)} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all">
+                    إلغاء
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
+              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-red-200 dark:border-red-500/30 shadow-2xl"
+            >
+              {/* Top danger stripe */}
+              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-red-600 to-orange-500 rounded-t-[2.5rem]" />
+
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
+                className="absolute top-5 left-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mb-8 mt-4">
+                <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-3xl flex items-center justify-center mb-4 border border-red-200 dark:border-red-500/30">
+                  <Trash2 className="w-10 h-10 text-red-500" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">تأكيد حذف الحساب</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
+                  هذا الإجراء <span className="text-red-500 font-black">لا يمكن التراجع عنه.</span> أدخل كلمة المرور لتأكيد هويتك.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 text-right">
+                    كلمة المرور
+                  </label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => { setDeletePassword(e.target.value); setDeleteError(""); }}
+                    placeholder="••••••••"
+                    dir="ltr"
+                    className="w-full p-4 rounded-2xl border-2 border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-900/10 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white tracking-widest text-lg text-left"
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleDeleteAccount(); }}
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {deleteError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-bold">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        {deleteError}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex gap-3 pt-2">
+                  <motion.button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={deleteLoading || !deletePassword}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_10px_20px_-10px_rgba(239,68,68,0.5)]"
+                  >
+                    {deleteLoading ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <><Trash2 className="w-4 h-4" />حذف نهائياً</>
+                    )}
+                  </motion.button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
+                    className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

@@ -349,3 +349,52 @@ export async function resetForgotPassword(email: string, tempPassword: string, n
     return { error: "حدث خطأ غير متوقع أثناء إعادة تعيين كلمة المرور" };
   }
 }
+
+// ============================================================
+// Delete Account — حذف الحساب نهائياً
+// ============================================================
+
+export async function deleteAccount(password: string) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_token")?.value;
+  if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
+
+  if (!password) return { error: "كلمة المرور مطلوبة" };
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.password) return { error: "لم يتم العثور على المستخدم" };
+
+    // التحقق من كلمة المرور
+    let isValid = false;
+    try {
+      isValid = await bcrypt.compare(password, user.password);
+    } catch {
+      isValid = user.password === password;
+    }
+
+    if (!isValid) return { error: "كلمة المرور غير صحيحة" };
+
+    // الحذف بشكل آمن وحذف كل العلاقات
+    await prisma.$transaction([
+      prisma.comment.deleteMany({ where: { userId } }),
+      prisma.favorite.deleteMany({ where: { userId } }),
+      prisma.progress.deleteMany({ where: { userId } }),
+      prisma.gPACalculation.deleteMany({ where: { userId } }),
+      prisma.discussionComment.deleteMany({ where: { userId } }),
+      prisma.discussion.deleteMany({ where: { userId } }),
+      prisma.like.deleteMany({ where: { userId } }),
+      prisma.newsComment.deleteMany({ where: { userId } }),
+      prisma.friendship.deleteMany({ where: { OR: [{ userId }, { friendId: userId }] } }),
+      prisma.user.delete({ where: { id: userId } })
+    ]);
+
+    // تسجيل الخروج بعد الحذف
+    cookieStore.delete("user_token");
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Delete Account Error:", err);
+    return { error: "حدث خطأ أثناء حذف الحساب" };
+  }
+}

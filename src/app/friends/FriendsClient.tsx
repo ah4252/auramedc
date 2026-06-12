@@ -22,6 +22,7 @@ interface Friend {
     telegram: string | null;
     instagram: string | null;
     facebook: string | null;
+    lastActiveAt?: Date | string | null;
   };
 }
 
@@ -323,17 +324,22 @@ export default function FriendsClient({
                         
                         <div className="flex items-center gap-3 min-w-0">
                           {/* User Avatar */}
-                          {result.image ? (
-                            <img
-                              src={result.image}
-                              alt={result.name || "صورة"}
-                              className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm shrink-0"
-                            />
-                          ) : (
-                            <div className="w-11 h-11 bg-gradient-to-tr from-medical-500 to-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md shrink-0 uppercase">
-                              {(result.name || "U").substring(0, 2)}
-                            </div>
-                          )}
+                          <div className="relative shrink-0">
+                            {result.image ? (
+                              <img
+                                src={result.image}
+                                alt={result.name || "صورة"}
+                                className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
+                              />
+                            ) : (
+                              <div className="w-11 h-11 bg-gradient-to-tr from-medical-500 to-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-sm shadow-md uppercase">
+                                {(result.name || "U").substring(0, 2)}
+                              </div>
+                            )}
+                            {result.lastActiveAt && (new Date().getTime() - new Date(result.lastActiveAt).getTime() < 5 * 60 * 1000) && (
+                              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                            )}
+                          </div>
 
                           <div className="text-right min-w-0">
                             <h4 className="font-black text-slate-800 dark:text-white text-xs truncate">
@@ -498,17 +504,22 @@ export default function FriendsClient({
                           className="p-5 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200/40 dark:border-slate-800/80 flex flex-col justify-between"
                         >
                           <div className="flex items-center gap-3">
-                            {f.user.image ? (
-                              <img
-                                src={f.user.image}
-                                alt={f.user.name || "صورة"}
-                                className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-700"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-sm uppercase shrink-0 border border-medical-500/20">
-                                {(f.user.name || "U").substring(0, 2)}
-                              </div>
-                            )}
+                            <div className="relative shrink-0">
+                              {f.user.image ? (
+                                <img
+                                  src={f.user.image}
+                                  alt={f.user.name || "صورة"}
+                                  className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-sm uppercase border border-medical-500/20">
+                                  {(f.user.name || "U").substring(0, 2)}
+                                </div>
+                              )}
+                              {f.user.lastActiveAt && (new Date().getTime() - new Date(f.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
+                                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                              )}
+                            </div>
                             <div className="text-right min-w-0">
                               <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm truncate">
                                 {f.user.name || "طالب بدون اسم"}
@@ -604,17 +615,22 @@ export default function FriendsClient({
                             className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800 flex items-center justify-between gap-4"
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              {req.user.image ? (
-                                <img
-                                  src={req.user.image}
-                                  alt={req.user.name || "صورة"}
-                                  className="w-10 h-10 rounded-xl object-cover shrink-0"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase shrink-0">
-                                  {(req.user.name || "U").substring(0, 2)}
-                                </div>
-                              )}
+                              <div className="relative shrink-0">
+                                {req.user.image ? (
+                                  <img
+                                    src={req.user.image}
+                                    alt={req.user.name || "صورة"}
+                                    className="w-10 h-10 rounded-xl object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
+                                    {(req.user.name || "U").substring(0, 2)}
+                                  </div>
+                                )}
+                                {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                )}
+                              </div>
                               <div className="text-right min-w-0">
                                 <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
                                   {req.user.name || "زميل"}
@@ -667,17 +683,22 @@ export default function FriendsClient({
                             className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800 flex items-center justify-between gap-4"
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              {req.user.image ? (
-                                <img
-                                  src={req.user.image}
-                                  alt={req.user.name || "صورة"}
-                                  className="w-10 h-10 rounded-xl object-cover shrink-0"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase shrink-0">
-                                  {(req.user.name || "U").substring(0, 2)}
-                                </div>
-                              )}
+                              <div className="relative shrink-0">
+                                {req.user.image ? (
+                                  <img
+                                    src={req.user.image}
+                                    alt={req.user.name || "صورة"}
+                                    className="w-10 h-10 rounded-xl object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
+                                    {(req.user.name || "U").substring(0, 2)}
+                                  </div>
+                                )}
+                                {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                )}
+                              </div>
                               <div className="text-right min-w-0">
                                 <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
                                   {req.user.name || "زميل"}

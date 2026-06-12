@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Newspaper, Calendar, X, ChevronRight, Video, Link as LinkIcon, Send, MessageCircle, User as UserIcon, CornerDownLeft, Reply, Trash2, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { addNewsComment, deleteNewsComment } from "@/app/actions/news";
@@ -12,13 +12,17 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
   const [replyTo, setReplyTo] = useState<{ id: string; userName: string } | null>(null);
 
   // لمنع التمرير في الخلفية عند فتح النافذة
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     if (selectedNews) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-  }
+    
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedNews]);
 
   const getYouTubeId = (url: string) => {
     if (!url) return null;
@@ -265,28 +269,21 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                 <div className="flex-1 min-h-[50vh] border-b lg:border-b-0 lg:border-l border-slate-700/50">
                   {(() => {
                     const videos = parseUrls(selectedNews.videoUrl);
-                    if (videos.length > 0) {
+                    const validVideos = videos.filter((vid: string) => getYouTubeId(vid));
+                    
+                    if (validVideos.length > 0) {
                       return (
                         <div className="w-full shrink-0 flex flex-col border-b border-slate-800">
-                          {videos.map((vid, idx) => {
+                          {validVideos.map((vid: string, idx: number) => {
                             const ytId = getYouTubeId(vid);
                             return (
                               <div key={idx} className={`w-full aspect-video relative bg-black shrink-0 ${idx > 0 ? 'border-t border-slate-800' : ''}`}>
-                                {ytId ? (
-                                  <iframe
-                                    className="w-full h-full"
-                                    src={`https://www.youtube.com/embed/${ytId}`}
-                                    allowFullScreen
-                                    title={`Video preview ${idx + 1}`}
-                                  />
-                                ) : (
-                                  <div className="flex flex-col items-center justify-center h-full gap-4">
-                                    <Video className="w-12 h-12 text-slate-600" />
-                                    <a href={vid} target="_blank" rel="noopener noreferrer" className="text-medical-400 hover:underline font-bold">
-                                      فتح رابط الفيديو الخارجي {videos.length > 1 ? idx + 1 : ''}
-                                    </a>
-                                  </div>
-                                )}
+                                <iframe
+                                  className="w-full h-full"
+                                  src={`https://www.youtube.com/embed/${ytId}`}
+                                  allowFullScreen
+                                  title={`Video preview ${idx + 1}`}
+                                />
                               </div>
                             );
                           })}

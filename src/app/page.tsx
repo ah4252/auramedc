@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, User, MessageSquare, Shield, LayoutGrid, GraduationCap, Lock } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
+import { getSettings } from "@/app/actions/settings";
 
 export default async function Home() {
   let latestLessons: any[] = [];
@@ -22,8 +23,13 @@ export default async function Home() {
     ]);
   } catch (error) {
     console.error("Home DB Error:", error);
-    // الصفحة تعمل بأرقام افتراضية عند فشل DB
   }
+
+  // جلب إعدادات الموقع لقراءة الإحصائيات المخصصة
+  let settings: any = {};
+  try {
+    settings = await getSettings();
+  } catch {}
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -63,10 +69,10 @@ export default async function Home() {
       <section className="py-16 bg-white dark:bg-dark-card border-y border-slate-200 dark:border-slate-800 relative z-20 shadow-sm">
         <div className="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: lessonCount > 0 ? `+${lessonCount}` : "+500", label: "محاضرة طبية", icon: BookOpen },
-            { value: subjectCount > 0 ? `+${subjectCount}` : "+50", label: "تخصص مختلف", icon: Stethoscope },
-            { value: userCount > 0 ? `${userCount.toLocaleString('ar-EG')}+` : "10k+", label: "طالب طب", icon: Award },
-            { value: "99%", label: "نسبة الرضا", icon: HeartPulse },
+            { value: settings.statLectures || (lessonCount > 0 ? `+${lessonCount}` : "+500"), label: "محاضرة طبية", icon: BookOpen },
+            { value: settings.statSpecialties || (subjectCount > 0 ? `+${subjectCount}` : "+50"), label: "تخصص مختلف", icon: Stethoscope },
+            { value: settings.statStudents || (userCount > 0 ? `${userCount.toLocaleString('ar-EG')}+` : "10k+"), label: "طالب طب", icon: Award },
+            { value: settings.statSatisfaction || "99%", label: "نسبة الرضا", icon: HeartPulse },
           ].map((stat, idx) => (
             <div key={idx} className="flex flex-col items-center text-center space-y-2 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
               <div className="p-3 bg-medical-100 dark:bg-medical-900/40 text-medical-600 dark:text-medical-400 rounded-xl group-hover:scale-110 transition-transform">

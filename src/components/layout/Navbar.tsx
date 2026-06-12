@@ -7,7 +7,7 @@ import { logoutAdmin, logoutUser } from "@/app/actions/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
-export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null }) {
+export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null, incomingRequestsCount = 0 }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null, incomingRequestsCount?: number }) {
   const pathname = usePathname();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [clicks, setClicks] = useState(0);
@@ -98,85 +98,91 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
           </Link>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8 lg:gap-10 font-bold">
-            <Link href="/" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+          {/* Desktop Links */}
+          <div className="hidden lg:flex items-center gap-3 xl:gap-6 font-bold text-xs lg:text-xs xl:text-sm">
+            <Link href="/" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               الرئيسية
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/courses" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+            <Link href="/courses" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               السنوات الدراسية
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/subjects" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+            <Link href="/subjects" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               التخصصات
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/timetable" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+            <Link href="/timetable" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               جدول الدراسة
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/community" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+            <Link href="/community" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               المجتمع
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
+            <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               الأخبار
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             {isUser && (
-              <Link href="/friends" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors">
-                الأصدقاء
+              <Link href="/friends" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0 flex items-center gap-1.5">
+                <span>الأصدقاء</span>
+                {incomingRequestsCount > 0 && (
+                  <span className="flex items-center justify-center min-w-[1.1rem] h-4 px-1 bg-red-500 text-white text-[10px] font-black rounded-full shadow-md animate-bounce">
+                    {incomingRequestsCount > 99 ? "+99" : incomingRequestsCount}
+                  </span>
+                )}
                 <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
               </Link>
             )}
             <Link
               href="/gpa-calculator"
-              className="px-6 py-2.5 bg-gradient-to-r from-medical-600 to-medical-400 text-white rounded-[1.2rem] hover:shadow-lg hover:shadow-medical-600/30 hover:scale-105 active:scale-95 transition-all font-black text-sm shadow-md shadow-medical-600/10"
+              className="px-4 py-2 bg-gradient-to-r from-medical-600 to-medical-400 text-white rounded-xl hover:shadow-md hover:shadow-medical-600/30 hover:scale-105 active:scale-95 transition-all font-black text-[11px] lg:text-xs xl:text-sm shadow-sm shadow-medical-600/10 shrink-0 whitespace-nowrap"
             >
               حاسبة المعدل
             </Link>
             {isAdmin && (
-              <Link href="/admin" className="group text-medical-600 dark:text-medical-400 font-bold flex items-center gap-1.5 bg-medical-50 dark:bg-medical-900/30 px-4 py-2 rounded-xl hover:bg-medical-100 dark:hover:bg-medical-900/50 transition-all border border-medical-100 dark:border-medical-500/20 shadow-sm">
-                <Lock className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <Link href="/admin" className="group text-medical-600 dark:text-medical-400 font-bold flex items-center gap-1 bg-medical-50 dark:bg-medical-900/30 px-3 py-1.5 rounded-lg hover:bg-medical-100 dark:hover:bg-medical-900/50 transition-all border border-medical-100 dark:border-medical-500/20 shadow-sm shrink-0">
+                <Lock className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
                 <span>لوحة التحكم</span>
               </Link>
             )}
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-2 lg:gap-4 shrink-0">
 
             {isUser ? (
-              <div className="flex items-center gap-2 md:gap-3">
-                <Link href="/profile" className="flex items-center gap-3 group">
-                  <div className="hidden lg:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors">
-                    <span className="text-xs text-slate-500">أهلاً بك</span>
-                    <span className="text-sm font-bold">{userName}</span>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Link href="/profile" className="flex items-center gap-2 group shrink-0">
+                  <div className="hidden xl:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors leading-tight">
+                    <span className="text-[10px] text-slate-400">أهلاً بك</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{userName}</span>
                   </div>
-                  <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-medical-100 dark:bg-medical-900/30 flex items-center justify-center border-2 border-transparent group-hover:border-medical-500 transition-all overflow-hidden">
+                  <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-medical-100 dark:bg-medical-900/30 flex items-center justify-center border-2 border-transparent group-hover:border-medical-500 transition-all overflow-hidden shrink-0">
                     {userImage ? (
                       <img src={userImage} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-5 h-5 text-medical-600 dark:text-medical-400" />
+                      <User className="w-4 h-4 text-medical-600 dark:text-medical-400" />
                     )}
                   </div>
                 </Link>
                 <button
                   onClick={handleLogoutUser}
-                  className="hidden md:block bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-full text-sm font-bold hover:bg-red-50 hover:text-red-600 transition-all"
+                  className="hidden lg:block bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 transition-all shrink-0"
                 >
                   خروج
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="hidden sm:flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-5 py-2 rounded-full transition-all shadow-md shadow-medical-600/20">
-                <User className="w-4 h-4" />
-                <span className="hidden md:inline">تسجيل الدخول</span>
+              <Link href="/login" className="hidden sm:flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-4 py-2 rounded-full transition-all shadow-md shadow-medical-600/20 shrink-0 text-xs">
+                <User className="w-3.5 h-3.5" />
+                <span>تسجيل الدخول</span>
               </Link>
             )}
 
             <button
               onClick={() => setShowMobileMenu(true)}
-              className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              className="lg:hidden p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
               title="القائمة"
             >
               <Menu className="w-6 h-6" />
@@ -194,14 +200,14 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowMobileMenu(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[50] md:hidden"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[50] lg:hidden"
             />
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[280px] bg-white dark:bg-dark-bg z-[55] md:hidden shadow-2xl flex flex-col"
+              className="fixed top-0 right-0 bottom-0 w-[280px] bg-white dark:bg-dark-bg z-[55] lg:hidden shadow-2xl flex flex-col"
             >
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <span className="font-black text-xl text-medical-600">القائمة</span>
@@ -230,8 +236,13 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                   الأخبار
                 </Link>
                 {isUser && (
-                  <Link href="/friends" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                    الأصدقاء
+                  <Link href="/friends" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
+                    <span>الأصدقاء</span>
+                    {incomingRequestsCount > 0 && (
+                      <span className="flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full shadow-md animate-pulse">
+                        {incomingRequestsCount > 99 ? "+99" : incomingRequestsCount}
+                      </span>
+                    )}
                   </Link>
                 )}
                 <Link href="/gpa-calculator" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-4 p-4 bg-medical-50 dark:bg-medical-900/20 text-medical-600 rounded-2xl">

@@ -9,6 +9,7 @@ import { getSettings } from "@/app/actions/settings";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import Script from "next/script";
+import ActivePresencePing from "@/components/ActivePresencePing";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], display: "swap" });
 
@@ -42,6 +43,7 @@ export default async function RootLayout({
   
   let userName = null;
   let userImage = null;
+  let incomingRequestsCount = 0;
   
   try {
     if (userId) {
@@ -51,6 +53,10 @@ export default async function RootLayout({
       });
       userName = user?.name || "طالب";
       userImage = user?.image || null;
+
+      incomingRequestsCount = await prisma.friendship.count({
+        where: { friendId: userId, status: "PENDING" }
+      });
     }
   } catch (error) {
     console.error("Layout DB Error (User fetch):", error);
@@ -90,7 +96,8 @@ export default async function RootLayout({
       </head>
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
         <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
-          <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} />
+          <ActivePresencePing userId={userId || null} />
+          <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} />
           <main className="flex-1 pb-20 md:pb-0">
             {children}
           </main>

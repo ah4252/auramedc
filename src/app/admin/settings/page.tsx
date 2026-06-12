@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock } from "lucide-react";
+import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection } from "@/app/actions/settings";
@@ -26,6 +26,14 @@ export default function AdminSettingsPage() {
   const [toolsMsg, setToolsMsg] = useState<{type: "success"|"error", text: string} | null>(null);
   const [toolsLoading, setToolsLoading] = useState(false);
 
+  // Homepage stats states
+  const [statLectures, setStatLectures] = useState("");
+  const [statSpecialties, setStatSpecialties] = useState("");
+  const [statStudents, setStatStudents] = useState("");
+  const [statSatisfaction, setStatSatisfaction] = useState("99%");
+  const [statsMsg, setStatsMsg] = useState<{type: "success"|"error", text: string} | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
   useEffect(() => {
     async function load() {
       const s = await getSettings();
@@ -35,6 +43,10 @@ export default function AdminSettingsPage() {
       setPrimaryColor(s.primaryColor || "#0ea5e9");
       setSecondaryColor(s.secondaryColor || "#6366f1");
       setDarkBg(s.darkBg || "#0f172a");
+      setStatLectures(s.statLectures || "");
+      setStatSpecialties(s.statSpecialties || "");
+      setStatStudents(s.statStudents || "");
+      setStatSatisfaction(s.statSatisfaction || "99%");
 
       const tp = await getToolsProtection();
       setToolsEnabled(tp.enabled);
@@ -60,6 +72,18 @@ export default function AdminSettingsPage() {
     await updateSettings({ siteName, primaryColor, secondaryColor, darkBg });
     alert("تم حفظ جميع الإعدادات والمظهر بنجاح!");
     setLoading(false);
+  };
+
+  const handleSaveStats = async () => {
+    setStatsLoading(true);
+    const res = await updateSettings({ statLectures, statSpecialties, statStudents, statSatisfaction });
+    if (res.success) {
+      setStatsMsg({ type: "success", text: "تم حفظ إحصائيات الصفحة الرئيسية بنجاح! ✓" });
+    } else {
+      setStatsMsg({ type: "error", text: "حدث خطأ أثناء الحفظ" });
+    }
+    setStatsLoading(false);
+    setTimeout(() => setStatsMsg(null), 4000);
   };
 
   const handleChangePassword = async () => {
@@ -115,6 +139,7 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "general", label: "العامة", icon: Globe },
+    { id: "stats", label: "إحصائيات الصفحة", icon: BarChart3 },
     { id: "security", label: "الأمان", icon: ShieldCheck },
     { id: "tools", label: "حماية الأدوات", icon: KeyRound },
     { id: "appearance", label: "المظهر", icon: Palette },
@@ -241,6 +266,122 @@ export default function AdminSettingsPage() {
                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-medical-500 outline-none transition-all font-medium leading-relaxed"
                       />
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "stats" && (
+                <div className="space-y-8">
+                  <div className="border-b border-slate-100 dark:border-slate-800 pb-6">
+                    <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                      <BarChart3 className="w-6 h-6 text-medical-500" />
+                      إحصائيات الصفحة الرئيسية
+                    </h2>
+                    <p className="text-slate-500 text-sm">تخصيص الأرقام الظاهرة في شريط الإحصائيات بالصفحة الرئيسية. اتركها فارغة لاستخدام القيم الحقيقية من قاعدة البيانات.</p>
+                  </div>
+
+                  {/* Live preview */}
+                  <div className="bg-slate-900 rounded-3xl p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { value: statLectures || "+37", label: "محاضرة طبية", icon: PlayCircle, color: "text-medical-400" },
+                      { value: statSpecialties || "+23", label: "تخصص مختلف", icon: Stethoscope, color: "text-indigo-400" },
+                      { value: statStudents || "+1", label: "طالب طب", icon: Users, color: "text-amber-400" },
+                      { value: statSatisfaction || "99%", label: "نسبة الرضا", icon: HeartPulse, color: "text-rose-400" },
+                    ].map((s, i) => (
+                      <div key={i} className="flex flex-col items-center text-center p-3">
+                        <div className={`p-2 bg-white/5 rounded-xl mb-2 ${s.color}`}>
+                          <s.icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-2xl font-black text-white">{s.value}</span>
+                        <span className="text-xs text-slate-400 font-bold mt-1">{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-center text-xs text-slate-400 font-bold -mt-4">↑ معاينة حية لمظهر إحصائيات الصفحة الرئيسية</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <PlayCircle className="w-4 h-4 text-medical-500" />
+                        عدد المحاضرات
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 37+ أو +100 (فارغ = من قاعدة البيانات)"
+                        value={statLectures}
+                        onChange={(e) => setStatLectures(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-medical-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Stethoscope className="w-4 h-4 text-indigo-500" />
+                        عدد التخصصات
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 23+ أو +50 (فارغ = من قاعدة البيانات)"
+                        value={statSpecialties}
+                        onChange={(e) => setStatSpecialties(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-amber-500" />
+                        عدد الطلاب
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 1+ أو 10k+ (فارغ = من قاعدة البيانات)"
+                        value={statStudents}
+                        onChange={(e) => setStatStudents(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <HeartPulse className="w-4 h-4 text-rose-500" />
+                        نسبة الرضا
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 99%"
+                        value={statSatisfaction}
+                        onChange={(e) => setStatSatisfaction(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-rose-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  {statsMsg && (
+                    <div className={`p-4 rounded-2xl text-sm font-bold flex items-center gap-2 ${
+                      statsMsg.type === "success"
+                      ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                    }`}>
+                      {statsMsg.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                      {statsMsg.text}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="button"
+                      onClick={handleSaveStats}
+                      disabled={statsLoading}
+                      className="flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-lg shadow-medical-600/20 disabled:opacity-50"
+                    >
+                      {statsLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      <span>حفظ الإحصائيات</span>
+                    </button>
                   </div>
                 </div>
               )}

@@ -212,8 +212,8 @@ export async function getFriendsData() {
             email: true,
             image: true,
             telegram: true,
-            instagram: true,
-            facebook: true
+            facebook: true,
+            lastActiveAt: true
           }
         },
         friend: {
@@ -224,7 +224,8 @@ export async function getFriendsData() {
             image: true,
             telegram: true,
             instagram: true,
-            facebook: true
+            facebook: true,
+            lastActiveAt: true
           }
         }
       },
@@ -291,7 +292,8 @@ export async function searchUsersLive(query: string) {
         id: true,
         name: true,
         email: true,
-        image: true
+        image: true,
+        lastActiveAt: true
       },
       take: 5
     });
