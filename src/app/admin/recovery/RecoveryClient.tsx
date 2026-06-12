@@ -34,18 +34,18 @@ export default function RecoveryClient({ initialRequests }: { initialRequests: a
     setLoadingId(id);
     try {
       const res = await approveRecoveryRequest(id);
-      if (res.success) {
+      if (res.success && res.tempPassword) {
         setRequests(prev =>
-          prev.map(req => (req.id === id ? { ...req, status: "APPROVED" } : req))
+          prev.map(req => (req.id === id ? { ...req, status: "APPROVED", lastPassword: `TEMP:${res.tempPassword}` } : req))
         );
-        showNotification("success", "تمت الموافقة على الطلب بنجاح! يمكن للمستخدم الآن الدخول بـ 2026");
+        showNotification("success", `تمت الموافقة بنجاح! كلمة المرور المؤقتة: ${res.tempPassword}`);
       } else {
         showNotification("error", res.error || "فشل في الموافقة على الطلب");
       }
     } catch (err) {
       showNotification("error", "حدث خطأ غير متوقع");
     } finally {
-      setLoadingId(null);
+      loadingId === id && setLoadingId(null);
     }
   };
 
@@ -63,7 +63,7 @@ export default function RecoveryClient({ initialRequests }: { initialRequests: a
     } catch (err) {
       showNotification("error", "حدث خطأ غير متوقع");
     } finally {
-      setLoadingId(null);
+      loadingId === id && setLoadingId(null);
     }
   };
 
@@ -145,7 +145,7 @@ export default function RecoveryClient({ initialRequests }: { initialRequests: a
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800/80 pb-4 text-slate-400 text-xs font-black uppercase tracking-wide">
                   <th className="py-4 px-4">المستخدم / البريد الإلكتروني</th>
-                  <th className="py-4 px-4">آخر كلمة سر يتذكرها</th>
+                  <th className="py-4 px-4">آخر كلمة سر / المؤقتة</th>
                   <th className="py-4 px-4">تاريخ الطلب</th>
                   <th className="py-4 px-4 text-center">حالة الطلب</th>
                   <th className="py-4 px-4 text-center">الإجراءات</th>
@@ -191,8 +191,14 @@ export default function RecoveryClient({ initialRequests }: { initialRequests: a
                       </td>
                       
                       <td className="py-5 px-4">
-                        <span className="bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-700 dark:text-slate-300 font-bold" dir="ltr">
-                          {request.lastPassword}
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold ${
+                          request.lastPassword.startsWith("TEMP:") 
+                            ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-850 dark:text-emerald-300"
+                            : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300"
+                        }`} dir="ltr">
+                          {request.lastPassword.startsWith("TEMP:") 
+                            ? `مؤقتة: ${request.lastPassword.replace("TEMP:", "")}` 
+                            : request.lastPassword}
                         </span>
                       </td>
 
@@ -215,7 +221,7 @@ export default function RecoveryClient({ initialRequests }: { initialRequests: a
                         ) : request.status === "APPROVED" ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 uppercase tracking-wide">
                             <Check className="w-3 h-3" />
-                            <span>تمت الموافقة (2026)</span>
+                            <span>مقبول (مؤقتة)</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wide">

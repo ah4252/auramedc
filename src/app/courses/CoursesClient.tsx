@@ -124,46 +124,56 @@ export default function CoursesClient({ categories, lessons }: { categories: any
                   transition={{ duration: 0.3, delay: idx * 0.05 }}
                 >
                   <Link href={`/courses/v/${lesson.slug}`} className="group flex flex-col h-full bg-white dark:bg-dark-card rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all duration-500">
-                    <div className="h-48 sm:h-56 relative overflow-hidden bg-[#05070a]">
-                      {hasValidVideo ? (
-                        <>
-                          <img 
-                            src={thumbnailUrl || ""} 
-                            alt={lesson.title} 
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-80" 
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10" />
-                          
-                          {/* Large Center Playlist Label */}
-                          {(videoUrl?.includes("list=") || lesson.resources?.some((r: any) => r.url.includes("list="))) && (
-                            <div className="absolute inset-0 z-20 flex items-center justify-center">
-                              <div className="bg-red-600/90 text-white text-lg sm:text-2xl font-black px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl shadow-2xl border-4 border-white/20 backdrop-blur-sm transform -rotate-12 tracking-widest animate-pulse">
-                                PLAY LIST
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="bg-medical-600/90 p-3 sm:p-4 rounded-full text-white backdrop-blur-md shadow-lg scale-90 group-hover:scale-100 transition-transform">
-                              <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10" />
+                     {hasValidVideo ? (
+                      <div className="h-48 sm:h-56 relative overflow-hidden bg-[#05070a]">
+                        <img 
+                          src={thumbnailUrl || ""} 
+                          alt={lesson.title} 
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-80" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10" />
+                        
+                        {/* Large Center Playlist Label */}
+                        {(videoUrl?.includes("list=") || lesson.resources?.some((r: any) => r.url.includes("list="))) && (
+                          <div className="absolute inset-0 z-20 flex items-center justify-center">
+                            <div className="bg-red-600/90 text-white text-lg sm:text-2xl font-black px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl shadow-2xl border-4 border-white/20 backdrop-blur-sm transform -rotate-12 tracking-widest animate-pulse">
+                              PLAY LIST
                             </div>
                           </div>
-                        </>
-                      ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-3 border-b border-white/5">
-                           <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-                              <Video className="w-8 h-8 text-white opacity-60" />
-                           </div>
-                           <span className="text-xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">لا يوجد فيديو</span>
-                        </div>
-                      )}
+                        )}
 
-                      <div className="absolute top-3 right-3 z-20">
-                        <span className="bg-white/90 dark:bg-dark-card/90 backdrop-blur-md text-medical-700 dark:text-medical-400 text-[10px] px-3 py-1.5 rounded-xl font-black shadow-md border border-slate-100 dark:border-slate-800">
-                          {lesson.subject?.category?.name || "عام"}
-                        </span>
+                        <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="bg-medical-600/90 p-3 sm:p-4 rounded-full text-white backdrop-blur-md shadow-lg scale-90 group-hover:scale-100 transition-transform">
+                            <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10" />
+                          </div>
+                        </div>
+
+                        <div className="absolute top-3 right-3 z-20">
+                          <span className="bg-white/90 dark:bg-dark-card/90 backdrop-blur-md text-medical-700 dark:text-medical-400 text-[10px] px-3 py-1.5 rounded-xl font-black shadow-md border border-slate-100 dark:border-slate-800">
+                            {lesson.subject?.category?.name || "عام"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="h-48 sm:h-56 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 border-b border-slate-200/10 dark:border-slate-800/30 flex items-center justify-center shrink-0">
+                        {/* Ambient glow */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-medical-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                        {/* Premium Grid Pattern */}
+                        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+                        
+                        <div className="relative flex flex-col items-center justify-center gap-2 z-10">
+                          <div className="w-14 h-14 rounded-2xl bg-white/5 dark:bg-medical-950/20 border border-white/10 dark:border-medical-500/20 flex items-center justify-center shadow-lg backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-medical-500/40">
+                            <BookOpen className="w-7 h-7 text-medical-400 group-hover:text-medical-300 transition-colors" />
+                          </div>
+                        </div>
+
+                        <div className="absolute top-3 right-3 z-20">
+                          <span className="bg-medical-500/10 border border-medical-500/20 text-medical-400 text-[10px] px-3 py-1.5 rounded-xl font-black shadow-md backdrop-blur-md">
+                            {lesson.subject?.category?.name || "عام"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                   <div className="p-6 sm:p-8 flex-1 flex flex-col relative z-20 text-right">
                     <h3 className="text-xl sm:text-2xl font-black mb-3 line-clamp-1 leading-snug group-hover:text-medical-600 transition-colors tracking-tight">

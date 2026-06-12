@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { generateTempPassword } from "@/lib/auth-helpers";
+import bcrypt from "bcryptjs";
 
 // Create a new forgot password recovery request
 export async function createRecoveryRequest(email: string, lastPassword: string) {
@@ -77,7 +79,7 @@ export async function getRecoveryRequests() {
   }
 }
 
-// Approve recovery request (changes DB password to '2026' and marks as APPROVED)
+// Approve recovery request (generates random temp password and marks as APPROVED)
 export async function approveRecoveryRequest(id: string) {
   try {
     const request = await prisma.forgotPasswordRequest.findUnique({ where: { id } });
@@ -86,22 +88,27 @@ export async function approveRecoveryRequest(id: string) {
     const user = await prisma.user.findUnique({ where: { email: request.email } });
     if (!user) return { error: "لم يتم العثور على المستخدم صاحب هذا الطلب" };
 
-    // Update user's password in database to "2026"
+    // ✅ توليد كلمة مرور مؤقتة عشوائية — ليست ثابتة أو معروفة مسبقاً
+    const tempPassword = generateTempPassword();
+    const hashedTemp = await bcrypt.hash(tempPassword, 12);
+
+    // تحديث كلمة مرور المستخدم بكلمة المرور المؤقتة المشفرة
     await prisma.user.update({
       where: { email: request.email },
       data: {
-        password: "2026",
-        passwordChangedAt: null // reset cooldown to let them change it immediately
-      }
+        password: hashedTemp,
+        passwordChangedAt: null, // إعادة تعيين مهلة التغيير
+      },
     });
 
-    // Update request status to APPROVED
+    // تحديث الطلب وحفظ كلمة المرور المؤقتة للمدير لإرسالها للمستخدم
     await prisma.forgotPasswordRequest.update({
       where: { id },
-      data: { status: "APPROVED" }
+      data: { status: "APPROVED", lastPassword: `TEMP:${tempPassword}` },
     });
 
-    return { success: true };
+    // إرجاع كلمة المرور المؤقتة للمدير ليرسلها للمستخدم يدوياً
+    return { success: true, tempPassword };
   } catch (err) {
     console.error("ApproveRecoveryRequest Error:", err);
     return { error: "حدث خطأ أثناء الموافقة على الطلب" };

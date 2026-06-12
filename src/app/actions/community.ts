@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
 
 /** تنظيف المنشورات القديمة (أكبر من 24 ساعة) */
 export async function cleanupDiscussions() {
@@ -125,10 +126,11 @@ export async function createDiscussion(userId: string, title: string, content: s
 /** تحديث منشور */
 export async function updateDiscussion(id: string, userId: string, title: string, content: string) {
   try {
-    const isAdmin = userId === "secure_session_token";
+    // ✅ التحقق من حالة المدير عبر الكوكي مباشرةً — ليس بمقارنة نص ثابت
+    const adminPrivileges = await checkIsAdmin();
     
     let user = null;
-    if (!isAdmin) {
+    if (!adminPrivileges) {
       user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true }
@@ -136,7 +138,7 @@ export async function updateDiscussion(id: string, userId: string, title: string
     }
 
     const where: any = { id };
-    if (!isAdmin && user?.role !== "ADMIN") {
+    if (!adminPrivileges && user?.role !== "ADMIN") {
       where.userId = userId;
     }
 
@@ -155,12 +157,11 @@ export async function updateDiscussion(id: string, userId: string, title: string
 /** حذف منشور */
 export async function deleteDiscussion(id: string, userId: string) {
   try {
-    // التحقق من صلاحيات المستخدم (صاحب المنشور أو مدير)
-    // ملاحظة: الـ admin_token في هذا المشروع هو "secure_session_token"
-    const isAdmin = userId === "secure_session_token";
+    // ✅ التحقق من حالة المدير عبر الكوكي — ليس بمقارنة نص ثابت
+    const adminPrivileges = await checkIsAdmin();
     
     let user = null;
-    if (!isAdmin) {
+    if (!adminPrivileges) {
       user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true }
@@ -168,8 +169,7 @@ export async function deleteDiscussion(id: string, userId: string) {
     }
 
     const where: any = { id };
-    // إذا لم يكن مديراً بالتوكن ولم يكن مديراً في قاعدة البيانات، يجب أن يكون هو صاحب المنشور
-    if (!isAdmin && user?.role !== "ADMIN") {
+    if (!adminPrivileges && user?.role !== "ADMIN") {
       where.userId = userId;
     }
 
@@ -206,10 +206,11 @@ export async function addComment(userId: string, discussionId: string, content: 
 /** حذف تعليق */
 export async function deleteDiscussionComment(id: string, userId: string, discussionId: string) {
   try {
-    const isAdmin = userId === "secure_session_token";
+    // ✅ التحقق من حالة المدير عبر الكوكي
+    const adminPrivileges = await checkIsAdmin();
     
     let user = null;
-    if (!isAdmin) {
+    if (!adminPrivileges) {
       user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true }
@@ -217,7 +218,7 @@ export async function deleteDiscussionComment(id: string, userId: string, discus
     }
 
     const where: any = { id };
-    if (!isAdmin && user?.role !== "ADMIN") {
+    if (!adminPrivileges && user?.role !== "ADMIN") {
       where.userId = userId;
     }
 

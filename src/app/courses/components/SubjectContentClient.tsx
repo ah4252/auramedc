@@ -124,26 +124,34 @@ export default function SubjectContentClient({ subject }: { subject: any }) {
                         href={`/courses/v/${lesson.slug}`}
                         className="group flex flex-col sm:flex-row gap-6 bg-white dark:bg-dark-card p-4 rounded-[2rem] border border-slate-200 dark:border-slate-800 hover:border-medical-500/50 shadow-sm hover:shadow-2xl transition-all duration-500"
                       >
-                         <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden relative shrink-0 bg-slate-100 dark:bg-slate-900 shadow-lg">
-                            {hasVideo ? (
-                               <>
-                                 <img src={thumb} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-medical-900/20 backdrop-blur-[2px]">
-                                    <PlayCircle className="w-12 h-12 text-white drop-shadow-2xl" />
-                                 </div>
-                               </>
-                            ) : (
-                               <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 gap-2 border-2 border-dashed border-slate-100 dark:border-slate-800/50 rounded-2xl">
-                                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-1">
-                                     <Video className="w-5 h-5 opacity-40" />
+                          {hasVideo ? (
+                             <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden relative shrink-0 bg-slate-100 dark:bg-slate-900 shadow-lg">
+                                <img src={thumb} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-medical-900/20 backdrop-blur-[2px]">
+                                   <PlayCircle className="w-12 h-12 text-white drop-shadow-2xl" />
+                                </div>
+                                <div className="absolute top-3 right-3 bg-medical-600 text-white text-[9px] font-black px-2 py-1 rounded-lg z-10 shadow-md">
+                                   المحاضرة {idx + 1}
+                                </div>
+                             </div>
+                          ) : (
+                             <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden relative shrink-0 bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 border border-slate-200/10 dark:border-slate-800/30 flex items-center justify-center shadow-lg">
+                                {/* Ambient glow */}
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-medical-500/10 rounded-full blur-xl pointer-events-none"></div>
+                                {/* Premium Grid Pattern */}
+                                <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:1rem_1rem] opacity-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+                                
+                                <div className="relative flex flex-col items-center justify-center gap-1 z-10">
+                                  <div className="w-10 h-10 rounded-xl bg-white/5 dark:bg-medical-950/20 border border-white/10 dark:border-medical-500/20 flex items-center justify-center shadow-md backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-medical-500/40">
+                                    <FileText className="w-5 h-5 text-medical-400 group-hover:text-medical-300 transition-colors" />
                                   </div>
-                                  <span className="text-xs font-black uppercase tracking-tighter text-slate-400 dark:text-slate-500">لا يوجد فيديو</span>
-                               </div>
-                            )}
-                            <div className="absolute top-3 right-3 bg-medical-600 text-white text-[9px] font-black px-2 py-1 rounded-lg z-10 shadow-md">
-                               المحاضرة {idx + 1}
-                            </div>
-                         </div>
+                                </div>
+
+                                <div className="absolute top-3 right-3 bg-medical-600/20 border border-medical-600/30 text-medical-400 text-[9px] font-black px-2 py-1 rounded-lg z-10 shadow-sm backdrop-blur-md">
+                                   المحاضرة {idx + 1}
+                                </div>
+                             </div>
+                          )}
                          
                          <div className="flex-1 py-2">
                             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 group-hover:text-medical-600 transition-colors line-clamp-1 tracking-tight">

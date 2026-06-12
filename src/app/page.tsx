@@ -212,37 +212,45 @@ export default async function Home() {
             const hasValidVideo = !!thumbnailUrl;
             return (
               <Link href={`/courses/v/${lesson.slug}`} key={lesson.id} className="glass-panel rounded-3xl overflow-hidden group hover:shadow-2xl hover:shadow-medical-600/10 transition-all duration-500 hover:-translate-y-2 flex flex-col h-full border border-slate-200 dark:border-slate-800">
-                <div className="h-56 relative overflow-hidden bg-[#05070a]">
-                  {hasValidVideo ? (
-                    <>
-                      <img 
-                        src={thumbnailUrl || ""} 
-                        alt={lesson.title} 
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-80" 
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10" />
-                      
-                      <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="bg-medical-600/90 p-4 rounded-full text-white backdrop-blur-md shadow-lg shadow-medical-600/50 scale-90 group-hover:scale-100 transition-transform">
-                          <PlayCircle className="w-10 h-10 ml-1" />
-                        </div>
+                {hasValidVideo ? (
+                  <div className="h-56 relative overflow-hidden bg-[#05070a]">
+                    <img 
+                      src={thumbnailUrl || ""} 
+                      alt={lesson.title} 
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-80" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent z-10" />
+                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-medical-600/90 p-4 rounded-full text-white backdrop-blur-md shadow-lg shadow-medical-600/50 scale-90 group-hover:scale-100 transition-transform">
+                        <PlayCircle className="w-10 h-10 ml-1" />
                       </div>
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-3 border-b border-white/5">
-                       <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-                          <BookOpen className="w-8 h-8 text-white opacity-60" />
-                       </div>
-                       <span className="text-xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">لا يوجد فيديو</span>
                     </div>
-                  )}
-
-                  <div className="absolute top-4 right-4 z-20">
-                    <span className="bg-white/90 dark:bg-dark-card/90 backdrop-blur-md text-medical-700 dark:text-medical-400 text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm">
-                      {lesson.subject?.category?.name || "عام"}
-                    </span>
+                    <div className="absolute top-4 right-4 z-20">
+                      <span className="bg-white/90 dark:bg-dark-card/90 backdrop-blur-md text-medical-700 dark:text-medical-400 text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm">
+                        {lesson.subject?.category?.name || "عام"}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="h-56 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 border-b border-slate-200/10 dark:border-slate-800/30 flex items-center justify-center shrink-0">
+                    {/* Ambient glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-medical-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    {/* Premium Grid Pattern */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+                    
+                    <div className="relative flex flex-col items-center justify-center gap-2 z-10">
+                      <div className="w-14 h-14 rounded-2xl bg-white/5 dark:bg-medical-950/20 border border-white/10 dark:border-medical-500/20 flex items-center justify-center shadow-lg backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-medical-500/40">
+                        <BookOpen className="w-7 h-7 text-medical-400 group-hover:text-medical-300 transition-colors" />
+                      </div>
+                    </div>
+
+                    <div className="absolute top-4 right-4 z-20">
+                      <span className="bg-medical-500/10 border border-medical-500/20 text-medical-400 text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm backdrop-blur-md">
+                        {lesson.subject?.category?.name || "عام"}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-6 flex-1 flex flex-col bg-white dark:bg-dark-card relative z-20">
                   <h3 className="text-xl font-bold mb-3 line-clamp-2 leading-snug group-hover:text-medical-600 transition-colors">

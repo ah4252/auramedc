@@ -12,7 +12,15 @@ import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import { lockTools } from "@/app/actions/settings";
 
-export default function AdminSidebar({ toolsProtected = false, toolsUnlocked = true }: { toolsProtected?: boolean; toolsUnlocked?: boolean }) {
+export default function AdminSidebar({ 
+  toolsProtected = false, 
+  toolsUnlocked = true,
+  pendingRecoveryCount = 0
+}: { 
+  toolsProtected?: boolean; 
+  toolsUnlocked?: boolean;
+  pendingRecoveryCount?: number;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +162,12 @@ export default function AdminSidebar({ toolsProtected = false, toolsUnlocked = t
                         </div>
                         <span className={`text-sm font-bold ${isActive ? "text-medical-600 dark:text-medical-400" : ""}`}>{link.label}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
+                        {link.href === "/admin/recovery" && pendingRecoveryCount > 0 && (
+                          <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/20">
+                            {pendingRecoveryCount}
+                          </span>
+                        )}
                         {isLocked && (
                           <Lock className="w-3.5 h-3.5 text-amber-500" />
                         )}

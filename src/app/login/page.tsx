@@ -1,6 +1,6 @@
 "use client";
 
-import { loginUser } from "@/app/actions/auth";
+import { loginUser, resetForgotPassword } from "@/app/actions/auth";
 import { createRecoveryRequest } from "@/app/actions/recovery";
 import { useState } from "react";
 import { LogIn, Mail, Lock, ArrowRight, HeartPulse, X, Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
@@ -22,6 +22,18 @@ export default function LoginPage() {
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
+  // Forced password reset modal state
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetTempPw, setResetTempPw] = useState("");
+  const [resetNewPw, setResetNewPw] = useState("");
+  const [resetConfirmPw, setResetConfirmPw] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [showNewPwModal, setShowNewPwModal] = useState(false);
+  const [showConfirmPwModal, setShowConfirmPwModal] = useState(false);
+
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -31,10 +43,47 @@ export default function LoginPage() {
     if (res?.error) {
       setError(res.error);
       setLoading(false);
+    } else if (res?.requiresPasswordReset) {
+      setResetEmail(res.email);
+      setResetTempPw(res.tempPassword);
+      setResetNewPw("");
+      setResetConfirmPw("");
+      setResetError("");
+      setResetSuccess(false);
+      setShowResetModal(true);
+      setLoading(false);
     } else {
       router.push("/");
       router.refresh();
     }
+  }
+
+  async function handleForcedPasswordReset(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resetNewPw.trim() || !resetConfirmPw.trim()) return;
+    if (resetNewPw !== resetConfirmPw) {
+      setResetError("كلمتا المرور غير متطابقتين");
+      return;
+    }
+    if (resetNewPw.length < 6) {
+      setResetError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل");
+      return;
+    }
+    setResetLoading(true);
+    setResetError("");
+    
+    const res = await resetForgotPassword(resetEmail, resetTempPw, resetNewPw);
+    if (res?.error) {
+      setResetError(res.error);
+    } else {
+      setResetSuccess(true);
+      setTimeout(() => {
+        setShowResetModal(false);
+        router.push("/");
+        router.refresh();
+      }, 1500);
+    }
+    setResetLoading(false);
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
@@ -333,6 +382,166 @@ export default function LoginPage() {
                         <>
                           <KeyRound className="w-5 h-5" />
                           <span>إرسال الطلب للمطور</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Forced Password Reset Modal */}
+      <AnimatePresence>
+        {showResetModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/75 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="relative w-full max-w-md bg-[#0f172a] rounded-[2.5rem] border border-slate-700/50 shadow-[0_0_80px_-10px_rgba(16,185,129,0.3)] overflow-hidden"
+            >
+              {/* Top accent line */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent"></div>
+
+              <div className="p-8">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                      <Lock className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-white font-cairo">إعداد كلمة مرور جديدة</h2>
+                      <p className="text-slate-400 text-xs font-bold mt-1 font-cairo">يجب تغيير كلمة المرور المؤقتة لتأمين حسابك</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Result: Success */}
+                <AnimatePresence>
+                  {resetSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-6"
+                    >
+                      <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 animate-bounce">
+                        <CheckCircle className="w-10 h-10" />
+                      </div>
+                      <h3 className="text-xl font-black text-white mb-3 font-cairo">تم تحديث كلمة المرور!</h3>
+                      <p className="text-slate-400 text-sm font-bold leading-relaxed font-cairo">
+                        تم تأمين حسابك بنجاح. 
+                        <br />
+                        جاري تحويلك للصفحة الرئيسية...
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Error */}
+                <AnimatePresence>
+                  {resetError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden mb-6"
+                    >
+                      <div className="bg-red-500/10 text-red-400 p-4 rounded-2xl text-xs font-black border border-red-500/20 flex items-center gap-2" dir="rtl">
+                        <X className="w-4 h-4 shrink-0" />
+                        <span className="font-cairo">{resetError}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form */}
+                {!resetSuccess && (
+                  <form onSubmit={handleForcedPasswordReset} className="space-y-5">
+                    <div className="space-y-1">
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">البريد الإلكتروني</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={resetEmail}
+                        className="w-full px-4 py-4 rounded-2xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold text-left outline-none"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">كلمة المرور الجديدة</label>
+                      <div className="relative group">
+                        <input
+                          type={showNewPwModal ? "text" : "password"}
+                          value={resetNewPw}
+                          onChange={e => { setResetNewPw(e.target.value); setResetError(""); }}
+                          placeholder="••••••••"
+                          required
+                          minLength={6}
+                          className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-bold text-left"
+                          dir="ltr"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-emerald-500 group-focus-within:text-white text-slate-400 transition-colors">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPwModal(!showNewPwModal)}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                          {showNewPwModal ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">تأكيد كلمة المرور الجديدة</label>
+                      <div className="relative group">
+                        <input
+                          type={showConfirmPwModal ? "text" : "password"}
+                          value={resetConfirmPw}
+                          onChange={e => { setResetConfirmPw(e.target.value); setResetError(""); }}
+                          placeholder="••••••••"
+                          required
+                          minLength={6}
+                          className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-bold text-left"
+                          dir="ltr"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-emerald-500 group-focus-within:text-white text-slate-400 transition-colors">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPwModal(!showConfirmPwModal)}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                          {showConfirmPwModal ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={resetLoading || !resetNewPw.trim() || !resetConfirmPw.trim()}
+                      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-2xl font-black transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_0_30px_-10px_rgba(16,185,129,0.5)]"
+                    >
+                      {resetLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="font-cairo">تحديث وتفعيل الدخول</span>
                         </>
                       )}
                     </button>

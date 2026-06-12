@@ -2,10 +2,12 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth-helpers";
 
 
 // --- Categories (Years/Subjects) ---
 export async function addCategory(formData: FormData) {
+  await requireAdmin();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const type = formData.get("type") as string || "YEAR";
@@ -96,6 +98,7 @@ export async function addSubject(formData: FormData) {
 }
 
 export async function deleteSubject(id: string) {
+  await requireAdmin();
   try {
     // 1. Get all lessons in this subject
     const lessons = await prisma.lesson.findMany({ where: { subjectId: id } });
@@ -135,6 +138,7 @@ export async function deleteSubject(id: string) {
 
 // --- Lessons ---
 export async function addLesson(formData: FormData) {
+  await requireAdmin();
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const subjectId = formData.get("subjectId") as string;
@@ -203,6 +207,7 @@ export async function getLessons() {
 }
 
 export async function deleteLesson(id: string) {
+  await requireAdmin();
   try {
     // Delete related records first
     await prisma.comment.deleteMany({ where: { lessonId: id } });
@@ -221,6 +226,7 @@ export async function deleteLesson(id: string) {
 }
 
 export async function deleteCategory(id: string) {
+  await requireAdmin();
   try {
     // 1. Get all subjects in this category
     const subjects = await prisma.subject.findMany({ where: { categoryId: id } });
@@ -276,6 +282,7 @@ export async function deleteCategory(id: string) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
+  await requireAdmin();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const communityPassword = formData.get("communityPassword") as string || null;
@@ -337,6 +344,7 @@ export async function updateLesson(id: string, formData: FormData) {
 }
 
 export async function deleteUser(id: string) {
+  await requireAdmin();
   try {
     await prisma.comment.deleteMany({ where: { userId: id } });
     await prisma.favorite.deleteMany({ where: { userId: id } });
@@ -454,6 +462,7 @@ export async function getAllGPACalculations() {
 }
 
 export async function deleteGPACalculation(id: string) {
+  await requireAdmin();
   try {
     await (prisma as any).gPACalculation.delete({
       where: { id }
@@ -465,3 +474,16 @@ export async function deleteGPACalculation(id: string) {
   }
 }
 
+export async function bulkDeleteGPACalculations(ids: string[]) {
+  await requireAdmin();
+  if (!ids || ids.length === 0) return { error: "لم يتم تحديد أي نتيجة" };
+  try {
+    await (prisma as any).gPACalculation.deleteMany({
+      where: { id: { in: ids } }
+    });
+    revalidatePath("/admin/gpa");
+    return { success: true, count: ids.length };
+  } catch (error) {
+    return { error: "حدث خطأ أثناء الحذف الجماعي" };
+  }
+}

@@ -232,28 +232,32 @@ export default function ProfileClient({ user, news = [] }: { user: any, news?: a
                       href={`/courses/v/${fav.lesson.slug}`}
                       className="bg-white dark:bg-dark-card p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
                     >
-                      <div className="aspect-video rounded-2xl bg-[#05070a] mb-4 overflow-hidden relative border border-slate-100 dark:border-slate-800/50 shadow-inner">
-                        {thumbnailUrl ? (
-                          <>
-                            <img 
-                              src={thumbnailUrl} 
-                              alt={fav.lesson.title}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <PlayCircle className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-                            </div>
-                            <div className="absolute inset-0 bg-medical-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </>
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white gap-2 border-b border-white/5">
-                             <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-                                <BookOpen className="w-5 h-5 text-white opacity-60" />
-                             </div>
-                             <span className="text-sm font-black uppercase tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">لا يوجد فيديو</span>
+                       {thumbnailUrl ? (
+                        <div className="aspect-video rounded-2xl bg-[#05070a] mb-4 overflow-hidden relative border border-slate-100 dark:border-slate-800/50 shadow-inner">
+                          <img 
+                            src={thumbnailUrl} 
+                            alt={fav.lesson.title}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <PlayCircle className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                           </div>
-                        )}
-                      </div>
+                          <div className="absolute inset-0 bg-medical-600/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      ) : (
+                        <div className="aspect-video rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 mb-4 overflow-hidden relative border border-slate-100 dark:border-slate-800/50 shadow-inner flex items-center justify-center">
+                          {/* Ambient glow */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-medical-500/10 rounded-full blur-xl pointer-events-none"></div>
+                          {/* Premium Grid Pattern */}
+                          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:1rem_1rem] opacity-20 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+                          
+                          <div className="relative flex flex-col items-center justify-center gap-1 z-10">
+                            <div className="w-10 h-10 rounded-xl bg-white/5 dark:bg-medical-950/20 border border-white/10 dark:border-medical-500/20 flex items-center justify-center shadow-md backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-medical-500/40">
+                              <BookOpen className="w-5 h-5 text-medical-400 group-hover:text-medical-300 transition-colors" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <h3 className="font-bold group-hover:text-medical-600 transition-colors line-clamp-1">{fav.lesson.title}</h3>
                       <p className="text-xs text-slate-500">{fav.lesson.subject.name}</p>
                     </Link>
