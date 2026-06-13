@@ -39,6 +39,15 @@ export default function AdminSettingsPage() {
   const [statsMsg, setStatsMsg] = useState<{type: "success"|"error", text: string} | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // Social links states
+  const [socialFacebook, setSocialFacebook] = useState("");
+  const [socialInstagram, setSocialInstagram] = useState("");
+  const [socialTelegram, setSocialTelegram] = useState("");
+  const [socialWhatsapp, setSocialWhatsapp] = useState("");
+  const [socialEmail, setSocialEmail] = useState("");
+  const [socialMsg, setSocialMsg] = useState<{type: "success"|"error", text: string} | null>(null);
+  const [socialLoading, setSocialLoading] = useState(false);
+
   useEffect(() => {
     async function load() {
       const s = await getSettings();
@@ -57,6 +66,11 @@ export default function AdminSettingsPage() {
       setStatSpecialties(s.statSpecialties || "");
       setStatStudents(s.statStudents || "");
       setStatSatisfaction(s.statSatisfaction || "99%");
+      setSocialFacebook(s.socialFacebook || "");
+      setSocialInstagram(s.socialInstagram || "");
+      setSocialTelegram(s.socialTelegram || "");
+      setSocialWhatsapp(s.socialWhatsapp || "");
+      setSocialEmail(s.socialEmail || "");
 
       const tp = await getToolsProtection();
       setToolsEnabled(tp.enabled);
@@ -104,6 +118,18 @@ export default function AdminSettingsPage() {
     }
     setStatsLoading(false);
     setTimeout(() => setStatsMsg(null), 4000);
+  };
+
+  const handleSaveSocial = async () => {
+    setSocialLoading(true);
+    const res = await updateSettings({ socialFacebook, socialInstagram, socialTelegram, socialWhatsapp, socialEmail });
+    if (res.success) {
+      setSocialMsg({ type: "success", text: "تم حفظ روابط التواصل بنجاح! ✓" });
+    } else {
+      setSocialMsg({ type: "error", text: "حدث خطأ أثناء الحفظ" });
+    }
+    setSocialLoading(false);
+    setTimeout(() => setSocialMsg(null), 4000);
   };
 
   const handleChangePassword = async () => {
@@ -160,6 +186,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: "general", label: "العامة", icon: Globe },
     { id: "stats", label: "إحصائيات الصفحة", icon: BarChart3 },
+    { id: "contact", label: "روابط التواصل", icon: Mail },
     { id: "security", label: "الأمان", icon: ShieldCheck },
     { id: "tools", label: "حماية الأدوات", icon: KeyRound },
     { id: "appearance", label: "المظهر", icon: Palette },
@@ -401,6 +428,112 @@ export default function AdminSettingsPage() {
                         <Save className="w-5 h-5" />
                       )}
                       <span>حفظ الإحصائيات</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "contact" && (
+                <div className="space-y-8">
+                  <div className="border-b border-slate-100 dark:border-slate-800 pb-6">
+                    <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                      <Mail className="w-6 h-6 text-sky-500" />
+                      روابط وحسابات التواصل
+                    </h2>
+                    <p className="text-slate-500 text-sm">أضف روابط حساباتك ليتم عرضها للمستخدمين في أسفل الموقع لتسهيل التواصل.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        البريد الإلكتروني (Gmail)
+                      </label>
+                      <input
+                        type="email" placeholder="example@gmail.com"
+                        value={socialEmail}
+                        onChange={(e) => setSocialEmail(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-sky-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        واتساب (WhatsApp)
+                      </label>
+                      <input
+                        type="text" placeholder="+213XXXXXXXX"
+                        value={socialWhatsapp}
+                        onChange={(e) => setSocialWhatsapp(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-green-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        تيليجرام (Telegram)
+                      </label>
+                      <input
+                        type="text" placeholder="https://t.me/username"
+                        value={socialTelegram}
+                        onChange={(e) => setSocialTelegram(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        إنستغرام (Instagram)
+                      </label>
+                      <input
+                        type="text" placeholder="https://instagram.com/username"
+                        value={socialInstagram}
+                        onChange={(e) => setSocialInstagram(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-pink-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        فيسبوك (Facebook)
+                      </label>
+                      <input
+                        type="text" placeholder="https://facebook.com/username"
+                        value={socialFacebook}
+                        onChange={(e) => setSocialFacebook(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-blue-600 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  {socialMsg && (
+                    <div className={`p-4 rounded-2xl text-sm font-bold flex items-center gap-2 ${
+                      socialMsg.type === "success"
+                      ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                    }`}>
+                      {socialMsg.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                      {socialMsg.text}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="button"
+                      onClick={handleSaveSocial}
+                      disabled={socialLoading}
+                      className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-lg shadow-sky-600/20 disabled:opacity-50"
+                    >
+                      {socialLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      <span>حفظ الروابط</span>
                     </button>
                   </div>
                 </div>

@@ -161,6 +161,13 @@ model SiteSettings {
   maintenanceGpa          Boolean @default(false)
   maintenanceNews         Boolean @default(false)
   
+  // Social Links
+  socialFacebook          String?
+  socialInstagram         String?
+  socialTelegram          String?
+  socialWhatsapp          String?
+  socialEmail             String?
+
   allowRegistration       Boolean @default(true)
   adminPassword           String? @default("admin123")
   primaryColor            String? @default("#0ea5e9")

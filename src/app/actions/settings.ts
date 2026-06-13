@@ -25,6 +25,11 @@ export async function getSettings() {
     statSpecialties: "",
     statStudents: "",
     statSatisfaction: "99%",
+    socialFacebook: "",
+    socialInstagram: "",
+    socialTelegram: "",
+    socialWhatsapp: "",
+    socialEmail: "",
   };
 
   try {
@@ -61,6 +66,12 @@ export async function updateSettings(data: any) {
     if (data.statSpecialties !== undefined) updateData.statSpecialties = data.statSpecialties;
     if (data.statStudents !== undefined) updateData.statStudents = data.statStudents;
     if (data.statSatisfaction !== undefined) updateData.statSatisfaction = data.statSatisfaction;
+    
+    if (data.socialFacebook !== undefined) updateData.socialFacebook = data.socialFacebook;
+    if (data.socialInstagram !== undefined) updateData.socialInstagram = data.socialInstagram;
+    if (data.socialTelegram !== undefined) updateData.socialTelegram = data.socialTelegram;
+    if (data.socialWhatsapp !== undefined) updateData.socialWhatsapp = data.socialWhatsapp;
+    if (data.socialEmail !== undefined) updateData.socialEmail = data.socialEmail;
 
     const updated = await prisma.siteSettings.update({
       where: { id: "global" },

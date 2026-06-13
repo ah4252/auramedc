@@ -721,9 +721,12 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                              <Facebook className="w-4 h-4 text-blue-600" /> Facebook
                            </label>
                            <input 
-                             name="facebook" defaultValue={user.facebook || ""} placeholder="profile_id" dir="ltr"
+                             name="facebook" defaultValue={user.facebook || ""} placeholder="https://www.facebook.com/your.name" dir="ltr"
                              className="w-full p-4 pl-24 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm"
                            />
+                           <p className="text-[10px] text-blue-500/70 font-bold px-1 mt-1">
+                             💡 لتجنب مشاكل الخصوصية، يرجى لصق رابط حسابك كاملاً كما يظهر في المتصفح.
+                           </p>
                            {user.facebook && (
                              <div className="absolute top-10 left-4 bg-blue-600/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
                                 مفعّل <CheckCircle className="w-3 h-3" />
