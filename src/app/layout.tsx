@@ -20,7 +20,8 @@ export const metadata: Metadata = {
   },
   description: "منصة التعليم الطبي الأرقى في العالم العربي — محاضرات، تخصصات، وأدوات ذكية لطلاب الطب النخبة.",
   icons: {
-    apple: "/icon.png",
+    icon: "/logo.svg",
+    apple: "/logo.svg",
   },
   manifest: "/manifest.json",
 };

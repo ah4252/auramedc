@@ -51,55 +51,57 @@ export default function MaintenanceScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-slate-900 flex items-center justify-center p-6 overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-medical-500/10 rounded-full -mr-64 -mt-64 blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full -ml-64 -mb-64 blur-3xl animate-pulse"></div>
+    <div className="fixed inset-0 z-[9999] bg-slate-900 overflow-y-auto overflow-x-hidden">
+      <div className="min-h-[100dvh] flex items-center justify-center p-4 sm:p-6 py-12 relative">
+        {/* Decorative background */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-medical-500/10 rounded-full -mr-32 -mt-32 md:-mr-64 md:-mt-64 blur-3xl animate-pulse pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-blue-500/10 rounded-full -ml-32 -mb-32 md:-ml-64 md:-mb-64 blur-3xl animate-pulse pointer-events-none"></div>
 
-      <div className="max-w-2xl w-full text-center relative z-10">
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="mb-12 inline-block cursor-pointer select-none"
-          onClick={handleIconClick}
-        >
-           <div className="relative group">
-              <div className="w-24 h-24 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-orange-600/20 rotate-12 group-active:scale-95 transition-transform">
-                 <Hammer className="w-12 h-12" />
-              </div>
-              <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center text-orange-500 border-4 border-slate-900">
-                 <Clock className="w-6 h-6 animate-spin-slow" />
-              </div>
-           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h1 className="text-5xl font-black text-white mb-6 tracking-tight leading-tight">
-            نحن في مهمة <span className="text-orange-500">تحسين</span> سريعة!
-          </h1>
-          <p className="text-xl text-slate-400 mb-10 leading-relaxed font-medium">
-            عذراً، المنصة حالياً تحت الصيانة الدورية لضمان تقديم أفضل تجربة تعليمية طبية ممكنة. سنعود إليكم خلال وقت قصير جداً.
-          </p>
-
-          <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-8 rounded-[2.5rem] mb-12">
-             <div className="flex items-center justify-center gap-3 text-orange-500 font-bold mb-4">
-                <ShieldAlert className="w-5 h-5" />
-                <span>إشعار النظام</span>
+        <div className="max-w-2xl w-full text-center relative z-10 my-auto">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="mb-8 md:mb-12 inline-block cursor-pointer select-none"
+            onClick={handleIconClick}
+          >
+             <div className="relative group">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-3xl md:rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-orange-600/20 rotate-12 group-active:scale-95 transition-transform">
+                   <Hammer className="w-10 h-10 md:w-12 md:h-12" />
+                </div>
+                <div className="absolute -bottom-3 -right-3 md:-bottom-4 md:-right-4 w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-xl md:rounded-2xl flex items-center justify-center text-orange-500 border-[3px] md:border-4 border-slate-900">
+                   <Clock className="w-5 h-5 md:w-6 md:h-6 animate-spin-slow" />
+                </div>
              </div>
-             <p className="text-slate-300">
-                جميع البيانات محفوظة بأمان، والعمل جارٍ على تحديث بعض الخصائص التقنية. نشكركم على صبركم.
-             </p>
-          </div>
+          </motion.div>
 
-          <div className="flex items-center justify-center gap-2 text-slate-500">
-             <HeartPulse className="w-5 h-5 text-medical-600" />
-             <span className="font-bold tracking-widest uppercase">MedGpa Engineering Team</span>
-          </div>
-        </motion.div>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 md:mb-6 tracking-tight leading-tight">
+              نحن في مهمة <span className="text-orange-500">تحسين</span> سريعة!
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-8 md:mb-10 leading-relaxed font-medium px-2">
+              عذراً، المنصة حالياً تحت الصيانة الدورية لضمان تقديم أفضل تجربة تعليمية طبية ممكنة. سنعود إليكم خلال وقت قصير جداً.
+            </p>
+
+            <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] mb-8 md:mb-12">
+               <div className="flex items-center justify-center gap-2 md:gap-3 text-orange-500 font-bold mb-3 md:mb-4">
+                  <ShieldAlert className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-sm md:text-base">إشعار النظام</span>
+               </div>
+               <p className="text-sm md:text-base text-slate-300">
+                  جميع البيانات محفوظة بأمان، والعمل جارٍ على تحديث بعض الخصائص التقنية. نشكركم على صبركم.
+               </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-slate-500 pb-2">
+               <HeartPulse className="w-4 h-4 md:w-5 md:h-5 text-medical-600" />
+               <span className="text-xs md:text-sm font-bold tracking-widest uppercase">MedGpa Engineering Team</span>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
       {/* Secret Admin Login Modal */}

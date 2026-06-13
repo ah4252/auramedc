@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, User, MessageSquare, Shield, LayoutGrid, GraduationCap, Lock } from "lucide-react";
+import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, User, MessageSquare, Shield, LayoutGrid, GraduationCap, Lock, Calculator } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
@@ -52,14 +52,26 @@ export default async function Home() {
             مكتبة ضخمة من المحاضرات، الدروس الجامعية، والمراجع الطبية منظمة بطريقة احترافية لتسهيل رحلتك في عالم الطب.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up [animation-delay:0.2s]">
-            <Link href="/courses" className="flex items-center justify-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-8 py-4 rounded-full text-lg font-bold transition-all shadow-lg shadow-medical-600/30 hover:scale-105">
-              <PlayCircle className="w-5 h-5" />
-              <span>ابدأ التعلم الآن</span>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 animate-slide-up [animation-delay:0.2s] w-full max-w-5xl mt-4 px-2">
+            <Link href="/courses" className="flex flex-col items-center justify-center gap-3 bg-medical-600 hover:bg-medical-700 text-white p-4 sm:p-6 rounded-3xl font-bold transition-all shadow-lg shadow-medical-600/30 hover:-translate-y-1">
+              <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10 opacity-90" />
+              <span className="text-sm sm:text-base">المحاضرات</span>
             </Link>
-            <Link href="/subjects" className="flex items-center justify-center gap-2 bg-white dark:bg-dark-card border-2 border-slate-200 dark:border-slate-700 hover:border-medical-500 dark:hover:border-medical-500 px-8 py-4 rounded-full text-lg font-bold transition-all hover:scale-105">
-              <Stethoscope className="w-5 h-5" />
-              <span>تصفح التخصصات</span>
+            <Link href="/subjects" className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 hover:border-medical-500 text-slate-700 dark:text-slate-300 hover:text-medical-600 dark:hover:text-medical-500 p-4 sm:p-6 rounded-3xl font-bold transition-all shadow-sm hover:-translate-y-1 group">
+              <Stethoscope className="w-8 h-8 sm:w-10 sm:h-10 opacity-80 group-hover:scale-110 transition-transform" />
+              <span className="text-sm sm:text-base">التخصصات</span>
+            </Link>
+            <Link href="/timetable" className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 hover:border-amber-500 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-500 p-4 sm:p-6 rounded-3xl font-bold transition-all shadow-sm hover:-translate-y-1 group">
+              <LayoutGrid className="w-8 h-8 sm:w-10 sm:h-10 opacity-80 group-hover:scale-110 transition-transform" />
+              <span className="text-sm sm:text-base">الجدول الدراسي</span>
+            </Link>
+            <Link href="/community" className="flex flex-col items-center justify-center gap-3 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 hover:border-indigo-500 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 p-4 sm:p-6 rounded-3xl font-bold transition-all shadow-sm hover:-translate-y-1 group">
+              <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 opacity-80 group-hover:scale-110 transition-transform" />
+              <span className="text-sm sm:text-base">المجتمع التفاعلي</span>
+            </Link>
+            <Link href="/gpa-calculator" className="col-span-2 md:col-span-1 lg:col-span-1 flex flex-col items-center justify-center gap-3 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-500 p-4 sm:p-6 rounded-3xl font-bold transition-all shadow-sm hover:-translate-y-1 group">
+              <Calculator className="w-8 h-8 sm:w-10 sm:h-10 opacity-80 group-hover:scale-110 transition-transform" />
+              <span className="text-sm sm:text-base">حاسبة المعدل</span>
             </Link>
           </div>
         </div>
@@ -121,75 +133,87 @@ export default async function Home() {
       </section>
 
       {/* Community Section - NEW */}
-      <section className="py-24 bg-slate-50 dark:bg-dark-bg/50 border-y border-slate-200 dark:border-slate-800">
-        <div className="container mx-auto px-4">
+      <section className="py-24 relative overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551601651-2a8555f1a136?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-5 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-900"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl -mr-64 -mt-64 pointer-events-none"></div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
             <div className="flex-1 space-y-8 text-right">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/10 text-indigo-500 text-xs font-black uppercase tracking-widest border border-indigo-500/20">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-xs font-black uppercase tracking-widest border border-indigo-500/30">
                  <MessageSquare className="w-4 h-4" />
                  مجتمع AuraMed التفاعلي
               </div>
-              <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white leading-tight italic">
-                تواصل مع زملائك في <span className="text-indigo-500">نفس السنة</span> الدراسية
+              <h2 className="text-4xl md:text-6xl font-black text-white leading-tight italic">
+                تواصل مع زملائك في <span className="text-transparent bg-clip-text bg-gradient-to-l from-indigo-400 to-indigo-600">نفس السنة</span> الدراسية
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 text-xl leading-relaxed font-medium">
-                لقد قمنا بتقسيم المجتمع إلى غرف نقاش مخصصة لكل سنة دراسية، لضمان تبادل المعلومات والأسئلة الأكثر صلة بِمرحلتك الحالية.
+              <p className="text-slate-300 text-xl leading-relaxed font-medium">
+                لقد قمنا بتقسيم المجتمع إلى غرف نقاش مخصصة لكل سنة دراسية، لضمان تبادل المعلومات والأسئلة الأكثر صلة بِمرحلتك الحالية في بيئة إيجابية وداعمة.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-                <div className="flex items-start gap-4 p-6 bg-white dark:bg-dark-card rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <div className="w-12 h-12 bg-medical-500/10 rounded-2xl flex items-center justify-center text-medical-600 shrink-0">
+                <div className="flex items-start gap-4 p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl hover:bg-white/10 transition-colors">
+                  <div className="w-12 h-12 bg-rose-500/20 rounded-2xl flex items-center justify-center text-rose-400 shrink-0">
                     <Shield className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white mb-1">خصوصية تامة</h4>
-                    <p className="text-sm text-slate-500">مجتمعات محمية بكلمة مرور لضمان جودة المحتوى.</p>
+                    <h4 className="text-lg font-black text-white mb-1">خصوصية تامة</h4>
+                    <p className="text-sm text-slate-400">مجتمعات محمية بكلمة مرور لضمان جودة وموثوقية المحتوى.</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-4 p-6 bg-white dark:bg-dark-card rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                  <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 shrink-0">
+                <div className="flex items-start gap-4 p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl hover:bg-white/10 transition-colors">
+                  <div className="w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-400 shrink-0">
                     <LayoutGrid className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white mb-1">تنظيم ذكي</h4>
-                    <p className="text-sm text-slate-500">نقاشات مقسمة حسب المواد والتخصصات الطبية.</p>
+                    <h4 className="text-lg font-black text-white mb-1">تنظيم ذكي</h4>
+                    <p className="text-sm text-slate-400">نقاشات مقسمة حسب المواد والتخصصات لتسهيل الوصول.</p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-8">
-                 <Link href="/community" className="inline-flex items-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[2rem] font-black text-xl transition-all shadow-xl shadow-indigo-600/20 hover:scale-105">
+                 <Link href="/community" className="inline-flex items-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[2rem] font-black text-xl transition-all shadow-xl shadow-indigo-600/20 hover:scale-105 group">
                     دخول بوابة المجتمع
-                    <ArrowLeft className="w-6 h-6 -rotate-180" />
+                    <ArrowLeft className="w-6 h-6 -rotate-180 group-hover:translate-x-2 transition-transform" />
                  </Link>
               </div>
             </div>
             
-            <div className="flex-1 relative">
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4 pt-12">
-                    <div className="h-48 bg-white dark:bg-dark-card rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
-                       <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
+            <div className="flex-1 relative w-full max-w-lg mx-auto">
+               <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-4 sm:space-y-6 pt-8 sm:pt-12">
+                    <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-6 shadow-2xl border border-white/10 flex flex-col justify-between hover:-translate-y-2 transition-transform duration-500 group">
+                       <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-300 group-hover:scale-110 transition-transform group-hover:text-white group-hover:bg-indigo-500/20">
                           <GraduationCap className="w-6 h-6" />
                        </div>
-                       <div className="font-black text-slate-900 dark:text-white">السنة الأولى</div>
+                       <div>
+                          <div className="text-slate-400 text-sm font-bold mb-1">نقاشات وتحديثات</div>
+                          <div className="font-black text-white text-xl">السنة الأولى</div>
+                       </div>
                     </div>
-                    <div className="h-64 bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-600/30 flex flex-col justify-between relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                       <MessageSquare className="w-10 h-10 opacity-40" />
-                       <div className="font-black text-2xl">أكثر من 500 نقاش طبي نشط</div>
+                    <div className="aspect-[4/5] bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl shadow-indigo-600/30 flex flex-col justify-between relative overflow-hidden hover:-translate-y-2 transition-transform duration-500">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                       <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
+                       <MessageSquare className="w-12 h-12 opacity-50 relative z-10" />
+                       <div className="font-black text-2xl sm:text-3xl relative z-10 leading-tight">أكثر من 500<br/>نقاش طبي نشط</div>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <div className="h-64 bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl border border-white/5 flex flex-col justify-between relative overflow-hidden">
-                        <Lock className="w-10 h-10 text-amber-500 opacity-60" />
-                        <div className="font-black text-xl">دخول آمن ومحمي لطلاب النخبة</div>
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="aspect-[4/5] bg-gradient-to-br from-slate-900 to-black rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl border border-white/10 flex flex-col justify-between relative overflow-hidden hover:-translate-y-2 transition-transform duration-500 group">
+                        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <Lock className="w-12 h-12 text-amber-400 opacity-80" />
+                        <div className="font-black text-2xl relative z-10 leading-tight">دخول آمن<br/><span className="text-amber-400">لطلاب النخبة</span></div>
                     </div>
-                    <div className="h-48 bg-white dark:bg-dark-card rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
-                       <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
+                    <div className="aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-6 shadow-2xl border border-white/10 flex flex-col justify-between hover:-translate-y-2 transition-transform duration-500 group">
+                       <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-300 group-hover:scale-110 transition-transform group-hover:text-white group-hover:bg-indigo-500/20">
                           <GraduationCap className="w-6 h-6" />
                        </div>
-                       <div className="font-black text-slate-900 dark:text-white">السنة النهائية</div>
+                       <div>
+                          <div className="text-slate-400 text-sm font-bold mb-1">المرحلة السريرية</div>
+                          <div className="font-black text-white text-xl">السنة النهائية</div>
+                       </div>
                     </div>
                   </div>
                </div>
