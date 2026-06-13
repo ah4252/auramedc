@@ -9,6 +9,11 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceCourses, setMaintenanceCourses] = useState(false);
+  const [maintenanceTimetable, setMaintenanceTimetable] = useState(false);
+  const [maintenanceCommunity, setMaintenanceCommunity] = useState(false);
+  const [maintenanceGpa, setMaintenanceGpa] = useState(false);
+  const [maintenanceNews, setMaintenanceNews] = useState(false);
   const [allowRegistration, setAllowRegistration] = useState(true);
   const [siteName, setSiteName] = useState("Aura Med Elite");
   const [primaryColor, setPrimaryColor] = useState("#0ea5e9");
@@ -38,6 +43,11 @@ export default function AdminSettingsPage() {
     async function load() {
       const s = await getSettings();
       setMaintenanceMode(s.maintenanceMode);
+      setMaintenanceCourses(s.maintenanceCourses || false);
+      setMaintenanceTimetable(s.maintenanceTimetable || false);
+      setMaintenanceCommunity(s.maintenanceCommunity || false);
+      setMaintenanceGpa(s.maintenanceGpa || false);
+      setMaintenanceNews(s.maintenanceNews || false);
       setAllowRegistration(s.allowRegistration);
       setSiteName(s.siteName || "Aura Med Elite");
       setPrimaryColor(s.primaryColor || "#0ea5e9");
@@ -58,6 +68,16 @@ export default function AdminSettingsPage() {
     const newVal = !maintenanceMode;
     setMaintenanceMode(newVal);
     await updateSettings({ maintenanceMode: newVal });
+  };
+
+  const handleToggleSection = async (section: string, value: boolean) => {
+    switch (section) {
+      case 'courses': setMaintenanceCourses(value); await updateSettings({ maintenanceCourses: value }); break;
+      case 'timetable': setMaintenanceTimetable(value); await updateSettings({ maintenanceTimetable: value }); break;
+      case 'community': setMaintenanceCommunity(value); await updateSettings({ maintenanceCommunity: value }); break;
+      case 'gpa': setMaintenanceGpa(value); await updateSettings({ maintenanceGpa: value }); break;
+      case 'news': setMaintenanceNews(value); await updateSettings({ maintenanceNews: value }); break;
+    }
   };
 
   const handleToggleRegistration = async () => {
@@ -492,6 +512,42 @@ export default function AdminSettingsPage() {
                             />
                             <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-orange-500"></div>
                           </label>
+                       </div>
+
+                       <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
+                          <h3 className="font-black text-slate-900 dark:text-white mb-4 text-lg">صيانة الأقسام المحددة</h3>
+                          <p className="text-sm text-slate-500 mb-6">يمكنك تعطيل أقسام معينة فقط وإظهار نافذة الصيانة للمستخدمين عند محاولة الدخول إليها.</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             {[
+                               { id: 'courses', label: 'قسم المحاضرات', icon: PlayCircle, value: maintenanceCourses },
+                               { id: 'timetable', label: 'الجدول الدراسي', icon: Stethoscope, value: maintenanceTimetable },
+                               { id: 'community', label: 'المجتمع التفاعلي', icon: Users, value: maintenanceCommunity },
+                               { id: 'gpa', label: 'حاسبة المعدل', icon: Sliders, value: maintenanceGpa },
+                               { id: 'news', label: 'الأخبار والمستجدات', icon: Globe, value: maintenanceNews },
+                             ].map((section) => {
+                               const Icon = section.icon;
+                               return (
+                                 <div key={section.id} className="flex items-center justify-between p-4 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center gap-3">
+                                       <div className="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300">
+                                          <Icon className="w-5 h-5" />
+                                       </div>
+                                       <span className="font-bold text-sm">{section.label}</span>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                      <input 
+                                        title={`تعطيل ${section.label}`}
+                                        type="checkbox" 
+                                        className="sr-only peer" 
+                                        checked={section.value}
+                                        onChange={(e) => handleToggleSection(section.id, e.target.checked)}
+                                      />
+                                      <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-500 peer-checked:bg-red-500"></div>
+                                    </label>
+                                 </div>
+                               );
+                             })}
+                          </div>
                        </div>
                     </div>
                   </div>

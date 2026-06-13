@@ -9,6 +9,11 @@ export async function getSettings() {
     id: "global",
     siteName: "Aura Med Elite",
     maintenanceMode: false,
+    maintenanceCourses: false,
+    maintenanceTimetable: false,
+    maintenanceCommunity: false,
+    maintenanceGpa: false,
+    maintenanceNews: false,
     allowRegistration: true,
     primaryColor: "#0ea5e9",
     secondaryColor: "#6366f1",
@@ -43,6 +48,11 @@ export async function updateSettings(data: any) {
     const updateData: any = {};
     if (data.siteName !== undefined) updateData.siteName = data.siteName;
     if (data.maintenanceMode !== undefined) updateData.maintenanceMode = data.maintenanceMode;
+    if (data.maintenanceCourses !== undefined) updateData.maintenanceCourses = data.maintenanceCourses;
+    if (data.maintenanceTimetable !== undefined) updateData.maintenanceTimetable = data.maintenanceTimetable;
+    if (data.maintenanceCommunity !== undefined) updateData.maintenanceCommunity = data.maintenanceCommunity;
+    if (data.maintenanceGpa !== undefined) updateData.maintenanceGpa = data.maintenanceGpa;
+    if (data.maintenanceNews !== undefined) updateData.maintenanceNews = data.maintenanceNews;
     if (data.allowRegistration !== undefined) updateData.allowRegistration = data.allowRegistration;
     if (data.primaryColor !== undefined) updateData.primaryColor = data.primaryColor;
     if (data.secondaryColor !== undefined) updateData.secondaryColor = data.secondaryColor;

@@ -153,6 +153,14 @@ model SiteSettings {
   id                      String  @id @default("global")
   siteName                String  @default("AuraMed")
   maintenanceMode         Boolean @default(false)
+  
+  // Section Maintenance Modes
+  maintenanceCourses      Boolean @default(false)
+  maintenanceTimetable    Boolean @default(false)
+  maintenanceCommunity    Boolean @default(false)
+  maintenanceGpa          Boolean @default(false)
+  maintenanceNews         Boolean @default(false)
+  
   allowRegistration       Boolean @default(true)
   adminPassword           String? @default("admin123")
   primaryColor            String? @default("#0ea5e9")

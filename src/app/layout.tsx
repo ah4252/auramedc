@@ -33,6 +33,8 @@ export async function generateViewport() {
   };
 }
 
+import SectionMaintenanceGuard from "@/components/layout/SectionMaintenanceGuard";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -80,7 +82,12 @@ export default async function RootLayout({
       primaryColor: "#0ea5e9",
       secondaryColor: "#6366f1",
       darkBg: "#0f172a",
-      maintenanceMode: false
+      maintenanceMode: false,
+      maintenanceCourses: false,
+      maintenanceTimetable: false,
+      maintenanceCommunity: false,
+      maintenanceGpa: false,
+      maintenanceNews: false
     };
   }
 
@@ -107,7 +114,9 @@ export default async function RootLayout({
           <ActivePresencePing userId={userId || null} />
           <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
           <main className="flex-1 pb-20 md:pb-0">
-            {children}
+            <SectionMaintenanceGuard settings={settings}>
+              {children}
+            </SectionMaintenanceGuard>
           </main>
           <Footer />
           <MobileNav />
