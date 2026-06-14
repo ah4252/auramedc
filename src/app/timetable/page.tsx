@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { getTimetable } from "@/app/actions/timetable";
+import { prisma } from "@/lib/db";
 import TimetableClient from "./TimetableClient";
 import Script from "next/script";
 
@@ -10,10 +11,31 @@ export default async function TimetablePage() {
   
   const timetableData = isUser ? await getTimetable() : null;
 
+  let hasActiveSubscription = false;
+  if (userId) {
+    try {
+      const activeSub = await (prisma as any).subscriptionRequest.findFirst({
+        where: {
+          userId,
+          status: "APPROVED"
+        }
+      });
+      if (activeSub && (activeSub.transactionId.startsWith("TIMETABLE:") || activeSub.transactionId.startsWith("ALL:") || !activeSub.transactionId.includes(":"))) {
+        hasActiveSubscription = true;
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#0a0f1d] pb-20 font-sans">
       {/* Interactive Timetable Tool */}
-      <TimetableClient initialData={JSON.parse(JSON.stringify(timetableData))} isUser={isUser} />
+      <TimetableClient 
+        initialData={JSON.parse(JSON.stringify(timetableData))} 
+        isUser={isUser} 
+        hasActiveSubscription={hasActiveSubscription}
+      />
       
       <Script 
         src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" 

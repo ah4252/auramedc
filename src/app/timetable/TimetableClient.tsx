@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import html2canvas from "html2canvas";
 
-export default function TimetableClient({ initialData, isUser }: { initialData: any, isUser: boolean }) {
+export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean }) {
   const days = [
     { ar: "الأحد", en: "Sun" },
     { ar: "الاثنين", en: "Mon" },
@@ -24,9 +24,13 @@ export default function TimetableClient({ initialData, isUser }: { initialData: 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [reportId, setReportId] = useState("AM-00000");
   const certificateRef = useRef<HTMLDivElement>(null);
+  const [downloadCount, setDownloadCount] = useState(0);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     setReportId(`AM-${Math.floor(Math.random() * 100000)}`);
+    const count = parseInt(localStorage.getItem("timetableDownloadCount") || "0", 10);
+    setDownloadCount(count);
   }, []);
 
   const stats = useMemo(() => {
@@ -88,6 +92,11 @@ export default function TimetableClient({ initialData, isUser }: { initialData: 
   };
 
   const handleExport = async () => {
+    const isUnlimited = hasActiveSubscription || localStorage.getItem("unlimited_timetable") === "true";
+    if (!isUnlimited && downloadCount >= 2) {
+      setShowPaymentModal(true);
+      return;
+    }
     if (!certificateRef.current) return;
     setExportLoading(true);
     try {
@@ -110,7 +119,15 @@ export default function TimetableClient({ initialData, isUser }: { initialData: 
       link.href = image;
       link.download = `AuraMed_Schedule_${new Date().getTime()}.png`;
       link.click();
-      setMessage({ type: 'success', text: "تم تحميل الجدول كصورة بنجاح! 📸" });
+      
+      if (!isUnlimited) {
+        const newCount = downloadCount + 1;
+        setDownloadCount(newCount);
+        localStorage.setItem("timetableDownloadCount", newCount.toString());
+        setMessage({ type: 'success', text: `تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: ${2 - newCount})` });
+      } else {
+        setMessage({ type: 'success', text: "تم تحميل الجدول كصورة بنجاح! 📸" });
+      }
     } catch (error) {
       setMessage({ type: 'error', text: "حدث خطأ أثناء التصدير" });
     } finally {
@@ -304,6 +321,53 @@ export default function TimetableClient({ initialData, isUser }: { initialData: 
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-10 py-5 rounded-[2rem] font-black shadow-2xl z-[100] ${message.type === 'success' ? 'bg-blue-600' : 'bg-rose-600'}`}>
              {message.text}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+              
+              <div className="relative z-10 text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6">
+                  <Award className="w-10 h-10 text-white" />
+                </div>
+                
+                <h3 className="text-2xl font-black text-white mb-2">استنفدت محاولاتك المجانية</h3>
+                <p className="text-slate-400 mb-8 leading-relaxed">
+                  لقد وصلت إلى الحد الأقصى لتحميل الجدول كصورة (مرتان). للاستمرار في التحميل غير المحدود ودعم المنصة، يرجى الاشتراك بمبلغ رمزي.
+                </p>
+                
+                <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700">
+                  <div className="text-sm text-slate-400 mb-1">رسوم الاشتراك</div>
+                  <div className="text-3xl font-black text-white">500 <span className="text-xl text-slate-500">د.ج</span></div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setShowPaymentModal(false)}
+                    className="flex-1 py-4 rounded-xl font-bold text-slate-300 hover:bg-slate-800 transition-colors border border-slate-700"
+                  >
+                    إلغاء
+                  </button>
+                  <Link 
+                    href="/profile?tab=subscription"
+                    className="flex-[2] py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+                  >
+                    الذهاب للدفع
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

@@ -23,6 +23,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [subscriptionType, setSubscriptionType] = useState("TIMETABLE");
 
   // Password change state
   const [pwLoading, setPwLoading] = useState(false);
@@ -436,40 +437,63 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                   <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-600" />
                     
-                    {/* Status Banner */}
-                    {latestSubscription?.status === "APPROVED" && (
-                      <div className="mb-8 flex items-start gap-4 bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl">
-                        <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 shrink-0">
-                          <CheckCircle className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">تم تفعيل اشتراكك! 🎉</h4>
-                          <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-1">تم استلام دفعتك وتفعيل حسابك بنجاح. استمتع بكافة المحتويات.</p>
-                        </div>
-                      </div>
-                    )}
-                    {latestSubscription?.status === "REJECTED" && (
-                      <div className="mb-8 flex items-start gap-4 bg-rose-500/10 border border-rose-500/30 p-5 rounded-2xl">
-                        <div className="p-2 bg-rose-500/20 rounded-xl text-rose-500 shrink-0">
-                          <AlertCircle className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">تم رفض طلب الاشتراك</h4>
-                          <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">لم يتم التحقق من عملية الدفع. يرجى التواصل مع الدعم عبر تيليجرام أو إعادة إرسال طلب جديد.</p>
-                        </div>
-                      </div>
-                    )}
-                    {latestSubscription?.status === "PENDING" && (
-                      <div className="mb-8 flex items-start gap-4 bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl">
-                        <div className="p-2 bg-amber-500/20 rounded-xl text-amber-500 shrink-0">
-                          <Clock className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">طلبك قيد المراجعة</h4>
-                          <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">تم إرسال طلب التفعيل بنجاح. سيتم مراجعته وتفعيل حسابك قريباً إن شاء الله.</p>
-                        </div>
-                      </div>
-                    )}
+                    {/* Status Banner - Dynamic by Subscription Type */}
+                    {latestSubscription && (() => {
+                      const txId = latestSubscription.transactionId || "";
+                      const subType = txId.startsWith("TIMETABLE:") ? "جداول الدراسة" 
+                        : txId.startsWith("GPA:") ? "نتائج المعدل" 
+                        : txId.startsWith("SUPPORT:") ? "دعم المنصة" 
+                        : "الميزات المميزة";
+
+                      if (latestSubscription.status === "APPROVED") {
+                        return (
+                          <div className="mb-8 flex items-start gap-4 bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl">
+                            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 shrink-0">
+                              <CheckCircle className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">تم تفعيل اشتراك {subType}! 🎉</h4>
+                              <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-1">
+                                {txId.startsWith("TIMETABLE:")
+                                  ? "أصبح بإمكانك تحميل جدولك الدراسي الأسبوعي كصورة بدون أي قيود."
+                                  : txId.startsWith("GPA:")
+                                  ? "أصبح بإمكانك تحميل كشف نقاط معدلك كصورة بدون أي قيود."
+                                  : txId.startsWith("SUPPORT:")
+                                  ? "شكراً جزيلاً على دعمك لمنصة AuraMed! مساهمتك تُحدث فرقاً حقيقياً."
+                                  : "تم استلام دفعتك وتفعيل حسابك بنجاح. استمتع بكافة المحتويات."}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (latestSubscription.status === "REJECTED") {
+                        return (
+                          <div className="mb-8 flex items-start gap-4 bg-rose-500/10 border border-rose-500/30 p-5 rounded-2xl">
+                            <div className="p-2 bg-rose-500/20 rounded-xl text-rose-500 shrink-0">
+                              <AlertCircle className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">تم رفض طلب اشتراك {subType}</h4>
+                              <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">لم يتم التحقق من عملية الدفع. يرجى التواصل مع الدعم عبر تيليجرام أو إعادة إرسال طلب جديد.</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (latestSubscription.status === "PENDING") {
+                        return (
+                          <div className="mb-8 flex items-start gap-4 bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl">
+                            <div className="p-2 bg-amber-500/20 rounded-xl text-amber-500 shrink-0">
+                              <Clock className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">طلب اشتراك {subType} قيد المراجعة</h4>
+                              <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">تم إرسال طلب التفعيل بنجاح. سيتم مراجعته وتفعيل الميزة المطلوبة قريباً إن شاء الله.</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                     
                     <div className="flex items-center gap-4 mb-8">
                       <div className="p-3 bg-yellow-500/10 rounded-2xl text-yellow-500 shadow-inner">
@@ -545,7 +569,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                             e.preventDefault(); 
                             if (!transactionId || !paymentDate) return;
                             setPaymentLoading(true);
-                            const res = await submitSubscriptionRequest(transactionId, paymentDate);
+                            // Prefix the transactionId with subscriptionType
+                            const prefixedTxId = `${subscriptionType}:${transactionId}`;
+                            const res = await submitSubscriptionRequest(prefixedTxId, paymentDate);
                             setPaymentLoading(false);
                             if (res?.success) {
                               setPaymentSuccess(true);
@@ -555,14 +581,49 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               alert(res?.error || "حدث خطأ");
                             }
                           }}>
-                            {paymentSuccess || latestSubscription?.status === "PENDING" ? (
-                              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 text-center text-emerald-600 dark:text-emerald-400">
-                                <CheckCircle className="w-12 h-12 mx-auto mb-3" />
-                                <h4 className="font-black text-lg mb-1">تم إرسال طلبك بنجاح!</h4>
-                                <p className="text-sm font-bold">سيتم مراجعة الدفع وتفعيل حسابك قريباً.</p>
+                            {paymentSuccess ? (
+                              <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center text-amber-600 dark:text-amber-400">
+                                <Clock className="w-12 h-12 mx-auto mb-3 text-amber-500 animate-pulse" />
+                                <h4 className="font-black text-lg mb-1">تم إرسال طلبك بنجاح! ⏳</h4>
+                                <p className="text-sm font-bold">طلبك قيد المراجعة الآن. سيتم تفعيل الميزة بمجرد قبول الطلب وتفعيله من قبل الإدارة.</p>
                               </div>
                             ) : (
                               <>
+                                <div className="space-y-3 mb-6">
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">اختر نوع الاشتراك والتفعيل:</label>
+                                  <div className="grid grid-cols-1 gap-3">
+                                    {[
+                                      { id: "TIMETABLE", label: "تحميل غير محدود لصور الجداول", desc: "يمكّنك من حفظ وتحميل جدولك الأسبوعي كصورة دون قيود", price: "500 د.ج" },
+                                      { id: "GPA", label: "تحميل غير محدود لصور النتائج", desc: "يمكّنك من تصدير وتحميل كشف نقاط المعدل كصورة دون قيود", price: "500 د.ج" },
+                                      { id: "SUPPORT", label: "دعم الموقع والمنصة فقط", desc: "مساهمة رمزية لدعم استمرار وتطوير منصة AuraMed", price: "500 د.ج" }
+                                    ].map((opt) => (
+                                      <button
+                                        key={opt.id}
+                                        type="button"
+                                        onClick={() => setSubscriptionType(opt.id)}
+                                        className={`flex items-start justify-between p-4 rounded-2xl border-2 text-right transition-all hover:bg-slate-100 dark:hover:bg-slate-800/40 ${
+                                          subscriptionType === opt.id
+                                            ? "border-yellow-500 bg-yellow-500/5 dark:bg-yellow-500/10"
+                                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/10"
+                                        }`}
+                                      >
+                                        <div className="flex-1 pl-4">
+                                          <div className="font-bold text-slate-800 dark:text-white text-sm">{opt.label}</div>
+                                          <div className="text-[11px] text-slate-400 mt-1 leading-normal font-medium">{opt.desc}</div>
+                                        </div>
+                                        <div className="text-right shrink-0 flex flex-col items-end justify-center">
+                                          <span className="text-xs font-black text-yellow-500">{opt.price}</span>
+                                          <div className={`w-5 h-5 rounded-full border-2 mt-2 flex items-center justify-center ${
+                                            subscriptionType === opt.id ? "border-yellow-500 bg-yellow-500" : "border-slate-300 dark:border-slate-600"
+                                          }`}>
+                                            {subscriptionType === opt.id && <div className="w-2 h-2 rounded-full bg-white" />}
+                                          </div>
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
                                 <div className="space-y-2">
                                   <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">رقم العملية (Transaction ID)</label>
                                   <input 

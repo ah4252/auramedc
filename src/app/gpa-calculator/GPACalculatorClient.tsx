@@ -116,11 +116,11 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
   const handleExport = async () => {
     if (!certificateRef.current || !selectedYear) return;
     
-    // Check download limit (exclude specific account & active subscription with redirection history)
+    // Check download limit (exclude specific account & active subscription)
     const isExcluded = userEmail === "abendakfal07@gmail.com";
-    const hasInfiniteDownloads = isExcluded || (hasActiveSubscription && didRedirect);
+    const hasInfiniteDownloads = isExcluded || hasActiveSubscription || (localStorage.getItem("unlimited_gpa") === "true");
     const storageKey = `gpa_downloads_${userId || 'guest'}_${selectedYear.id}`;
-    let downloads = parseInt(localStorage.getItem(storageKey) || "0");
+    let downloads = parseInt(localStorage.getItem(storageKey) || "0", 10);
     
     if (!hasInfiniteDownloads && downloads >= 2) {
       setShowPaymentModal(true);

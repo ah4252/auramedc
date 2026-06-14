@@ -44,7 +44,7 @@ export default async function GPACalculatorPage() {
           status: "APPROVED"
         }
       });
-      if (activeSub) {
+      if (activeSub && (activeSub.transactionId.startsWith("GPA:") || activeSub.transactionId.startsWith("ALL:") || !activeSub.transactionId.includes(":"))) {
         hasActiveSubscription = true;
       }
     } catch (error) {
