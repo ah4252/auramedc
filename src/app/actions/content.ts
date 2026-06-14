@@ -22,6 +22,8 @@ export async function addCategory(formData: FormData) {
       data: { name, description, slug, type, communityPassword },
     });
     revalidatePath("/admin/subjects");
+    revalidatePath("/admin/specialties");
+    revalidatePath("/subjects");
     revalidatePath("/courses");
     revalidatePath("/community");
     return { success: true };
@@ -272,6 +274,8 @@ export async function deleteCategory(id: string) {
 
     revalidatePath("/admin/posts");
     revalidatePath("/admin/subjects");
+    revalidatePath("/admin/specialties");
+    revalidatePath("/subjects");
     revalidatePath("/courses");
     revalidatePath("/community");
     return { success: true };
@@ -290,11 +294,14 @@ export async function updateCategory(id: string, formData: FormData) {
   if (!name) return { error: "الاسم مطلوب" };
 
   try {
-    await prisma.category.update({
+    const updated = await prisma.category.update({
       where: { id },
       data: { name, description, communityPassword }
     });
     revalidatePath("/admin/subjects");
+    revalidatePath("/admin/specialties");
+    revalidatePath("/subjects");
+    revalidatePath(`/subjects/${updated.slug}`);
     revalidatePath("/courses");
     revalidatePath("/community");
     return { success: true };

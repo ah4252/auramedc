@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Settings, Video, 
   FileEdit, Calculator, Menu, X, Heart, 
   Database, LayoutPanelLeft, Bell, MessageSquare, Share2,
-  Lock, ShieldCheck, KeyRound, Zap
+  Lock, ShieldCheck, KeyRound, Zap, GraduationCap
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -64,7 +64,8 @@ export default function AdminSidebar({
       title: "إدارة المحتوى",
       links: [
         { href: "/admin/lessons", label: "الدروس والفيديوهات", icon: Video },
-        { href: "/admin/subjects", label: "المواد والتخصصات", icon: BookOpen },
+        { href: "/admin/specialties", label: "التخصصات الطبية", icon: GraduationCap },
+        { href: "/admin/subjects", label: "المواد الدراسية", icon: BookOpen },
         { href: "/admin/posts", label: "المنشورات والمقالات", icon: FileEdit },
         { href: "/admin/gpa-calculator", label: "تحرير الالة حاسبة", icon: Calculator },
         { href: "/admin/news", label: "إدارة الأخبار", icon: Bell },

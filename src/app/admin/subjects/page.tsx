@@ -81,7 +81,7 @@ export default function AdminSubjectsPage() {
     >
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">إدارة الهيكل التعليمي</h1>
+        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">إدارة المواد والسنوات الدراسية</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg font-medium">نظم السنوات الدراسية والمواد العلمية لِطلاب AuraMed.</p>
       </div>
 
@@ -92,7 +92,7 @@ export default function AdminSubjectsPage() {
           className={`flex items-center gap-2 px-8 py-3 rounded-xl font-black text-sm transition-all ${activeTab === "YEARS" ? "bg-white dark:bg-dark-card shadow-lg text-medical-600" : "text-slate-500 hover:text-slate-700"}`}
          >
            <Layers className="w-4 h-4" />
-           السنوات والتخصصات
+           السنوات الدراسية
          </button>
          <button 
           onClick={() => setActiveTab("SUBJECTS")}
@@ -142,8 +142,8 @@ export default function AdminSubjectsPage() {
                 <form action={handleAddCategory} className="space-y-8 relative z-10">
                   <input type="hidden" name="type" value="YEAR" />
                   <div className="space-y-3">
-                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم السنة / التخصص</label>
-                     <input name="name" required placeholder="مثلاً: السنة الثانية - طب بشري" className="admin-input" />
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">اسم السنة الدراسية</label>
+                     <input name="name" required placeholder="مثلاً: السنة الأولى، السنة الثانية..." className="admin-input" />
                   </div>
                   <div className="space-y-3">
                      <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">وصف قصير</label>
@@ -160,19 +160,24 @@ export default function AdminSubjectsPage() {
               {activeTab === "SUBJECTS" && (
                 <form action={handleAddSubject} className="space-y-8 relative z-10">
                   <div className="space-y-3">
-                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">تابع لِلسنة الدراسية</label>
+                     <label className="block text-sm font-black text-slate-500 dark:text-slate-400 px-1">تابع لِلسنة أو التخصص</label>
                      <select
                        name="categoryId"
-                       title="السنة الدراسية"
+                       title="السنة الدراسية أو التخصص"
                        required
                        className="admin-input appearance-none cursor-pointer"
                        value={filterYearId === "all" ? "" : filterYearId}
                        onChange={(e) => setFilterYearId(e.target.value || "all")}
                      >
-                        <option value="">اختر السنة الدراسية المناسبة...</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        <option value="">اختر السنة أو التخصص المناسب...</option>
+                        <optgroup label="السنوات الدراسية">
+                          {categories.filter(c => c.type === "YEAR").map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </optgroup>
+                        <optgroup label="التخصصات الطبية">
+                          {categories.filter(c => c.type === "SPECIALTY").map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </optgroup>
                      </select>
-                     <p className="text-[10px] text-amber-500 font-bold px-1">بِمجرد الاختيار، ستظهر فقط مواد هذه السنة في القائمة المجاورة.</p>
+                     <p className="text-[10px] text-amber-500 font-bold px-1">بِمجرد الاختيار، ستظهر فقط مواد هذا القسم في القائمة المجاورة.</p>
                   </div>
                   {filterYearId !== "all" && isFirstYear && (
                     <div className="space-y-3">
