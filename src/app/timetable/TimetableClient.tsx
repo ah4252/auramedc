@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import html2canvas from "html2canvas";
 
-export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean }) {
+export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, userEmail?: string | null }) {
   const days = [
     { ar: "الأحد", en: "Sun" },
     { ar: "الاثنين", en: "Mon" },
@@ -92,7 +92,8 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   };
 
   const handleExport = async () => {
-    const isUnlimited = hasActiveSubscription || localStorage.getItem("unlimited_timetable") === "true";
+    const isExcluded = userEmail === "abendakfal07@gmail.com";
+    const isUnlimited = isExcluded || hasActiveSubscription || localStorage.getItem("unlimited_timetable") === "true";
     if (!isUnlimited && downloadCount >= 2) {
       setShowPaymentModal(true);
       return;

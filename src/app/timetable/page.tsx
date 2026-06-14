@@ -12,8 +12,15 @@ export default async function TimetablePage() {
   const timetableData = isUser ? await getTimetable() : null;
 
   let hasActiveSubscription = false;
+  let userEmail: string | null = null;
   if (userId) {
     try {
+      const user = await (prisma as any).user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      });
+      if (user) userEmail = user.email;
+
       const activeSub = await (prisma as any).subscriptionRequest.findFirst({
         where: {
           userId,
@@ -35,6 +42,7 @@ export default async function TimetablePage() {
         initialData={JSON.parse(JSON.stringify(timetableData))} 
         isUser={isUser} 
         hasActiveSubscription={hasActiveSubscription}
+        userEmail={userEmail}
       />
       
       <Script 
