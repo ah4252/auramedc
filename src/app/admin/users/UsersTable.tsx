@@ -87,61 +87,148 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
     setPwLoading(false);
   }
 
-  const handleExport = () => {
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
-    script.onload = () => {
+  const handleExport = async () => {
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
       const element = document.createElement("div");
       element.dir = "rtl";
+      element.style.position = "absolute";
+      element.style.left = "-9999px";
+      element.style.top = "-9999px";
+      
       element.innerHTML = `
-        <div style="padding: 40px; font-family: 'Cairo', sans-serif;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px;">
+        <div dir="rtl" style="padding: 0; font-family: 'Cairo', sans-serif; width: 1122px; background: #ffffff;">
+          <!-- Top Navy Header Bar -->
+          <div style="background: #0f172a; padding: 36px 50px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <h1 style="font-size: 32px; font-weight: 900; color: #0f172a; margin: 0;">تقرير شؤون الطلاب</h1>
-              <p style="color: #64748b; font-weight: 600; margin-top: 5px;">كشف بيانات الطلاب المسجلين في المنصة</p>
+              <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 8px;">نظام إدارة المنصة التعليمية</div>
+              <h1 style="font-size: 30px; font-weight: 900; color: #ffffff; margin: 0 0 6px 0;">قاعدة بيانات الطلاب</h1>
+              <p style="color: #64748b; font-size: 14px; font-weight: 500; margin: 0;">كشف مفصل ببيانات الحسابات المسجلة في المنصة</p>
             </div>
-            <div style="text-align: left;">
-              <h2 style="font-size: 24px; font-weight: 900; color: #0ea5e9; margin: 0;">AuraMed Elite</h2>
-              <p style="color: #94a3b8; font-size: 12px; font-weight: bold;">تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+            <div style="text-align: left; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+              <div style="background: #0ea5e9; color: white; padding: 6px 16px; border-radius: 8px; font-size: 14px; font-weight: 800;">AuraMed Elite</div>
+              <div style="font-size: 12px; color: #64748b;">تاريخ الإصدار: <span style="color: #94a3b8; font-family: monospace; font-weight: 700;">${new Date().toLocaleDateString('ar-EG')}</span></div>
+              <div style="font-size: 12px; color: #64748b;">إجمالي السجلات: <span style="color: #0ea5e9; font-weight: 800;">${filteredUsers.length}</span></div>
             </div>
           </div>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-            <thead>
-              <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                <th style="padding: 15px; text-align: right; font-size: 14px; color: #475569;">الاسم</th>
-                <th style="padding: 15px; text-align: right; font-size: 14px; color: #475569;">البريد الإلكتروني</th>
-                <th style="padding: 15px; text-align: center; font-size: 14px; color: #475569;">كلمة المرور</th>
-                <th style="padding: 15px; text-align: center; font-size: 14px; color: #475569;">الصلاحية</th>
-                <th style="padding: 15px; text-align: center; font-size: 14px; color: #475569;">تاريخ الانضمام</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredUsers.map(user => `
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 15px; font-size: 13px; font-weight: 800; color: #1e293b;">${user.name || "بدون اسم"}</td>
-                  <td style="padding: 15px; font-size: 13px; color: #64748b;">${user.email}</td>
-                  <td style="padding: 15px; font-size: 13px; text-align: center; font-family: monospace; color: #0ea5e9;">${user.password || "---"}</td>
-                  <td style="padding: 15px; font-size: 11px; text-align: center; font-weight: 900;">${user.role}</td>
-                  <td style="padding: 15px; font-size: 12px; text-align: center; color: #94a3b8;">${new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
+          <!-- Accent bar -->
+          <div style="height: 4px; background: #0ea5e9;"></div>
+          <!-- Stats Row -->
+          <div style="display: flex; gap: 20px; padding: 30px 50px 20px 50px;">
+            <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #0ea5e9;">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">إجمالي الحسابات</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.length}</div>
+            </div>
+            <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #10b981;">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">كلمات مرور مشفرة</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.filter((u) => u.password && (u.password.startsWith('$2b$') || u.password.startsWith('$2a$'))).length}</div>
+            </div>
+            <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #e11d48;">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">مديرون (ADMIN)</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.filter((u) => u.role === 'ADMIN').length}</div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div style="padding: 0 50px 50px 50px;"><div style="border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;">
+            <table style="width: 100%; border-collapse: collapse; text-align: right;" dir="rtl">
+              <thead>
+                <tr style="background: #1e293b;">
+                  <th style="padding: 14px 18px; font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; border-bottom: 2px solid #0ea5e9; width: 5%">#</th>
+                  <th style="padding: 14px 18px; font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; width: 22%; border-bottom: 2px solid #0ea5e9;">الاسم الكامل</th>
+                  <th style="padding: 14px 18px; font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; width: 28%; border-bottom: 2px solid #0ea5e9;">البريد الإلكتروني</th>
+                  <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 18%; border-bottom: 2px solid #0ea5e9;">كلمة المرور</th>
+                  <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 12%; border-bottom: 2px solid #0ea5e9;">الصلاحية</th>
+                  <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 15%; border-bottom: 2px solid #0ea5e9;">تاريخ التسجيل</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          <div style="margin-top: 50px; text-align: center; padding-top: 20px; border-top: 1px solid #f1f5f9;">
-            <p style="font-size: 10px; color: #cbd5e1; font-weight: bold;">هذا التقرير تم إنشاؤه تلقائياً بواسطة نظام AuraMed الإداري</p>
+              </thead>
+              <tbody>
+                ${filteredUsers.map((user, index) => {
+                  const isEncrypted = user.password && (user.password.startsWith('$2b$') || user.password.startsWith('$2a$'));
+                  const pwDisplay = isEncrypted ? 'مشفرة 🔒' : (user.password || '---');
+                  const bgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                  
+                  return `
+                  <tr style="background-color: ${bgColor}; border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 14px 18px; font-size: 12px; color: #94a3b8; font-weight: 600; text-align: right;">${index + 1}</td>
+                    <td style="padding: 14px 18px; font-size: 14px; font-weight: 800; color: #0f172a; text-align: right;">${user.name || "بدون اسم"}</td>
+                    <td style="padding: 14px 18px; font-size: 12px; color: #475569; font-weight: 500; text-align: left; direction: ltr;">${user.email}</td>
+                    <td style="padding: 14px 18px; font-size: 12px; text-align: center; color: ${isEncrypted ? '#10b981' : '#f59e0b'}; font-weight: 700;">
+                      <div style="display: inline-block; background: ${isEncrypted ? '#ecfdf5' : '#fffbeb'}; padding: 4px 10px; border-radius: 8px; border: 1px solid ${isEncrypted ? '#a7f3d0' : '#fde68a'};">
+                        ${pwDisplay}
+                      </div>
+                    </td>
+                    <td style="padding: 14px 18px; text-align: center;">
+                      <span style="font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 5px; background: ${user.role === 'ADMIN' ? '#fee2e2' : '#e0f2fe'}; color: ${user.role === 'ADMIN' ? '#e11d48' : '#0284c7'};">
+                        ${user.role}
+                      </span>
+                    </td>
+                    <td style="padding: 14px 18px; font-size: 12px; text-align: center; color: #64748b; font-weight: 600;">${new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
+                  </tr>
+                `}).join('')}
+              </tbody>
+            </table>
+          </div></div>
+
+          <!-- Signature & Stamp Section -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 10px 50px 40px 50px; background: #ffffff;">
+            <div style="text-align: right;">
+              <p style="font-size: 12px; color: #64748b; font-weight: 700; margin: 0 0 12px 0;">توقيع واعتماد الإدارة:</p>
+              <div style="border-bottom: 2px dashed #cbd5e1; width: 220px; padding-bottom: 6px; text-align: center;">
+                <span style="font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 900; color: #0ea5e9;">Ahmed Ben Dakfal</span>
+              </div>
+              <p style="font-size: 10px; color: #94a3b8; margin: 6px 0 0 0;">المشرف العام على المنصة</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; margin-left: 20px;">
+              <!-- Professional Stamp Design -->
+              <div style="border: 2.5px dashed #0ea5e9; border-radius: 50%; width: 100px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: rotate(-5deg); background: rgba(14, 165, 233, 0.02); box-shadow: 0 0 0 4px #ffffff, 0 0 0 6px rgba(14, 165, 233, 0.08);">
+                <span style="font-size: 8px; color: #0ea5e9; font-weight: 800; letter-spacing: 0.5px;">AURAMED ELITE</span>
+                <span style="font-size: 12px; color: #0284c7; font-weight: 900; margin: 2px 0;">ختم رسمي</span>
+                <span style="font-size: 7px; color: #64748b; font-weight: 600;">مستند معتمد</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></div>
+              <span style="font-size: 12px; color: #64748b; font-weight: 600;">وثيقة إلكترونية موثقة - نظام AuraMed الإداري الآمن</span>
+            </div>
+            <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">AuraMed Elite v1.0.0</span>
           </div>
         </div>
       `;
-      const opt = {
-        margin: 0,
-        filename: `AuraMed_Students_Report_${new Date().getTime()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-      };
-      (window as any).html2pdf().from(element).set(opt).save();
-    };
-    document.head.appendChild(script);
+      
+      document.body.appendChild(element);
+
+      // Wait briefly for DOM to fully render the element
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      
+      // Calculate dynamic height to fit content perfectly on A4 landscape width
+      const pdfWidth = 11.69; // A4 width in inches
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      const pdf = new jsPDF({
+        unit: 'in',
+        format: [pdfWidth, Math.max(8.27, pdfHeight)],
+        orientation: 'landscape'
+      });
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.max(8.27, pdfHeight));
+      pdf.save(`AuraMed_Students_Report_${new Date().getTime()}.pdf`);
+      
+      document.body.removeChild(element);
+    } catch (e: any) {
+      console.error(e);
+      alert('حدث خطأ أثناء تحميل الملف. الرجاء المحاولة مرة أخرى.');
+    }
   };
 
   return (

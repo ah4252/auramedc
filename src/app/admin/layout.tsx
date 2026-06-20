@@ -39,6 +39,9 @@ export default async function AdminLayout({
     // Ignore error if table doesn't exist yet
   }
 
+  // جلب إجمالي المستخدمين لمعرفة المستخدمين الجدد
+  const totalUsersCount = await prisma.user.count();
+
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0f172a] text-slate-900 dark:text-white overflow-hidden font-sans">
       {/* Sidebar Component */}
@@ -47,6 +50,7 @@ export default async function AdminLayout({
         toolsUnlocked={toolsUnlocked} 
         pendingRecoveryCount={pendingRecoveryCount}
         pendingSubscriptionCount={pendingSubscriptionCount}
+        totalUsersCount={totalUsersCount}
       />
 
       {/* Main Content Area */}

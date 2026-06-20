@@ -16,22 +16,50 @@ export default function AdminSidebar({
   toolsProtected = false, 
   toolsUnlocked = true,
   pendingRecoveryCount = 0,
-  pendingSubscriptionCount = 0
+  pendingSubscriptionCount = 0,
+  totalUsersCount = 0
 }: { 
   toolsProtected?: boolean; 
   toolsUnlocked?: boolean;
   pendingRecoveryCount?: number;
   pendingSubscriptionCount?: number;
+  totalUsersCount?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [unlocked, setUnlocked] = useState(toolsUnlocked);
+  const [newUsersCount, setNewUsersCount] = useState(0);
 
   useEffect(() => {
     setUnlocked(toolsUnlocked);
   }, [toolsUnlocked]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("lastSeenUsersCount");
+      if (pathname === "/admin/users") {
+        localStorage.setItem("lastSeenUsersCount", totalUsersCount.toString());
+        setNewUsersCount(0);
+      } else {
+        if (!stored) {
+          localStorage.setItem("lastSeenUsersCount", totalUsersCount.toString());
+          setNewUsersCount(0);
+        } else {
+          const lastSeen = parseInt(stored, 10);
+          if (totalUsersCount > lastSeen) {
+            setNewUsersCount(totalUsersCount - lastSeen);
+          } else if (totalUsersCount < lastSeen) {
+            localStorage.setItem("lastSeenUsersCount", totalUsersCount.toString());
+            setNewUsersCount(0);
+          } else {
+            setNewUsersCount(0);
+          }
+        }
+      }
+    }
+  }, [pathname, totalUsersCount]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -167,6 +195,11 @@ export default function AdminSidebar({
                         <span className={`text-sm font-bold ${isActive ? "text-medical-600 dark:text-medical-400" : ""}`}>{link.label}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        {link.href === "/admin/users" && newUsersCount > 0 && (
+                          <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/20">
+                            {newUsersCount}
+                          </span>
+                        )}
                         {link.href === "/admin/recovery" && pendingRecoveryCount > 0 && (
                           <span className="flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/20">
                             {pendingRecoveryCount}
