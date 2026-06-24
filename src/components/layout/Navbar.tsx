@@ -112,6 +112,10 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               التخصصات
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
+            <Link href="/pharmacy" className="relative group text-slate-700 dark:text-slate-300 hover:text-emerald-600 transition-colors shrink-0">
+              الصيدلة
+              <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-emerald-500 group-hover:w-full transition-all duration-300"></span>
+            </Link>
             <Link href="/timetable" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
               جدول الدراسة
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
@@ -236,6 +240,9 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 </Link>
                 <Link href="/subjects" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   التخصصات
+                </Link>
+                <Link href="/pharmacy" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors text-emerald-700 dark:text-emerald-400">
+                  الصيدلة
                 </Link>
                 <Link href="/timetable" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   جدول الدراسة

@@ -322,4 +322,26 @@ model SubscriptionRequest {
   updatedAt     DateTime @updatedAt
 }
 
+model PharmacySection {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  order       Int              @default(0)
+  images      PharmacyImage[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model PharmacyImage {
+  id          String          @id @default(cuid())
+  title       String?
+  url         String
+  description String?
+  order       Int             @default(0)
+  sectionId   String
+  section     PharmacySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
 
