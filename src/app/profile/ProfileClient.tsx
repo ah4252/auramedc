@@ -216,7 +216,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       
                       {/* Optional Indicator/Badge */}
                       {tab.id === 'favorites' && favoritesCount > 0 && (
-                        <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-[10px] py-0.5 px-2 rounded-full relative z-10 ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
+                        <span className={`absolute left-4 top-1/2 -translate-y-1/2 text-[10px] py-0.5 px-2 rounded-full z-10 ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
                           {favoritesCount}
                         </span>
                       )}
@@ -823,7 +823,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       </div>
                       <div>
                         <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">تغيير كلمة المرور</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 inline-block px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 mt-1 shadow-sm">
+                        <p className="text-sm font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 inline-block px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 mt-1 shadow-sm">
                           لأسباب أمنية، مسموح بالتغيير مرة واحدة فقط كل 30 يوماً
                         </p>
                       </div>

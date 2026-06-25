@@ -257,14 +257,13 @@ export async function updateCategory(id: string, formData: FormData) {
   await requireAdmin();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
-  const communityPassword = formData.get("communityPassword") as string || null;
 
   if (!name) return { error: "الاسم مطلوب" };
 
   try {
     const updated = await prisma.category.update({
       where: { id },
-      data: { name, description, communityPassword }
+      data: { name, description }
     });
     revalidatePath("/admin/subjects");
     revalidatePath("/admin/specialties");
@@ -327,9 +326,6 @@ export async function deleteUser(id: string) {
       prisma.favorite.deleteMany({ where: { userId: id } }),
       prisma.progress.deleteMany({ where: { userId: id } }),
       prisma.gPACalculation.deleteMany({ where: { userId: id } }),
-      prisma.discussionComment.deleteMany({ where: { userId: id } }),
-      prisma.discussion.deleteMany({ where: { userId: id } }),
-      prisma.like.deleteMany({ where: { userId: id } }),
       prisma.newsComment.deleteMany({ where: { userId: id } }),
       prisma.friendship.deleteMany({ where: { OR: [{ userId: id }, { friendId: id }] } }),
       prisma.user.delete({ where: { id } }),

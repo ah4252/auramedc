@@ -73,11 +73,6 @@ export default async function CommunityPortalPage() {
                 <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-medical-600 group-hover:text-white transition-all duration-500 shadow-inner border border-white/5">
                   <GraduationCap className="w-8 h-8" />
                 </div>
-                {cat.communityPassword && (
-                  <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20" title="محمي بكلمة مرور">
-                    <Lock className="w-5 h-5" />
-                  </div>
-                )}
               </div>
               
               <h3 className="text-3xl font-black text-white mb-4 group-hover:text-medical-400 transition-colors">

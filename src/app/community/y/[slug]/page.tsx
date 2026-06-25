@@ -60,7 +60,7 @@ export default async function CommunityYearPage({ params }: { params: Promise<{ 
   ]);
 
   return (
-    <CommunityAccessClient categorySlug={category.slug} requiredPassword={category.communityPassword}>
+    <CommunityAccessClient categorySlug={category.slug}>
       <CommunityClient 
         initialDiscussions={JSON.parse(JSON.stringify(discussions))} 
         subjects={JSON.parse(JSON.stringify(subjects))} 

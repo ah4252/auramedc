@@ -37,16 +37,7 @@ export default async function DiscussionPage({ params }: { params: Promise<{ id:
   const discussion = await getDiscussion(id);
   if (!discussion) notFound();
 
-  // Increment views
-  await prisma.discussion.update({
-    where: { id },
-    data: { views: { increment: 1 } }
-  }).catch(() => {});
-  
-  // Update the object for immediate display
-  if (discussion) {
-    discussion.views += 1;
-  }
+
 
   return (
     <DiscussionViewClient 

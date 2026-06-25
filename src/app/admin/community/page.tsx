@@ -1,7 +1,7 @@
 import { getCategories } from "@/app/actions/content";
 import Link from "next/link";
 import { MessageSquare, GraduationCap, ChevronLeft, LayoutGrid, Lock } from "lucide-react";
-import PasswordManager from "./PasswordManager";
+
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +39,6 @@ export default async function CommunityAdminPortal() {
                 <GraduationCap className="w-7 h-7" />
               </Link>
               <div className="flex items-center gap-2">
-                {cat.communityPassword && (
-                  <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20" title="محمي بكلمة مرور">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                )}
-                <PasswordManager category={{ id: cat.id, name: cat.name, communityPassword: cat.communityPassword }} />
               </div>
             </div>
 
