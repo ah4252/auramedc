@@ -102,9 +102,10 @@ export async function updateSettings(data: any) {
     if (data.socialWhatsapp !== undefined) updateData.socialWhatsapp = data.socialWhatsapp;
     if (data.socialEmail !== undefined) updateData.socialEmail = data.socialEmail;
 
-    const updated = await prisma.siteSettings.update({
+    const updated = await prisma.siteSettings.upsert({
       where: { id: "global" },
-      data: updateData
+      update: updateData,
+      create: { id: "global", ...updateData },
     });
     
     revalidatePath("/", "layout");
@@ -118,9 +119,10 @@ export async function updateSettings(data: any) {
 
 export async function changeAdminPassword(newPassword: string) {
   try {
-    await prisma.siteSettings.update({
+    await prisma.siteSettings.upsert({
       where: { id: "global" },
-      data: { adminPassword: newPassword }
+      update: { adminPassword: newPassword },
+      create: { id: "global", adminPassword: newPassword },
     });
     return { success: true };
   } catch (error) {
@@ -151,9 +153,10 @@ export async function updateToolsProtection(data: { enabled?: boolean; newPasswo
     if (data.enabled !== undefined) updateData.toolsProtectionEnabled = data.enabled;
     if (data.newPassword && data.newPassword.length >= 4) updateData.toolsPassword = data.newPassword;
 
-    await prisma.siteSettings.update({
+    await prisma.siteSettings.upsert({
       where: { id: "global" },
-      data: updateData
+      update: updateData,
+      create: { id: "global", ...updateData },
     });
     revalidatePath("/admin", "layout");
     return { success: true };
