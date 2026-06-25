@@ -27,11 +27,14 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   const [downloadCount, setDownloadCount] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
+  // مفتاح فريد لكل مستخدم بناءً على بريده الإلكتروني
+  const downloadKey = userEmail ? `timetableDownloadCount_${userEmail}` : "timetableDownloadCount_guest";
+
   useEffect(() => {
     setReportId(`AM-${Math.floor(Math.random() * 100000)}`);
-    const count = parseInt(localStorage.getItem("timetableDownloadCount") || "0", 10);
+    const count = parseInt(localStorage.getItem(downloadKey) || "0", 10);
     setDownloadCount(count);
-  }, []);
+  }, [downloadKey]);
 
   const stats = useMemo(() => {
     let total = 0;
@@ -124,7 +127,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
       if (!isUnlimited) {
         const newCount = downloadCount + 1;
         setDownloadCount(newCount);
-        localStorage.setItem("timetableDownloadCount", newCount.toString());
+        localStorage.setItem(downloadKey, newCount.toString());
         setMessage({ type: 'success', text: `تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: ${2 - newCount})` });
       } else {
         setMessage({ type: 'success', text: "تم تحميل الجدول كصورة بنجاح! 📸" });
