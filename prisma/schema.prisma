@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,95 +8,86 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  name              String?
-  email             String    @unique
-  password          String? // hashed password
-  image             String?
-  role              String    @default("USER")
-  telegram          String?
-  instagram         String?
-  facebook          String?
-  passwordChangedAt DateTime?
-  lastActiveAt      DateTime?
-  lastReadNewsAt    DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  comments      Comment[]
-  favorites     Favorite[]
-  progress      Progress[]
-  gpaCalculations GPACalculation[]
-  timetable     Timetable?
-  discussions   Discussion[]
-  discussionComments DiscussionComment[]
-  likes         Like[]
-  newsComments  NewsComment[]
-  friendshipsInitiated Friendship[] @relation("UserFriendships")
-  friendshipsReceived  Friendship[] @relation("FriendFriendships")
+  id                   String                @id @default(cuid())
+  name                 String?
+  email                String                @unique
+  password             String?
+  image                String?
+  role                 String                @default("USER")
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  facebook             String?
+  instagram            String?
+  telegram             String?
+  passwordChangedAt    DateTime?
+  lastActiveAt         DateTime?
+  lastReadNewsAt       DateTime?
+  comments             Comment[]
+  favorites            Favorite[]
+  friendshipsReceived  Friendship[]          @relation("FriendFriendships")
+  friendshipsInitiated Friendship[]          @relation("UserFriendships")
+  gpaCalculations      GPACalculation[]
+  newsComments         NewsComment[]
+  progress             Progress[]
   subscriptionRequests SubscriptionRequest[]
+  timetable            Timetable?
 }
 
 model Category {
-  id                String    @id @default(cuid())
-  name              String
-  description       String?
-  slug              String    @unique
-  type              String    @default("YEAR") // "YEAR" or "SPECIALTY"
-  communityPassword String?   // Optional password for community access
-  subjects          Subject[]
-  discussions       Discussion[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-}
-
-model Subject {
   id          String    @id @default(cuid())
   name        String
   description String?
   slug        String    @unique
-  categoryId  String
-  semester    String?   // "1" for Semester 1, "2" for Semester 2
-  category    Category  @relation(fields: [categoryId], references: [id])
-  lessons     Lesson[]
-  discussions Discussion[]
+  type        String    @default("YEAR")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  subjects    Subject[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  semester    String?
+  lessons     Lesson[]
+  category    Category @relation(fields: [categoryId], references: [id])
 }
 
 model Lesson {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
-  slug        String    @unique
+  slug        String     @unique
   thumbnail   String?
   videoUrl    String?
   pdfUrl      String?
   summaryUrl  String?
-  views       Int       @default(0)
-  isPublished Boolean   @default(false)
+  views       Int        @default(0)
+  isPublished Boolean    @default(false)
   subjectId   String
-  subject     Subject   @relation(fields: [subjectId], references: [id])
-  
-  tags        Tag[]     @relation("LessonTags")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   comments    Comment[]
   favorites   Favorite[]
+  subject     Subject    @relation(fields: [subjectId], references: [id])
   progress    Progress[]
   resources   Resource[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  tags        Tag[]      @relation("LessonTags")
 }
 
 model Resource {
   id          String   @id @default(cuid())
   title       String
-  description String?
-  type        String   @default("VIDEO") // VIDEO, PDF, SUMMARY, LINK
+  type        String   @default("VIDEO")
   url         String
   lessonId    String
-  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
+  description String?
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
@@ -109,96 +100,90 @@ model Comment {
   id        String   @id @default(cuid())
   content   String
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Favorite {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
   createdAt DateTime @default(now())
-  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, lessonId])
 }
 
 model Progress {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  lessonId  String
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
-  completed Boolean  @default(false)
-  watchedSec Int     @default(0)
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  lessonId   String
+  completed  Boolean  @default(false)
+  watchedSec Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, lessonId])
 }
 
 model GPACalculation {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  gpa         String
-  subjects    String   
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  gpa       String
+  subjects  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model SiteSettings {
-  id                      String  @id @default("global")
-  siteName                String  @default("AuraMed")
-  maintenanceMode         Boolean @default(false)
-  
-  // Section Maintenance Modes
-  maintenanceCourses      Boolean @default(false)
-  maintenanceTimetable    Boolean @default(false)
-  maintenanceCommunity    Boolean @default(false)
-  maintenanceGpa          Boolean @default(false)
-  maintenanceNews         Boolean @default(false)
-  
-  // Social Links
-  socialFacebook          String?
-  socialInstagram         String?
-  socialTelegram          String?
-  socialWhatsapp          String?
-  socialEmail             String?
-
-  allowRegistration       Boolean @default(true)
-  adminPassword           String? @default("admin123")
-  primaryColor            String? @default("#0ea5e9")
-  secondaryColor          String? @default("#6366f1")
-  darkBg                  String? @default("#0f172a")
-  toolsPassword           String? @default("tools123")
-  toolsProtectionEnabled  Boolean @default(false)
-  // Homepage stats
-  statLectures            String? @default("")
-  statSpecialties         String? @default("")
-  statStudents            String? @default("")
-  statSatisfaction        String? @default("99%")
-  updatedAt               DateTime @updatedAt
+  id                     String   @id @default("global")
+  siteName               String   @default("AuraMed")
+  maintenanceMode        Boolean  @default(false)
+  allowRegistration      Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+  darkBg                 String?  @default("#0f172a")
+  primaryColor           String?  @default("#0ea5e9")
+  secondaryColor         String?  @default("#6366f1")
+  adminPassword          String?  @default("admin123")
+  toolsPassword          String?  @default("tools123")
+  toolsProtectionEnabled Boolean  @default(false)
+  statLectures           String?  @default("")
+  statSatisfaction       String?  @default("99%")
+  statSpecialties        String?  @default("")
+  statStudents           String?  @default("")
+  maintenanceCourses     Boolean  @default(false)
+  maintenanceGpa         Boolean  @default(false)
+  maintenanceNews        Boolean  @default(false)
+  maintenanceTimetable   Boolean  @default(false)
+  socialEmail            String?
+  socialFacebook         String?
+  socialInstagram        String?
+  socialTelegram         String?
+  socialWhatsapp         String?
+  maintenancePharmacy    Boolean  @default(false)
+  maintenanceSubjects    Boolean  @default(false)
 }
-
 
 model Timetable {
   id        String   @id @default(cuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  data      String   // JSON string of the schedule
+  data      String
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GpaYear {
   id        String       @id @default(cuid())
   name      String
   slug      String       @unique
-  subjects  GpaSubject[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  subjects  GpaSubject[]
 }
 
 model GpaSubject {
@@ -206,107 +191,56 @@ model GpaSubject {
   name        String
   coefficient Int      @default(1)
   gpaYearId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   gpaYear     GpaYear  @relation(fields: [gpaYearId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Discussion {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subjectId   String?
-  subject     Subject? @relation(fields: [subjectId], references: [id])
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
-  comments    DiscussionComment[]
-  likes       Like[]
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model DiscussionComment {
-  id           String     @id @default(cuid())
-  content      String
-  userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discussionId String
-  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  
-  // New: Threading support
-  parentId     String?
-  parent       DiscussionComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies      DiscussionComment[] @relation("CommentReplies")
-
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-}
-
-
-model Like {
-  id           String     @id @default(cuid())
-  userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  discussionId String
-  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  createdAt    DateTime   @default(now())
-
-  @@unique([userId, discussionId])
 }
 
 model News {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   title       String
   content     String
   image       String?
   videoUrl    String?
   fileUrl     String?
-  isPublished Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  isPublished Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   comments    NewsComment[]
 }
 
 model NewsComment {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   content   String
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   newsId    String
-  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
-  
-  // Threading support for replies
   parentId  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  news      News          @relation(fields: [newsId], references: [id], onDelete: Cascade)
   parent    NewsComment?  @relation("NewsCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   NewsComment[] @relation("NewsCommentReplies")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ForgotPasswordRequest {
   id           String   @id @default(cuid())
   email        String
   lastPassword String
-  status       String   @default("PENDING") // "PENDING", "APPROVED"
+  status       String   @default("PENDING")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Friendship {
-  id         String   @id @default(cuid())
-  userId     String
-  friendId   String
-  status     String   @default("PENDING") // "PENDING", "ACCEPTED"
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  user       User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
-  friend     User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  friend    User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, friendId])
 }
@@ -314,23 +248,23 @@ model Friendship {
 model SubscriptionRequest {
   id            String   @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactionId String
   paymentDate   DateTime
-  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PharmacySection {
-  id          String           @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
   description String?
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   imageUrl    String?
-  order       Int              @default(0)
   images      PharmacyImage[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
 }
 
 model PharmacyImage {
@@ -340,8 +274,7 @@ model PharmacyImage {
   description String?
   order       Int             @default(0)
   sectionId   String
-  section     PharmacySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  section     PharmacySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 }
-

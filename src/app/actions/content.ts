@@ -11,21 +11,18 @@ export async function addCategory(formData: FormData) {
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   const type = formData.get("type") as string || "YEAR";
-  const communityPassword = formData.get("communityPassword") as string || null;
-  
   if (!name) return { error: "الاسم مطلوب" };
   
   const slug = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
 
   try {
     await prisma.category.create({
-      data: { name, description, slug, type, communityPassword },
+      data: { name, description, slug, type },
     });
     revalidatePath("/admin/subjects");
     revalidatePath("/admin/specialties");
     revalidatePath("/subjects");
     revalidatePath("/courses");
-    revalidatePath("/community");
     return { success: true };
   } catch (error) {
     return { error: "حدث خطأ أثناء الإضافة" };
@@ -113,17 +110,6 @@ export async function deleteSubject(id: string) {
       await prisma.progress.deleteMany({ where: { lessonId: { in: lessonIds } } });
       await prisma.resource.deleteMany({ where: { lessonId: { in: lessonIds } } });
       await prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } });
-    }
-
-    // 3. Get all discussions in this subject
-    const discussions = await prisma.discussion.findMany({ where: { subjectId: id } });
-    const discussionIds = discussions.map(d => d.id);
-
-    // 4. Delete everything related to these discussions
-    if (discussionIds.length > 0) {
-      await prisma.discussionComment.deleteMany({ where: { discussionId: { in: discussionIds } } });
-      await prisma.like.deleteMany({ where: { discussionId: { in: discussionIds } } });
-      await prisma.discussion.deleteMany({ where: { id: { in: discussionIds } } });
     }
 
     // 5. Delete the subject itself
@@ -247,23 +233,6 @@ export async function deleteCategory(id: string) {
       await prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } });
     }
 
-    // 4. Delete Discussions (both directly linked to category AND linked to its subjects)
-    const discussions = await prisma.discussion.findMany({
-      where: {
-        OR: [
-          { categoryId: id },
-          { subjectId: { in: subjectIds } }
-        ]
-      }
-    });
-    const discussionIds = discussions.map(d => d.id);
-
-    if (discussionIds.length > 0) {
-      await prisma.discussionComment.deleteMany({ where: { discussionId: { in: discussionIds } } });
-      await prisma.like.deleteMany({ where: { discussionId: { in: discussionIds } } });
-      await prisma.discussion.deleteMany({ where: { id: { in: discussionIds } } });
-    }
-
     // 5. Delete the subjects
     if (subjectIds.length > 0) {
       await prisma.subject.deleteMany({ where: { id: { in: subjectIds } } });
@@ -277,7 +246,6 @@ export async function deleteCategory(id: string) {
     revalidatePath("/admin/specialties");
     revalidatePath("/subjects");
     revalidatePath("/courses");
-    revalidatePath("/community");
     return { success: true };
   } catch (error) {
     console.error("Delete Category Error:", error);
@@ -303,7 +271,7 @@ export async function updateCategory(id: string, formData: FormData) {
     revalidatePath("/subjects");
     revalidatePath(`/subjects/${updated.slug}`);
     revalidatePath("/courses");
-    revalidatePath("/community");
+
     return { success: true };
   } catch (error) {
     return { error: "حدث خطأ أثناء التحديث" };

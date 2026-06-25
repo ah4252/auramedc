@@ -3,15 +3,18 @@
 import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection } from "@/app/actions/settings";
+import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection, getSystemStatus } from "@/app/actions/settings";
+import styles from "./adminSettings.module.css";
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [systemStatus, setSystemStatus] = useState({ connected: false, sizeString: "جاري التحميل...", percentage: 0 });
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceCourses, setMaintenanceCourses] = useState(false);
+  const [maintenanceSubjects, setMaintenanceSubjects] = useState(false);
+  const [maintenancePharmacy, setMaintenancePharmacy] = useState(false);
   const [maintenanceTimetable, setMaintenanceTimetable] = useState(false);
-  const [maintenanceCommunity, setMaintenanceCommunity] = useState(false);
   const [maintenanceGpa, setMaintenanceGpa] = useState(false);
   const [maintenanceNews, setMaintenanceNews] = useState(false);
   const [allowRegistration, setAllowRegistration] = useState(true);
@@ -53,8 +56,9 @@ export default function AdminSettingsPage() {
       const s = await getSettings();
       setMaintenanceMode(s.maintenanceMode);
       setMaintenanceCourses(s.maintenanceCourses || false);
+      setMaintenanceSubjects(s.maintenanceSubjects || false);
+      setMaintenancePharmacy(s.maintenancePharmacy || false);
       setMaintenanceTimetable(s.maintenanceTimetable || false);
-      setMaintenanceCommunity(s.maintenanceCommunity || false);
       setMaintenanceGpa(s.maintenanceGpa || false);
       setMaintenanceNews(s.maintenanceNews || false);
       setAllowRegistration(s.allowRegistration);
@@ -74,6 +78,13 @@ export default function AdminSettingsPage() {
 
       const tp = await getToolsProtection();
       setToolsEnabled(tp.enabled);
+
+      const status = await getSystemStatus();
+      setSystemStatus({
+        connected: status.connected,
+        sizeString: status.sizeString,
+        percentage: status.percentage
+      });
     }
     load();
   }, []);
@@ -87,8 +98,9 @@ export default function AdminSettingsPage() {
   const handleToggleSection = async (section: string, value: boolean) => {
     switch (section) {
       case 'courses': setMaintenanceCourses(value); await updateSettings({ maintenanceCourses: value }); break;
+      case 'subjects': setMaintenanceSubjects(value); await updateSettings({ maintenanceSubjects: value }); break;
+      case 'pharmacy': setMaintenancePharmacy(value); await updateSettings({ maintenancePharmacy: value }); break;
       case 'timetable': setMaintenanceTimetable(value); await updateSettings({ maintenanceTimetable: value }); break;
-      case 'community': setMaintenanceCommunity(value); await updateSettings({ maintenanceCommunity: value }); break;
       case 'gpa': setMaintenanceGpa(value); await updateSettings({ maintenanceGpa: value }); break;
       case 'news': setMaintenanceNews(value); await updateSettings({ maintenanceNews: value }); break;
     }
@@ -257,14 +269,16 @@ export default function AdminSettingsPage() {
                 <div className="space-y-3">
                    <div className="flex justify-between text-xs">
                       <span className="text-slate-500">قاعدة البيانات</span>
-                      <span className="text-green-500 font-bold">متصلة</span>
+                      <span className={systemStatus.connected ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
+                         {systemStatus.connected ? "متصلة" : "غير متصلة"}
+                      </span>
                    </div>
                    <div className="flex justify-between text-xs">
                       <span className="text-slate-500">سعة التخزين</span>
-                      <span className="text-slate-900 dark:text-white font-bold">12%</span>
+                      <span className="text-slate-900 dark:text-white font-bold">{systemStatus.sizeString} ({systemStatus.percentage}%)</span>
                    </div>
                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-medical-500 h-full w-[12%]"></div>
+                      <div className={styles.progressBar} style={{ "--progress-width": `${systemStatus.percentage}%` } as React.CSSProperties}></div>
                    </div>
                 </div>
              </div>
@@ -653,8 +667,9 @@ export default function AdminSettingsPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              {[
                                { id: 'courses', label: 'قسم المحاضرات', icon: PlayCircle, value: maintenanceCourses },
-                               { id: 'timetable', label: 'الجدول الدراسي', icon: Stethoscope, value: maintenanceTimetable },
-                               { id: 'community', label: 'المجتمع التفاعلي', icon: Users, value: maintenanceCommunity },
+                               { id: 'subjects', label: 'قسم التخصصات', icon: Stethoscope, value: maintenanceSubjects },
+                               { id: 'pharmacy', label: 'قسم الصيدلة', icon: HeartPulse, value: maintenancePharmacy },
+                               { id: 'timetable', label: 'الجدول الدراسي', icon: Sliders, value: maintenanceTimetable },
                                { id: 'gpa', label: 'حاسبة المعدل', icon: Sliders, value: maintenanceGpa },
                                { id: 'news', label: 'الأخبار والمستجدات', icon: Globe, value: maintenanceNews },
                              ].map((section) => {

@@ -120,10 +120,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               جدول الدراسة
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            <Link href="/community" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              المجتمع
-              <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
-            </Link>
+
             <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0 flex items-center gap-1.5">
               <span>الأخبار</span>
               {unreadNewsCount > 0 && (
@@ -247,9 +244,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 <Link href="/timetable" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   جدول الدراسة
                 </Link>
-                <Link href="/community" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  المجتمع
-                </Link>
+
                 <Link href="/news" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   <div className="flex items-center gap-3">
                     الأخبار

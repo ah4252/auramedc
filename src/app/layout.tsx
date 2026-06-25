@@ -85,7 +85,7 @@ export default async function RootLayout({
       maintenanceMode: false,
       maintenanceCourses: false,
       maintenanceTimetable: false,
-      maintenanceCommunity: false,
+
       maintenanceGpa: false,
       maintenanceNews: false
     };

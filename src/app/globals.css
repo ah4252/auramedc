@@ -35,6 +35,16 @@
   }
 }
 
+.hero-headline {
+  line-height: 1.75;
+}
+
+.hero-headline span {
+  display: inline-block;
+  line-height: 1.75;
+  padding-bottom: 4px;
+}
+
 .glass-panel {
   @apply bg-white/70 dark:bg-dark-card/70 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-xl;
 }

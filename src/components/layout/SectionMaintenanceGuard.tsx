@@ -24,12 +24,15 @@ export default function SectionMaintenanceGuard({
     if (pathname.startsWith("/courses") && settings.maintenanceCourses) {
       isUnderMaintenance = true;
       sectionName = "قسم المحاضرات";
+    } else if (pathname.startsWith("/subjects") && settings.maintenanceSubjects) {
+      isUnderMaintenance = true;
+      sectionName = "قسم التخصصات";
+    } else if (pathname.startsWith("/pharmacy") && settings.maintenancePharmacy) {
+      isUnderMaintenance = true;
+      sectionName = "قسم الصيدلة";
     } else if (pathname.startsWith("/timetable") && settings.maintenanceTimetable) {
       isUnderMaintenance = true;
       sectionName = "الجدول الدراسي";
-    } else if (pathname.startsWith("/community") && settings.maintenanceCommunity) {
-      isUnderMaintenance = true;
-      sectionName = "المجتمع التفاعلي";
     } else if (pathname.startsWith("/gpa-calculator") && settings.maintenanceGpa) {
       isUnderMaintenance = true;
       sectionName = "حاسبة المعدل";

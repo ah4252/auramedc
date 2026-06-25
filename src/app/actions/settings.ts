@@ -10,8 +10,9 @@ export async function getSettings() {
     siteName: "Aura Med Elite",
     maintenanceMode: false,
     maintenanceCourses: false,
+    maintenanceSubjects: false,
+    maintenancePharmacy: false,
     maintenanceTimetable: false,
-    maintenanceCommunity: false,
     maintenanceGpa: false,
     maintenanceNews: false,
     allowRegistration: true,
@@ -35,13 +36,40 @@ export async function getSettings() {
   try {
     const settings = await prisma.siteSettings.findUnique({
       where: { id: "global" },
+      select: {
+        id: true,
+        siteName: true,
+        maintenanceMode: true,
+        maintenanceCourses: true,
+        maintenanceSubjects: true,
+        maintenancePharmacy: true,
+        maintenanceTimetable: true,
+        maintenanceGpa: true,
+        maintenanceNews: true,
+        allowRegistration: true,
+        primaryColor: true,
+        secondaryColor: true,
+        darkBg: true,
+        adminPassword: true,
+        toolsPassword: true,
+        toolsProtectionEnabled: true,
+        statLectures: true,
+        statSpecialties: true,
+        statStudents: true,
+        statSatisfaction: true,
+        socialFacebook: true,
+        socialInstagram: true,
+        socialTelegram: true,
+        socialWhatsapp: true,
+        socialEmail: true,
+      },
     });
 
     if (!settings) {
       return defaultSettings;
     }
 
-    return settings;
+    return { ...defaultSettings, ...settings };
   } catch (error) {
     console.error("Local Settings Error:", error);
     return defaultSettings;
@@ -54,8 +82,9 @@ export async function updateSettings(data: any) {
     if (data.siteName !== undefined) updateData.siteName = data.siteName;
     if (data.maintenanceMode !== undefined) updateData.maintenanceMode = data.maintenanceMode;
     if (data.maintenanceCourses !== undefined) updateData.maintenanceCourses = data.maintenanceCourses;
+    if (data.maintenanceSubjects !== undefined) updateData.maintenanceSubjects = data.maintenanceSubjects;
+    if (data.maintenancePharmacy !== undefined) updateData.maintenancePharmacy = data.maintenancePharmacy;
     if (data.maintenanceTimetable !== undefined) updateData.maintenanceTimetable = data.maintenanceTimetable;
-    if (data.maintenanceCommunity !== undefined) updateData.maintenanceCommunity = data.maintenanceCommunity;
     if (data.maintenanceGpa !== undefined) updateData.maintenanceGpa = data.maintenanceGpa;
     if (data.maintenanceNews !== undefined) updateData.maintenanceNews = data.maintenanceNews;
     if (data.allowRegistration !== undefined) updateData.allowRegistration = data.allowRegistration;
@@ -180,5 +209,49 @@ export async function isToolsUnlocked() {
 export async function lockTools() {
   (await cookies()).delete("tools_unlocked");
   return { success: true };
+}
+
+export async function getSystemStatus() {
+  try {
+    const startTime = Date.now();
+    const result = await prisma.$queryRaw<any[]>`SELECT 1 as conn`;
+    const latency = Date.now() - startTime;
+    const isConnected = result && result.length > 0;
+
+    const sizeResult = await prisma.$queryRaw<any[]>`SELECT pg_database_size(current_database()) AS size`;
+    const sizeInBytes = Number(sizeResult[0]?.size || 0);
+
+    // Neon free tier limit: 512MB
+    const limitBytes = 512 * 1024 * 1024;
+    let percentage = (sizeInBytes / limitBytes) * 100;
+    if (percentage < 1 && sizeInBytes > 0) percentage = 1;
+    if (percentage > 100) percentage = 100;
+
+    let sizeString = "";
+    if (sizeInBytes < 1024 * 1024) {
+      sizeString = `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    } else if (sizeInBytes < 1024 * 1024 * 1024) {
+      sizeString = `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+    } else {
+      sizeString = `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+    }
+
+    return {
+      connected: isConnected,
+      latency: `${latency}ms`,
+      sizeString,
+      percentage: Math.round(percentage),
+      rawSize: sizeInBytes
+    };
+  } catch (error) {
+    console.error("System status check failed:", error);
+    return {
+      connected: false,
+      latency: "0ms",
+      sizeString: "0 MB",
+      percentage: 0,
+      rawSize: 0
+    };
+  }
 }
 

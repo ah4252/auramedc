@@ -24,9 +24,6 @@ async function cleanupInactiveUsers() {
         prisma.favorite.deleteMany({ where: { userId } }),
         prisma.progress.deleteMany({ where: { userId } }),
         prisma.gPACalculation.deleteMany({ where: { userId } }),
-        prisma.discussionComment.deleteMany({ where: { userId } }),
-        prisma.discussion.deleteMany({ where: { userId } }),
-        prisma.like.deleteMany({ where: { userId } }),
         prisma.newsComment.deleteMany({ where: { userId } }),
         prisma.friendship.deleteMany({ where: { OR: [{ userId }, { friendId: userId }] } }),
         prisma.user.delete({ where: { id: userId } })

@@ -105,7 +105,6 @@ export default function AdminSidebar({
       links: [
         { href: "/admin/users", label: "قاعدة المستخدمين", icon: Users },
         { href: "/admin/recovery", label: "نسيت كلمة السر", icon: KeyRound },
-        { href: "/admin/community", label: "إدارة المجتمع", icon: MessageSquare },
         { href: "/admin/social", label: "مواقع التواصل", icon: Share2 },
         { href: "/admin/favorites", label: "تفاعلات المفضلة", icon: Heart },
         { href: "/admin/gpa", label: "سجلات المعدل", icon: Calculator },

@@ -228,10 +228,10 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                     إذا كان لديك أي استفسار حول هذا التخصص، أو تريد تزويدنا بمراجع ومحاضرات، يرجى التواصل مع الدعم الفني للمنصة.
                   </p>
                   <Link 
-                    href="/community"
+                    href="/"
                     className="block w-full py-4 bg-white hover:bg-slate-50 text-medical-700 text-center font-black rounded-2xl transition-all shadow-md text-sm"
                   >
-                    طرح استفسار في المجتمع
+                    العودة للرئيسية
                   </Link>
                 </div>
               </div>
