@@ -2,9 +2,10 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import SectionClient from "./SectionClient";
 
-export async function generateMetadata({ params }: { params: { sectionId: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ sectionId: string }> }) {
+  const { sectionId } = await params;
   const section = await (prisma as any).pharmacySection.findUnique({
-    where: { id: params.sectionId },
+    where: { id: sectionId },
   });
 
   if (!section) return { title: "قسم غير موجود" };
@@ -15,9 +16,10 @@ export async function generateMetadata({ params }: { params: { sectionId: string
   };
 }
 
-export default async function PharmacySectionPage({ params }: { params: { sectionId: string } }) {
+export default async function PharmacySectionPage({ params }: { params: Promise<{ sectionId: string }> }) {
+  const { sectionId } = await params;
   const section = await (prisma as any).pharmacySection.findUnique({
-    where: { id: params.sectionId },
+    where: { id: sectionId },
     include: {
       images: {
         orderBy: { order: "asc" },
