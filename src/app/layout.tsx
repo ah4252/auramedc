@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
+import ProtectionGuard from "@/components/layout/ProtectionGuard";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], display: "swap" });
 
@@ -111,6 +112,7 @@ export default async function RootLayout({
       </head>
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
         <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
+          <ProtectionGuard />
           <ActivePresencePing userId={userId || null} />
           <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
           <main className="flex-1 pb-20 md:pb-0">
