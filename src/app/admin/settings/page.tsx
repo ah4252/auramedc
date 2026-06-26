@@ -1,7 +1,7 @@
 "use client";
 
 import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection, getSystemStatus } from "@/app/actions/settings";
 import styles from "./adminSettings.module.css";
@@ -10,13 +10,6 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [systemStatus, setSystemStatus] = useState({ connected: false, sizeString: "جاري التحميل...", percentage: 0 });
-  const progressBarRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (progressBarRef.current) {
-      progressBarRef.current.style.setProperty("--progress-width", `${systemStatus.percentage}%`);
-    }
-  }, [systemStatus.percentage]);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceCourses, setMaintenanceCourses] = useState(false);
   const [maintenanceSubjects, setMaintenanceSubjects] = useState(false);
@@ -285,7 +278,8 @@ export default function AdminSettingsPage() {
                       <span className="text-slate-900 dark:text-white font-bold">{systemStatus.sizeString} ({systemStatus.percentage}%)</span>
                    </div>
                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div ref={progressBarRef} className={styles.progressBar}></div>
+                      {/* eslint-disable-next-line */}
+                      <div className={styles.progressBar} style={{ "--progress-width": `${systemStatus.percentage}%` } as React.CSSProperties}></div>
                    </div>
                 </div>
              </div>
