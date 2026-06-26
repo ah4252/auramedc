@@ -111,6 +111,22 @@ export default function ProtectionGuard() {
       if (mainContent) mainContent.style.opacity = "1";
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleObscure();
+      } else {
+        handleReveal();
+      }
+    };
+
+    const handleBlur = () => {
+      handleObscure();
+    };
+
+    const handleFocus = () => {
+      handleReveal();
+    };
+
     // Prevent drag on images
     const handleDragStart = (e: DragEvent) => {
       if ((e.target as HTMLElement).tagName === 'IMG') {
@@ -120,6 +136,9 @@ export default function ProtectionGuard() {
 
     window.addEventListener("contextmenu", handleContextMenu);
     window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
     document.addEventListener("dragstart", handleDragStart);
 
     // Initial CSS to prevent selection
@@ -155,6 +174,9 @@ export default function ProtectionGuard() {
     return () => {
       window.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
       document.removeEventListener("dragstart", handleDragStart);
       
       document.body.style.userSelect = "auto";
