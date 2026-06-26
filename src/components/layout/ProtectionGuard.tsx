@@ -69,7 +69,7 @@ export default function ProtectionGuard() {
         overlay.style.height = "100vh";
         overlay.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
         overlay.style.backdropFilter = "blur(15px)";
-        overlay.style.WebkitBackdropFilter = "blur(15px)";
+        overlay.style.setProperty("-webkit-backdrop-filter", "blur(15px)");
         overlay.style.zIndex = "9999999";
         overlay.style.display = "flex";
         overlay.style.flexDirection = "column";

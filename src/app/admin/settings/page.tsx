@@ -9,6 +9,7 @@ import styles from "./adminSettings.module.css";
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [systemStatus, setSystemStatus] = useState({ connected: false, sizeString: "جاري التحميل...", percentage: 0 });
   const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,7 +17,6 @@ export default function AdminSettingsPage() {
       progressBarRef.current.style.setProperty("--progress-width", `${systemStatus.percentage}%`);
     }
   }, [systemStatus.percentage]);
-  const [systemStatus, setSystemStatus] = useState({ connected: false, sizeString: "جاري التحميل...", percentage: 0 });
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceCourses, setMaintenanceCourses] = useState(false);
   const [maintenanceSubjects, setMaintenanceSubjects] = useState(false);
