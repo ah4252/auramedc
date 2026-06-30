@@ -30,6 +30,7 @@ model User {
   newsComments         NewsComment[]
   progress             Progress[]
   subscriptionRequests SubscriptionRequest[]
+  pushSubscriptions    PushSubscription[]
   timetable            Timetable?
 }
 
@@ -278,3 +279,15 @@ model PharmacyImage {
   updatedAt   DateTime        @updatedAt
   section     PharmacySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 }
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+

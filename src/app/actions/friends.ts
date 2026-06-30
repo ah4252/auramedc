@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { sendPushNotification } from "@/lib/push";
 
 // Get active logged-in user id
 async function getActiveUserId() {
@@ -97,6 +98,11 @@ export async function sendFriendRequest(friendId: string) {
       }
     });
 
+    const senderUser = await prisma.user.findUnique({ where: { id: activeUserId } });
+    if (senderUser) {
+      await sendPushNotification(friendId, "طلب صداقة جديد", `أرسل لك ${senderUser.name || 'مستخدم'} طلب صداقة!`, '/friends');
+    }
+
     revalidatePath("/friends");
     return { success: true };
   } catch (err) {
@@ -123,6 +129,11 @@ export async function acceptFriendRequest(requestId: string) {
       where: { id: requestId },
       data: { status: "ACCEPTED" }
     });
+
+    const acceptorUser = await prisma.user.findUnique({ where: { id: activeUserId } });
+    if (acceptorUser) {
+      await sendPushNotification(request.userId, "تم قبول طلب الصداقة", `لقد قبل ${acceptorUser.name || 'المستخدم'} طلب صداقتك!`, '/friends');
+    }
 
     revalidatePath("/friends");
     return { success: true };

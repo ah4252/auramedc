@@ -278,8 +278,8 @@ export default function AdminSettingsPage() {
                       <span className="text-slate-900 dark:text-white font-bold">{systemStatus.sizeString} ({systemStatus.percentage}%)</span>
                    </div>
                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      {/* eslint-disable-next-line */}
-                      <div className={styles.progressBar} style={{ "--progress-width": `${systemStatus.percentage}%` } as React.CSSProperties}></div>
+                      {/* eslint-disable-next-line react/forbid-dom-props */}
+                      <div className={styles.progressBar} style={{ width: `${systemStatus.percentage}%` }}></div>
                    </div>
                 </div>
              </div>
