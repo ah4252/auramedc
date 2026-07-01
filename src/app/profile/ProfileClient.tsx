@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
 import { submitSubscriptionRequest } from "@/app/actions/payment";
+import { deleteGPACalculation, deleteAllGPACalculations } from "@/app/actions/gpaUser";
 import { useSearchParams, useRouter } from "next/navigation";
 import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar } from "lucide-react";
 
@@ -42,6 +43,26 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  async function handleDeleteGpa(id: string) {
+    if (!confirm("تحذير: هل أنت متأكد أنك تريد حذف هذا المعدل نهائياً دون رجعة؟")) return;
+    const res = await deleteGPACalculation(id);
+    if (res.success) {
+      router.refresh();
+    } else {
+      alert(res.error || "فشل الحذف");
+    }
+  }
+
+  async function handleDeleteAllGpa() {
+    if (!confirm("تحذير هام: هل أنت متأكد أنك تريد حذف جميع سجلات المعدلات الخاصة بك نهائياً دون رجعة؟ لا يمكن استعادة هذه البيانات لاحقاً.")) return;
+    const res = await deleteAllGPACalculations();
+    if (res.success) {
+      router.refresh();
+    } else {
+      alert(res.error || "فشل الحذف");
+    }
+  }
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -322,6 +343,16 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           </div>
                           سجل المعدلات
                         </h2>
+                        {user.gpaCalculations?.length > 0 && (
+                          <button
+                            onClick={handleDeleteAllGpa}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors border border-red-500/20"
+                            title="حذف جميع السجلات نهائياً"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            حذف السجل بالكامل
+                          </button>
+                        )}
                       </div>
                       
                       <div className="space-y-4 relative z-10">
@@ -339,8 +370,17 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 </div>
                               </div>
                             </div>
-                            <div className="text-xs font-black text-slate-500 bg-slate-200/50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full whitespace-nowrap">
-                              {calc.subjects.split(',').length} مواد
+                            <div className="flex items-center gap-3">
+                              <div className="text-xs font-black text-slate-500 bg-slate-200/50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full whitespace-nowrap">
+                                {calc.subjects.split(',').length} مواد
+                              </div>
+                              <button
+                                onClick={() => handleDeleteGpa(calc.id)}
+                                className="p-1.5 text-red-400 hover:text-white hover:bg-red-500 rounded-lg transition-colors"
+                                title="حذف هذا السجل نهائياً"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
                         ))}

@@ -442,13 +442,11 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
             <div className="flex items-center gap-4">
               {/* Logo Emblem (Inline for guaranteed export rendering) */}
               <div className="w-16 h-16 shrink-0">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="48" stroke="#0ea5e9" strokeWidth="4" fill="none"/>
-                  <circle cx="50" cy="50" r="40" fill="#0f172a"/>
-                  <path d="M35 30 C35 30 28 30 28 40 L28 55 C28 64 36 70 44 70 C52 70 58 64 58 55 L58 52" stroke="#0ea5e9" strokeWidth="6" strokeLinecap="round" fill="none"/>
-                  <circle cx="65" cy="46" r="10" stroke="#f59e0b" strokeWidth="4" fill="#0f172a"/>
-                  <circle cx="65" cy="46" r="4" fill="#f59e0b"/>
-                </svg>
+                <img 
+                  src="/logo.png" 
+                  alt="AuraMed Elite" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-3xl font-black text-medical-600 tracking-wider italic leading-none">Aura<span className="not-italic font-light">Med</span></h1>

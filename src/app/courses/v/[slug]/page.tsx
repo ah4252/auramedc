@@ -163,9 +163,9 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="flex items-center gap-4 pt-6 border-t border-slate-100 dark:border-slate-800/60">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-medical-600 to-medical-400 flex items-center justify-center text-white shadow-lg relative shrink-0">
-                  <Stethoscope className="w-6 h-6 sm:w-8 sm:h-8" />
-                  <Sparkles className="w-3 h-3 sm:w-4 h-4 absolute -top-1 -right-1 text-amber-300 animate-pulse" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg relative shrink-0 bg-white dark:bg-slate-800/80 p-0 border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <img src="/logo.png" alt="AuraMed Logo" className="w-[85%] h-[85%] object-contain drop-shadow-md" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 absolute -top-1.5 -right-1.5 text-amber-500 animate-pulse" />
                 </div>
                 <div>
                   <h4 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white italic">إدارة Aura<span className="not-italic font-light">Med</span></h4>

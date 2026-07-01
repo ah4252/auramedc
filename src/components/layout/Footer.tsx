@@ -34,28 +34,11 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               {/* Premium SVG Emblem (Footer version) */}
               <div className="relative w-12 h-12 flex-shrink-0">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
-                  <circle cx="50" cy="50" r="48" stroke="url(#goldGradF)" strokeWidth="2.5" fill="none"/>
-                  <circle cx="50" cy="50" r="43" fill="#0f172a" fillOpacity="0.95"/>
-                  <rect x="44" y="24" width="12" height="52" rx="4" fill="url(#blueGradF)" fillOpacity="0.15"/>
-                  <rect x="24" y="44" width="52" height="12" rx="4" fill="url(#blueGradF)" fillOpacity="0.15"/>
-                  <path d="M35 30 C35 30 28 30 28 40 L28 55 C28 64 36 70 44 70 C52 70 58 64 58 55 L58 52" stroke="url(#blueGradF)" strokeWidth="4" strokeLinecap="round" fill="none"/>
-                  <circle cx="65" cy="46" r="8" stroke="url(#goldGradF)" strokeWidth="3" fill="#0f172a"/>
-                  <circle cx="65" cy="46" r="3.5" fill="url(#goldGradF)"/>
-                  <path d="M42 62 L50 45 L58 62" stroke="url(#blueGradF)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7"/>
-                  <path d="M45 57 L55 57" stroke="url(#blueGradF)" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-                  <defs>
-                    <linearGradient id="goldGradF" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#f59e0b"/>
-                      <stop offset="50%" stopColor="#fcd34d"/>
-                      <stop offset="100%" stopColor="#d97706"/>
-                    </linearGradient>
-                    <linearGradient id="blueGradF" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#38bdf8"/>
-                      <stop offset="100%" stopColor="#0ea5e9"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
+                <img
+                  src="/logo.png"
+                  alt="AuraMed Elite Logo"
+                  className="w-full h-full object-contain drop-shadow-lg"
+                />
               </div>
               <div className="flex flex-col leading-none">
                 <span className="text-2xl font-black tracking-tight">

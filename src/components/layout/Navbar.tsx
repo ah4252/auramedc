@@ -80,7 +80,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
             {/* Logo Image */}
             <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
               <img
-                src="/logo.svg"
+                src="/logo.png"
                 alt="AuraMed Logo"
                 className="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300"
               />

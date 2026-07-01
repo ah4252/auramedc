@@ -20,10 +20,7 @@ export const metadata: Metadata = {
     template: "%s | AuraMed Elite",
   },
   description: "منصة التعليم الطبي الأرقى في العالم العربي — محاضرات، تخصصات، وأدوات ذكية لطلاب الطب النخبة.",
-  icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
-  },
+
   manifest: "/manifest.json",
 };
 
