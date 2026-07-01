@@ -6,6 +6,7 @@ import { saveTimetable } from "@/app/actions/timetable";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import html2canvas from "html2canvas";
+import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 
 export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, userEmail?: string | null }) {
   const days = [
@@ -23,6 +24,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   const [exportLoading, setExportLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [reportId, setReportId] = useState("AM-00000");
+  const { saveFile } = useAuraDownloader();
   const certificateRef = useRef<HTMLDivElement>(null);
   const [downloadCount, setDownloadCount] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -119,10 +121,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
       element.style.display = "none";
       element.classList.add("hidden");
       const image = canvas.toDataURL("image/png", 1.0);
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = `AuraMed_Schedule_${new Date().getTime()}.png`;
-      link.click();
+      await saveFile(image, `AuraMed_Schedule_${new Date().getTime()}.png`, "image/png");
       
       if (!isUnlimited) {
         const newCount = downloadCount + 1;

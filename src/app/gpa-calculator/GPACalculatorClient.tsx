@@ -15,9 +15,11 @@ interface Subject {
 }
 
 import html2canvas from "html2canvas";
+import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 
 export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscription = false, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, hasActiveSubscription?: boolean, initialData: any, gpaYears: any[] }) {
   const [selectedYear, setSelectedYear] = useState<any>(null);
+  const { saveFile } = useAuraDownloader();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [saveLoading, setSaveLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -150,10 +152,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
       element.classList.add("hidden");
       
       const image = canvas.toDataURL("image/png", 1.0);
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = `AuraMed_Result_${new Date().getTime()}.png`;
-      link.click();
+      await saveFile(image, `AuraMed_Result_${new Date().getTime()}.png`, "image/png");
       
       // Increment download count after successful download
       localStorage.setItem(storageKey, (downloads + 1).toString());
