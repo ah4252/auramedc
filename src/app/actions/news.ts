@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { sendBroadcastNotification } from "@/lib/push";
+
 
 // Automatic Cleanup of Comments older than 4 hours
 export async function cleanupOldComments() {
@@ -102,6 +104,12 @@ export async function createNews(data: { title: string; content: string; image?:
     revalidatePath("/news");
     revalidatePath("/admin/news");
     revalidatePath("/profile");
+    
+    if (news.isPublished) {
+      // Send broadcast notification
+      await sendBroadcastNotification("خبر جديد 📰", news.title, `/news`);
+    }
+
     return { success: true, news };
   } catch (error) {
     console.error("Error creating news:", error);

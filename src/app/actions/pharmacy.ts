@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
+import { sendBroadcastNotification } from "@/lib/push";
+
 
 // --- Pharmacy Sections ---
 
@@ -42,6 +44,10 @@ export async function addPharmacySection(formData: FormData) {
     });
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    
+    // Send broadcast notification
+    await sendBroadcastNotification("قسم صيدلاني جديد 💊", `تم إضافة قسم جديد: ${name}`, "/pharmacy");
+
     return { success: true };
   } catch (error) {
     console.error("Add Pharmacy Section Error:", error);
@@ -121,6 +127,10 @@ export async function addPharmacyImage(formData: FormData) {
     });
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+
+    // Send broadcast notification
+    await sendBroadcastNotification("دواء جديد 💊", `تمت إضافة دواء/ملف جديد: ${title || 'صورة جديدة'}`, "/pharmacy");
+
     return { success: true };
   } catch (error) {
     console.error("Add Pharmacy Image Error:", error);

@@ -29,7 +29,20 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
-
+    <!-- Internet access (required for Capacitor Bridge + remote server) -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Download Manager requires these permissions -->
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+
+    <!-- READ_EXTERNAL_STORAGE needed for API < 33 to read downloaded files -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- WRITE_EXTERNAL_STORAGE needed for API < 29 (below Android 10) -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
 </manifest>

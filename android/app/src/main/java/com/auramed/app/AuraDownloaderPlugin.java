@@ -48,6 +48,7 @@ public class AuraDownloaderPlugin extends Plugin {
     @Override
     public void load() {
         super.load();
+        Log.d("AuraDownloader", "AuraDownloaderPlugin.load() called");
         downloadReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -71,12 +72,27 @@ public class AuraDownloaderPlugin extends Plugin {
 
     @Override
     protected void handleOnDestroy() {
+        unregisterDownloadReceiver();
+        super.handleOnDestroy();
+    }
+
+    /**
+     * Capacitor 8 also calls this when the Bridge is detached from the window.
+     * Ensure cleanup runs in both cases.
+     */
+    @Override
+    protected void handleOnDetachedFromWindow() {
+        unregisterDownloadReceiver();
+        super.handleOnDetachedFromWindow();
+    }
+
+    private void unregisterDownloadReceiver() {
         if (downloadReceiver != null) {
             try {
                 getContext().unregisterReceiver(downloadReceiver);
+                downloadReceiver = null;
             } catch (Exception ignored) {}
         }
-        super.handleOnDestroy();
     }
 
     private void checkDownloadStatus(long downloadId) {

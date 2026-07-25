@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
+import { sendBroadcastNotification } from "@/lib/push";
+
 
 
 // --- Categories (Years/Subjects) ---
@@ -167,6 +169,10 @@ export async function addLesson(formData: FormData) {
 
     revalidatePath("/admin/lessons");
     revalidatePath("/courses");
+
+    // Send broadcast notification
+    await sendBroadcastNotification("درس جديد 📚", `تم إضافة درس جديد: ${title}`, "/courses");
+
     return { success: true };
   } catch (error) {
     return { error: "حدث خطأ أثناء إضافة الدرس" };

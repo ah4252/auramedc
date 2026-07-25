@@ -63,8 +63,12 @@ export default function PushNotificationManager() {
     setTimeout(() => setMessage(""), 6000);
   };
 
+  if (permission === "granted" && !message) {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3">
+    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[100] flex flex-col items-end gap-3">
       <AnimatePresence>
         {message && (
           <motion.div
@@ -79,28 +83,26 @@ export default function PushNotificationManager() {
         )}
       </AnimatePresence>
 
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all border-4 border-white dark:border-dark-bg ${
-          permission === "granted" 
-            ? "bg-green-500 hover:bg-green-600 text-white" 
-            : permission === "denied"
-            ? "bg-red-500 hover:bg-red-600 text-white"
-            : "bg-medical-500 hover:bg-medical-600 text-white animate-pulse"
-        }`}
-        title="إدارة الإشعارات"
-      >
-        {loading ? (
-          <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin" />
-        ) : permission === "granted" ? (
-          <BellRing className="w-6 h-6" />
-        ) : permission === "denied" ? (
-          <BellOff className="w-6 h-6" />
-        ) : (
-          <Bell className="w-6 h-6" />
-        )}
-      </button>
+      {permission !== "granted" && (
+        <button
+          onClick={handleClick}
+          disabled={loading}
+          className={`w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl transition-all border-2 md:border-4 border-white dark:border-dark-bg ${
+            permission === "denied"
+              ? "bg-red-500 hover:bg-red-600 text-white"
+              : "bg-medical-500 hover:bg-medical-600 text-white md:animate-pulse"
+          }`}
+          title="إدارة الإشعارات"
+        >
+          {loading ? (
+            <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+          ) : permission === "denied" ? (
+            <BellOff className="w-5 h-5 md:w-6 md:h-6" />
+          ) : (
+            <Bell className="w-5 h-5 md:w-6 md:h-6" />
+          )}
+        </button>
+      )}
     </div>
   );
 }
