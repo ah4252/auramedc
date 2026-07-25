@@ -38,7 +38,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' ws: wss:",
+              "connect-src 'self' ws: wss: https://fcm.googleapis.com https://android.googleapis.com https://updates.push.services.mozilla.com https://*.push.apple.com",
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com",
               "frame-ancestors 'none'",
             ].join("; "),

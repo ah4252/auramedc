@@ -46,18 +46,23 @@ export default function PushNotificationManager() {
     setMessage("سيظهر لك الآن طلب من المتصفح في الأعلى... اضغط 'Allow' (السماح).");
     try {
       const perm = await requestPermission();
-      setPermission(perm);
       if (perm === "granted") {
-        setMessage("ممتاز! تم تفعيل الإشعارات بنجاح 🎉");
         const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         if (vapidKey) {
           await subscribeUser(vapidKey);
         }
+        setPermission(perm);
+        setMessage("ممتاز! تم تفعيل الإشعارات بنجاح 🎉");
       } else {
+        setPermission(perm);
         setMessage("قمت برفض الإشعارات. يمكنك تفعيلها لاحقاً من القفل بجوار الرابط.");
       }
-    } catch (error) {
-      setMessage("حدث خطأ أثناء طلب الإذن");
+    } catch (error: any) {
+      if (error.message === "Unauthorized") {
+        setMessage("عذراً! يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
+      } else {
+        setMessage("حدث خطأ أثناء تفعيل الإشعارات");
+      }
     }
     setLoading(false);
     setTimeout(() => setMessage(""), 6000);

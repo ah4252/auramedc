@@ -18,16 +18,20 @@ export async function subscribeUser(vapidPublicKey: string) {
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
     
-    await fetch('/api/subscribe', {
+    const res = await fetch('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subscription),
     });
     
+    if (!res.ok) {
+      throw new Error(res.status === 401 ? 'Unauthorized' : 'Failed to save');
+    }
+    
     return subscription;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Push subscription failed:', err);
-    return null;
+    throw err;
   }
 }
 
