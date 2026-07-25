@@ -2,20 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { requestPermission, subscribeUser } from "@/utils/notifications";
-import { Bell, BellOff, BellRing } from "lucide-react";
+import { Bell, BellOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PushNotificationManager() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [subscribed, setSubscribed] = useState(false); // هل تم حفظ الاشتراك في DB؟
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
       setPermission(Notification.permission);
-      
+
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/service-worker.js").catch(console.error);
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+        // إذا كان الإذن ممنوحاً مسبقاً — حاول التسجيل الصامت تلقائياً
         if (Notification.permission === "granted") {
           subscribeSilently();
         }
@@ -23,54 +25,78 @@ export default function PushNotificationManager() {
     }
   }, []);
 
+  // تسجيل صامت بدون إشعار بصري — يعمل عند كل تحميل للصفحة
   const subscribeSilently = async () => {
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (vapidKey) await subscribeUser(vapidKey);
+    if (!vapidKey) return;
+    try {
+      await subscribeUser(vapidKey);
+      setSubscribed(true); // نجح الحفظ في DB
+    } catch {
+      // فشل صامت (مثلاً: FCM غير متاح أو المستخدم غير مسجل)
+      // الزر سيظهر ليتمكن المستخدم من المحاولة يدوياً
+    }
   };
 
   const handleClick = async () => {
-    if (permission === "granted") {
-      setMessage("الإشعارات مفعلة بالفعل ومسجلة بنجاح! 🎉");
-      setTimeout(() => setMessage(""), 4000);
+    // الإذن ممنوح لكن الاشتراك لم يُسجَّل في DB — حاول مجدداً
+    if (permission === "granted" && !subscribed) {
+      setLoading(true);
+      setMessage("جارٍ تسجيل الإشعارات...");
+      try {
+        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (vapidKey) await subscribeUser(vapidKey);
+        setSubscribed(true);
+        setMessage("ممتاز! تم تفعيل الإشعارات بنجاح 🎉");
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          setMessage("يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
+        } else {
+          setMessage("تعذّر التسجيل. تأكد من اتصالك بالإنترنت وحاول مجدداً.");
+        }
+      }
+      setLoading(false);
+      setTimeout(() => setMessage(""), 6000);
       return;
     }
 
     if (permission === "denied") {
-      setMessage("لقد قمت برفض الإشعارات سابقاً 🔒. لتفعيلها، اضغط على أيقونة (القفل) بجوار رابط الموقع في الأعلى واختر 'سماح' للإشعارات.");
+      setMessage("رفضت الإشعارات سابقاً 🔒. اضغط على أيقونة القفل بجوار الرابط واختر 'سماح'.");
       setTimeout(() => setMessage(""), 8000);
       return;
     }
 
-    // Default state: request it
+    // الحالة الافتراضية: اطلب الإذن لأول مرة
     setLoading(true);
-    setMessage("سيظهر لك الآن طلب من المتصفح في الأعلى... اضغط 'Allow' (السماح).");
+    setMessage("سيظهر طلب من المتصفح... اضغط 'Allow' للسماح.");
     try {
       const perm = await requestPermission();
       if (perm === "granted") {
         const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-        if (vapidKey) {
-          await subscribeUser(vapidKey);
-        }
+        if (vapidKey) await subscribeUser(vapidKey);
         setPermission(perm);
+        setSubscribed(true);
         setMessage("ممتاز! تم تفعيل الإشعارات بنجاح 🎉");
       } else {
         setPermission(perm);
-        setMessage("قمت برفض الإشعارات. يمكنك تفعيلها لاحقاً من القفل بجوار الرابط.");
+        setMessage("رفضت الإشعارات. يمكنك تفعيلها لاحقاً من القفل بجوار الرابط.");
       }
     } catch (error: any) {
       if (error.message === "Unauthorized") {
-        setMessage("عذراً! يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
+        setMessage("يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
       } else {
-        setMessage("حدث خطأ أثناء تفعيل الإشعارات");
+        setMessage("تعذّر تفعيل الإشعارات. حاول مجدداً.");
       }
     }
     setLoading(false);
     setTimeout(() => setMessage(""), 6000);
   };
 
-  if (permission === "granted" && !message) {
-    return null;
-  }
+  // أخفِ الزر فقط بعد نجاح الاشتراك فعلياً في DB
+  if (subscribed && !message) return null;
+
+  // أخفِ الزر إذا كان الإذن مرفوضاً ولا توجد رسالة
+  if (permission === "denied" && !message) return null;
 
   return (
     <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[100] flex flex-col items-end gap-3">
@@ -88,21 +114,15 @@ export default function PushNotificationManager() {
         )}
       </AnimatePresence>
 
-      {permission !== "granted" && (
+      {!subscribed && permission !== "denied" && (
         <button
           onClick={handleClick}
           disabled={loading}
-          className={`w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl transition-all border-2 md:border-4 border-white dark:border-dark-bg ${
-            permission === "denied"
-              ? "bg-red-500 hover:bg-red-600 text-white"
-              : "bg-medical-500 hover:bg-medical-600 text-white md:animate-pulse"
-          }`}
-          title="إدارة الإشعارات"
+          className="w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl transition-all border-2 md:border-4 border-white dark:border-dark-bg bg-medical-500 hover:bg-medical-600 text-white md:animate-pulse"
+          title="تفعيل الإشعارات"
         >
           {loading ? (
             <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-white/50 border-t-white rounded-full animate-spin" />
-          ) : permission === "denied" ? (
-            <BellOff className="w-5 h-5 md:w-6 md:h-6" />
           ) : (
             <Bell className="w-5 h-5 md:w-6 md:h-6" />
           )}
@@ -111,5 +131,3 @@ export default function PushNotificationManager() {
     </div>
   );
 }
-
-
