@@ -76,38 +76,70 @@ export default function SSENotificationListener() {
   }, []);
 
   return (
-    <div className="fixed top-4 right-4 z-[200] flex flex-col gap-2 max-w-[320px]" dir="rtl">
+    <div className="fixed top-5 right-4 z-[200] flex flex-col gap-3 max-w-[340px] w-full px-2 pointer-events-none" dir="rtl">
       <AnimatePresence>
         {toasts.map((t) => (
           <motion.div
             key={t.toastId}
-            initial={{ opacity: 0, x: 40, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 40, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-4 flex gap-3 items-start cursor-pointer hover:shadow-xl transition-shadow"
+            initial={{ opacity: 0, y: -20, x: 50, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85, x: 50, transition: { duration: 0.2 } }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="pointer-events-auto relative overflow-hidden bg-slate-900/90 dark:bg-slate-950/95 backdrop-blur-xl border border-medical-500/40 rounded-2xl shadow-[0_10px_35px_rgba(14,165,233,0.25)] p-4 flex gap-3.5 items-center cursor-pointer group hover:border-medical-400 transition-all duration-300"
             onClick={() => {
               if (t.url) window.location.href = t.url;
               dismiss(t.toastId);
             }}
           >
-            <div className="w-9 h-9 rounded-full bg-medical-100 dark:bg-medical-900 flex items-center justify-center shrink-0">
-              <Bell className="w-5 h-5 text-medical-600 dark:text-medical-400" />
+            {/* Ambient Background Glow Effect */}
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-medical-500/20 rounded-full blur-2xl group-hover:bg-medical-400/30 transition-all duration-500 pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Icon Container with Glowing Ping & Ringing Animation */}
+            <div className="relative shrink-0 flex items-center justify-center">
+              <span className="absolute inline-flex h-11 w-11 rounded-full bg-medical-400/30 animate-ping" />
+              <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-medical-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-medical-500/40 text-white">
+                <motion.div
+                  animate={{ rotate: [0, -18, 18, -12, 12, -6, 6, 0] }}
+                  transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 2 }}
+                >
+                  <Bell className="w-5 h-5 drop-shadow" />
+                </motion.div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
-                {t.title}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+
+            {/* Text Contents */}
+            <div className="flex-1 min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-medical-400 animate-pulse" />
+                <h4 className="text-sm font-black text-white tracking-wide leading-tight group-hover:text-medical-300 transition-colors">
+                  {t.title}
+                </h4>
+              </div>
+              <p className="text-xs text-slate-300 dark:text-slate-300 font-medium mt-1 leading-relaxed line-clamp-2">
                 {t.body}
               </p>
             </div>
+
+            {/* Close Button */}
             <button
-              onClick={(e) => { e.stopPropagation(); dismiss(t.toastId); }}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0 mt-0.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                dismiss(t.toastId);
+              }}
+              className="z-10 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-all shrink-0 self-start"
+              title="إغلاق"
             >
               <X className="w-4 h-4" />
             </button>
+
+            {/* Bottom Shrinking Progress Bar */}
+            <motion.div
+              initial={{ width: "100%" }}
+              animate={{ width: "0%" }}
+              transition={{ duration: 7, ease: "linear" }}
+              className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-medical-400 via-cyan-400 to-medical-600 rounded-b-full"
+            />
           </motion.div>
         ))}
       </AnimatePresence>
