@@ -11,6 +11,7 @@ import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
 import PushNotificationManager from "@/components/PushNotificationManager";
+import SSENotificationListener from "@/components/SSENotificationListener";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], display: "swap" });
 
@@ -108,6 +109,7 @@ export default async function RootLayout({
         `}} />
       </head>
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
+        <SSENotificationListener />
         <PushNotificationManager />
         <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
           <ActivePresencePing userId={userId || null} />

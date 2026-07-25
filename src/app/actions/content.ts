@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
+import { broadcast } from "@/lib/sse-store";
 
 
 
@@ -170,7 +171,9 @@ export async function addLesson(formData: FormData) {
     revalidatePath("/admin/lessons");
     revalidatePath("/courses");
 
-    // Send broadcast notification
+    // SSE — إشعار فوري للمستخدمين المتصلين حالياً
+    broadcast("notification", { title: "درس جديد 📚", body: `تم إضافة درس جديد: ${title}`, url: "/courses" });
+    // Web Push — للمستخدمين غير المتصلين
     await sendBroadcastNotification("درس جديد 📚", `تم إضافة درس جديد: ${title}`, "/courses");
 
     return { success: true };

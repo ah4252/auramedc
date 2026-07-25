@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
+import { broadcast } from "@/lib/sse-store";
 
 
 // --- Pharmacy Sections ---
@@ -45,7 +46,9 @@ export async function addPharmacySection(formData: FormData) {
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
     
-    // Send broadcast notification
+    // SSE
+    broadcast("notification", { title: "قسم صيدلاني جديد 💊", body: `تم إضافة قسم جديد: ${name}`, url: "/pharmacy" });
+    // Web Push
     await sendBroadcastNotification("قسم صيدلاني جديد 💊", `تم إضافة قسم جديد: ${name}`, "/pharmacy");
 
     return { success: true };
@@ -128,7 +131,9 @@ export async function addPharmacyImage(formData: FormData) {
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
 
-    // Send broadcast notification
+    // SSE
+    broadcast("notification", { title: "دواء جديد 💊", body: `تمت إضافة دواء/ملف جديد: ${title || 'صورة جديدة'}`, url: "/pharmacy" });
+    // Web Push
     await sendBroadcastNotification("دواء جديد 💊", `تمت إضافة دواء/ملف جديد: ${title || 'صورة جديدة'}`, "/pharmacy");
 
     return { success: true };

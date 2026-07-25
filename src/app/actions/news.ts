@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { sendBroadcastNotification } from "@/lib/push";
+import { broadcast } from "@/lib/sse-store";
 
 
 // Automatic Cleanup of Comments older than 4 hours
@@ -106,7 +107,9 @@ export async function createNews(data: { title: string; content: string; image?:
     revalidatePath("/profile");
     
     if (news.isPublished) {
-      // Send broadcast notification
+      // SSE — إشعار فوري للمستخدمين المتصلين حالياً
+      broadcast("notification", { title: "خبر جديد 📰", body: news.title, url: "/news" });
+      // Web Push — إشعار للمستخدمين غير المتصلين (إن كانوا مسجلين)
       await sendBroadcastNotification("خبر جديد 📰", news.title, `/news`);
     }
 
