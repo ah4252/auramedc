@@ -19,12 +19,13 @@ const playNotificationSound = () => {
   try {
     // Ensure AudioContext is resumed (required after user interaction)
     if (audioContext && audioBuffer) {
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().catch((e) => console.error('AudioContext resume error:', e));
+      const ctx = audioContext as AudioContext;
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch((e) => console.error('AudioContext resume error:', e));
       }
-      const source = audioContext.createBufferSource();
+      const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
+      source.connect(ctx.destination);
       source.start(0);
     } else if (globalAudio) {
       // Fallback to HTMLAudioElement
