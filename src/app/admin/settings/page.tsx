@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3 } from "lucide-react";
+import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3, Pill } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection, getSystemStatus } from "@/app/actions/settings";
@@ -38,6 +38,7 @@ export default function AdminSettingsPage() {
   const [statLectures, setStatLectures] = useState("");
   const [statSpecialties, setStatSpecialties] = useState("");
   const [statStudents, setStatStudents] = useState("");
+  const [statPharmacy, setStatPharmacy] = useState("");
   const [statSatisfaction, setStatSatisfaction] = useState("99%");
   const [statsMsg, setStatsMsg] = useState<{type: "success"|"error", text: string} | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -69,6 +70,7 @@ export default function AdminSettingsPage() {
       setStatLectures(s.statLectures || "");
       setStatSpecialties(s.statSpecialties || "");
       setStatStudents(s.statStudents || "");
+      setStatPharmacy(s.statPharmacy || "");
       setStatSatisfaction(s.statSatisfaction || "99%");
       setSocialFacebook(s.socialFacebook || "");
       setSocialInstagram(s.socialInstagram || "");
@@ -122,7 +124,7 @@ export default function AdminSettingsPage() {
 
   const handleSaveStats = async () => {
     setStatsLoading(true);
-    const res = await updateSettings({ statLectures, statSpecialties, statStudents, statSatisfaction });
+    const res = await updateSettings({ statLectures, statSpecialties, statStudents, statPharmacy, statSatisfaction });
     if (res.success) {
       setStatsMsg({ type: "success", text: "تم حفظ إحصائيات الصفحة الرئيسية بنجاح! ✓" });
     } else {
@@ -348,6 +350,7 @@ export default function AdminSettingsPage() {
                       { value: statLectures || "+37", label: "محاضرة طبية", icon: PlayCircle, color: "text-medical-400" },
                       { value: statSpecialties || "+23", label: "تخصص مختلف", icon: Stethoscope, color: "text-indigo-400" },
                       { value: statStudents || "+1", label: "طالب طب", icon: Users, color: "text-amber-400" },
+                      { value: statPharmacy || "+0", label: "الصيدلة", icon: Pill, color: "text-emerald-400" },
                       { value: statSatisfaction || "99%", label: "نسبة الرضا", icon: HeartPulse, color: "text-rose-400" },
                     ].map((s, i) => (
                       <div key={i} className="flex flex-col items-center text-center p-3">
@@ -400,6 +403,20 @@ export default function AdminSettingsPage() {
                         value={statStudents}
                         onChange={(e) => setStatStudents(e.target.value)}
                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <Pill className="w-4 h-4 text-emerald-500" />
+                        الصيدلة
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 0+ (فارغ = من قاعدة البيانات)"
+                        value={statPharmacy}
+                        onChange={(e) => setStatPharmacy(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold"
                         dir="ltr"
                       />
                     </div>

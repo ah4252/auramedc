@@ -191,6 +191,7 @@ export default async function Home() {
               { value: settings.statLectures || (lessonCount > 0 ? `+${lessonCount}` : "+500"), label: "محاضرة طبية", icon: PlayCircle, color: "medical" },
               { value: settings.statSpecialties || (subjectCount > 0 ? `+${subjectCount}` : "+50"), label: "تخصص مختلف", icon: Stethoscope, color: "violet" },
               { value: settings.statStudents || (userCount > 0 ? `${userCount.toLocaleString('ar-EG')}+` : "10k+"), label: "طالب طب", icon: GraduationCap, color: "amber" },
+              { value: settings.statPharmacy || "+0", label: "الصيدلة", icon: Pill, color: "emerald" },
               { value: settings.statSatisfaction || "99%", label: "نسبة الرضا", icon: HeartPulse, color: "emerald" },
             ].map((stat, idx) => {
               const colorMap: Record<string, string> = {

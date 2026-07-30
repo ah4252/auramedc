@@ -8,8 +8,17 @@ self.addEventListener('push', event => {
     data: data.url || '/',
     vibrate: [200, 100, 200],
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options).then(() => {
+      return clients.matchAll({ type: 'window', includeUncontrolled: true });
+    }).then(clientList => {
+      for (const client of clientList) {
+        client.postMessage({ type: 'NOTIFICATION_RECEIVED', payload: data });
+      }
+    })
+  );
 });
+
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();

@@ -2,14 +2,50 @@
 
 import { useEffect, useState } from "react";
 import { requestPermission, subscribeUser } from "@/utils/notifications";
-import { Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {
+    console.error("Audio error", e);
+  }
+};
 
 export default function PushNotificationManager() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [subscribed, setSubscribed] = useState(false); // هل تم حفظ الاشتراك في DB؟
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSound = localStorage.getItem("notification_sound");
+      if (storedSound !== null) {
+        setSoundEnabled(storedSound === "true");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -21,6 +57,17 @@ export default function PushNotificationManager() {
         if (Notification.permission === "granted") {
           subscribeSilently();
         }
+
+        const messageHandler = (event: MessageEvent) => {
+          if (event.data && event.data.type === 'NOTIFICATION_RECEIVED') {
+            const isSoundEnabled = localStorage.getItem("notification_sound") !== "false";
+            if (isSoundEnabled) {
+              playNotificationSound();
+            }
+          }
+        };
+        navigator.serviceWorker.addEventListener("message", messageHandler);
+        return () => navigator.serviceWorker.removeEventListener("message", messageHandler);
       }
     }
   }, []);
@@ -92,9 +139,6 @@ export default function PushNotificationManager() {
     setTimeout(() => setMessage(""), 6000);
   };
 
-  // أخفِ الزر فقط بعد نجاح الاشتراك فعلياً في DB
-  if (subscribed && !message) return null;
-
   // أخفِ الزر إذا كان الإذن مرفوضاً ولا توجد رسالة
   if (permission === "denied" && !message) return null;
 
@@ -126,6 +170,20 @@ export default function PushNotificationManager() {
           ) : (
             <Bell className="w-5 h-5 md:w-6 md:h-6" />
           )}
+        </button>
+      )}
+
+      {subscribed && (
+        <button
+          onClick={() => {
+            const newVal = !soundEnabled;
+            setSoundEnabled(newVal);
+            localStorage.setItem("notification_sound", newVal ? "true" : "false");
+          }}
+          className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition-all border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-medical-500 hover:border-medical-500"
+          title={soundEnabled ? "كتم صوت الإشعارات" : "تفعيل صوت الإشعارات"}
+        >
+          {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
         </button>
       )}
     </div>
