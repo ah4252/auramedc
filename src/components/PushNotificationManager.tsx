@@ -9,11 +9,31 @@ let audioContext: AudioContext | null = null;
 let audioBuffer: AudioBuffer | null = null;
 
 if (typeof document !== "undefined") {
-  // Pre‑load an HTMLAudioElement for fallback (will be used if Web Audio API fails)
+  // Pre‑load a fallback HTMLAudioElement
   globalAudio = new Audio('/notification.wav');
   globalAudio.preload = 'auto';
+  // Initialize Web Audio API on first user interaction
+  const initAudio = async () => {
+    if (!audioContext) {
+      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+      audioContext = new AudioCtx();
+      try {
+        const response = await fetch('/notification.wav');
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      } catch (e) {
+        console.error('Failed to load notification sound buffer:', e);
+      }
+    }
+    if (globalAudio) {
+      globalAudio.load(); // satisfy user gesture
+    }
+    document.removeEventListener('click', initAudio as any);
+    document.removeEventListener('touchstart', initAudio as any);
+  };
+  document.addEventListener('click', initAudio as any);
+  document.addEventListener('touchstart', initAudio as any);
 }
-
 
 const playNotificationSound = () => {
   try {
