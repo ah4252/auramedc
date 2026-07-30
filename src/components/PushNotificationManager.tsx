@@ -26,10 +26,20 @@ if (typeof document !== "undefined") {
 
 const playNotificationSound = () => {
   try {
+    console.log("Attempting to play notification sound...");
+    if (!globalAudioCtx) {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        globalAudioCtx = new AudioContext();
+      }
+    }
     const ctx = globalAudioCtx;
-    if (!ctx) return;
+    if (!ctx) {
+      console.warn("AudioContext not supported");
+      return;
+    }
     if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
+      ctx.resume().catch((e) => console.error("Audio resume error:", e));
     }
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -80,8 +90,10 @@ export default function PushNotificationManager() {
         }
 
         const messageHandler = (event: MessageEvent) => {
+          console.log("Service Worker message received:", event.data);
           if (event.data && event.data.type === 'NOTIFICATION_RECEIVED') {
             const isSoundEnabled = localStorage.getItem("notification_sound") !== "false";
+            console.log("Is sound enabled?", isSoundEnabled);
             if (isSoundEnabled) {
               playNotificationSound();
             }
