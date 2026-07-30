@@ -9,34 +9,15 @@ let audioContext: AudioContext | null = null;
 let audioBuffer: AudioBuffer | null = null;
 
 if (typeof document !== "undefined") {
+  // Pre‑load an HTMLAudioElement for fallback (will be used if Web Audio API fails)
   globalAudio = new Audio('/notification.wav');
   globalAudio.preload = 'auto';
-  const unlockAudio = async () => {
-    // Create AudioContext on first user interaction to satisfy autoplay policies
-    if (!audioContext) {
-      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
-      audioContext = new AudioCtx();
-      try {
-        const response = await fetch('/notification.wav');
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      } catch (e) {
-        console.error('Failed to load notification sound buffer:', e);
-      }
-    }
-    if (globalAudio) {
-      globalAudio.load(); // Forces the browser to recognize user intent
-    }
-    document.removeEventListener('click', unlockAudio as any);
-    document.removeEventListener('touchstart', unlockAudio as any);
-  };
-  document.addEventListener('click', unlockAudio as any);
-  document.addEventListener('touchstart', unlockAudio as any);
 }
+
 
 const playNotificationSound = () => {
   try {
-    // Ensure the AudioContext is running (required after user interaction)
+    // Ensure AudioContext is resumed (required after user interaction)
     if (audioContext && audioBuffer) {
       if (audioContext.state === 'suspended') {
         audioContext.resume().catch((e) => console.error('AudioContext resume error:', e));
@@ -46,8 +27,8 @@ const playNotificationSound = () => {
       source.connect(audioContext.destination);
       source.start(0);
     } else if (globalAudio) {
-      // Fallback to the HTMLAudioElement if the Web Audio API failed
-      globalAudio.currentTime = 0; // Reset to start
+      // Fallback to HTMLAudioElement
+      globalAudio.currentTime = 0;
       globalAudio.play().catch((e) => console.error('Audio play error:', e));
     } else {
       console.warn('No audio method available');
@@ -77,46 +58,38 @@ export default function PushNotificationManager() {
     if (typeof window !== "undefined" && "Notification" in window) {
       console.log("PushNotificationManager mounted. Permission:", Notification.permission);
       setPermission(Notification.permission);
+    }
+  }, []);
 
-      if ("serviceWorker" in navigator) {
-        // Re‑add listener for messages from the Service Worker
-        const messageHandler = (event: MessageEvent) => {
-          console.log('Service Worker message received:', event.data);
-          if (event.data && event.data.type === 'NOTIFICATION_RECEIVED') {
-            const isSoundEnabled = localStorage.getItem('notification_sound') !== 'false';
-            console.log('Is sound enabled?', isSoundEnabled);
-            if (isSoundEnabled) {
-              playNotificationSound();
-            }
-          }
-        };
-        navigator.serviceWorker.addEventListener('message', messageHandler);
-        
-        navigator.serviceWorker.register("/service-worker.js").then((reg) => {
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      // Register Service Worker and attach a single message listener
+      const registerSW = async () => {
+        try {
+          const reg = await navigator.serviceWorker.register("/service-worker.js");
           console.log("Service Worker registered successfully with scope:", reg.scope);
-          // Add message listener after registration
           const messageHandler = (event: MessageEvent) => {
             console.log('Service Worker message received:', event.data);
             if (event.data && event.data.type === 'NOTIFICATION_RECEIVED') {
               const isSoundEnabled = localStorage.getItem('notification_sound') !== 'false';
-              console.log('Is sound enabled?', isSoundEnabled);
               if (isSoundEnabled) {
                 playNotificationSound();
               }
             }
           };
           navigator.serviceWorker.addEventListener('message', messageHandler);
-          // Cleanup on unmount
+          // Cleanup on component unmount
           return () => {
             navigator.serviceWorker.removeEventListener('message', messageHandler);
           };
-        }).catch((err) => {
-          console.error("Service Worker registration failed:", err);
-        });
-        // إذا كان الإذن ممنوحاً مسبقاً — حاول التسجيل الصامت تلقائياً
-        if (Notification.permission === "granted") {
-          subscribeSilently();
+        } catch (err) {
+          console.error('Service Worker registration failed:', err);
         }
+      };
+      registerSW();
+      // If permission already granted, attempt silent subscription
+      if (Notification.permission === "granted") {
+        subscribeSilently();
       }
     }
   }, []);
