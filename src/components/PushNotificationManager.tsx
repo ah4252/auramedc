@@ -4,61 +4,12 @@ import { useEffect, useState } from "react";
 import { requestPermission, subscribeUser } from "@/utils/notifications";
 import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-let globalAudioCtx: AudioContext | null = null;
-
-if (typeof document !== "undefined") {
-  const unlockAudio = () => {
-    if (!globalAudioCtx) {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContext) {
-        globalAudioCtx = new AudioContext();
-      }
-    }
-    if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
-      globalAudioCtx.resume().catch(() => {});
-    }
-    document.removeEventListener('click', unlockAudio);
-    document.removeEventListener('touchstart', unlockAudio);
-  };
-  document.addEventListener('click', unlockAudio);
-  document.addEventListener('touchstart', unlockAudio);
-}
-
 const playNotificationSound = () => {
   try {
-    console.log("Attempting to play notification sound...");
-    if (!globalAudioCtx) {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContext) {
-        globalAudioCtx = new AudioContext();
-      }
-    }
-    const ctx = globalAudioCtx;
-    if (!ctx) {
-      console.warn("AudioContext not supported");
-      return;
-    }
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch((e) => console.error("Audio resume error:", e));
-    }
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
-    
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + 0.3);
+    const audio = new Audio('/notification.wav');
+    audio.play().catch((e) => console.error("Audio play error:", e));
   } catch (e) {
-    console.error("Audio error", e);
+    console.error("Audio error:", e);
   }
 };
 
