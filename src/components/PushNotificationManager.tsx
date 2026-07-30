@@ -4,10 +4,28 @@ import { useEffect, useState } from "react";
 import { requestPermission, subscribeUser } from "@/utils/notifications";
 import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+let globalAudio: HTMLAudioElement | null = null;
+
+if (typeof document !== "undefined") {
+  globalAudio = new Audio('/notification.wav');
+  // Pre-load the audio when the user first interacts with the page
+  const unlockAudio = () => {
+    if (globalAudio) {
+      globalAudio.load(); // Forces the browser to recognize user intent
+    }
+    document.removeEventListener('click', unlockAudio);
+    document.removeEventListener('touchstart', unlockAudio);
+  };
+  document.addEventListener('click', unlockAudio);
+  document.addEventListener('touchstart', unlockAudio);
+}
+
 const playNotificationSound = () => {
   try {
-    const audio = new Audio('/notification.wav');
-    audio.play().catch((e) => console.error("Audio play error:", e));
+    if (globalAudio) {
+      globalAudio.currentTime = 0; // Reset to start
+      globalAudio.play().catch((e) => console.error("Audio play error:", e));
+    }
   } catch (e) {
     console.error("Audio error:", e);
   }
@@ -31,10 +49,15 @@ export default function PushNotificationManager() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
+      console.log("PushNotificationManager mounted. Permission:", Notification.permission);
       setPermission(Notification.permission);
 
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+        navigator.serviceWorker.register("/service-worker.js").then((reg) => {
+          console.log("Service Worker registered successfully with scope:", reg.scope);
+        }).catch((err) => {
+          console.error("Service Worker registration failed:", err);
+        });
         // إذا كان الإذن ممنوحاً مسبقاً — حاول التسجيل الصامت تلقائياً
         if (Notification.permission === "granted") {
           subscribeSilently();
@@ -83,7 +106,7 @@ export default function PushNotificationManager() {
         if (error.message === "Unauthorized") {
           setMessage("يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
         } else {
-          setMessage("تعذّر التسجيل. تأكد من اتصالك بالإنترنت وحاول مجدداً.");
+          setMessage(`تعذّر التسجيل: ${error.message}`);
         }
       }
       setLoading(false);
@@ -116,7 +139,7 @@ export default function PushNotificationManager() {
       if (error.message === "Unauthorized") {
         setMessage("يجب تسجيل الدخول كطالب أولاً لتلقي الإشعارات 🔐");
       } else {
-        setMessage("تعذّر تفعيل الإشعارات. حاول مجدداً.");
+        setMessage(`تعذّر التفعيل: ${error.message}`);
       }
     }
     setLoading(false);

@@ -30,7 +30,6 @@ export async function subscribeUser(vapidPublicKey: string) {
     
     return subscription;
   } catch (err: any) {
-    console.error('Push subscription failed:', err);
     throw err;
   }
 }

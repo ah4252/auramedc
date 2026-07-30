@@ -18,6 +18,9 @@ self.addEventListener('push', event => {
   };
   event.waitUntil(
     self.registration.showNotification(title, options).then(() => {
+      // Add a 600ms delay to allow the OS to animate the notification popup
+      return new Promise(resolve => setTimeout(resolve, 600));
+    }).then(() => {
       return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     }).then(clientList => {
       for (const client of clientList) {
