@@ -4,12 +4,33 @@ import { useEffect, useState } from "react";
 import { requestPermission, subscribeUser } from "@/utils/notifications";
 import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+let globalAudioCtx: AudioContext | null = null;
+
+if (typeof document !== "undefined") {
+  const unlockAudio = () => {
+    if (!globalAudioCtx) {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        globalAudioCtx = new AudioContext();
+      }
+    }
+    if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+      globalAudioCtx.resume().catch(() => {});
+    }
+    document.removeEventListener('click', unlockAudio);
+    document.removeEventListener('touchstart', unlockAudio);
+  };
+  document.addEventListener('click', unlockAudio);
+  document.addEventListener('touchstart', unlockAudio);
+}
 
 const playNotificationSound = () => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = globalAudioCtx;
+    if (!ctx) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
     const osc = ctx.createOscillator();
     const gainNode = ctx.createGain();
     
