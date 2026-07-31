@@ -222,6 +222,7 @@ export async function getFriendsData() {
             name: true,
             email: true,
             image: true,
+            studyYear: true,
             telegram: true,
             facebook: true,
             lastActiveAt: true
@@ -233,6 +234,7 @@ export async function getFriendsData() {
             name: true,
             email: true,
             image: true,
+            studyYear: true,
             telegram: true,
             instagram: true,
             facebook: true,

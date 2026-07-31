@@ -50,6 +50,7 @@ export default function FriendsClient({
   const [activeTab, setActiveTab] = useState<"my-friends" | "requests">("my-friends");
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Friend | null>(null);
 
   const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -241,6 +242,153 @@ export default function FriendsClient({
               <AlertTriangle className="w-5 h-5 shrink-0" />
             )}
             <span className="text-sm font-black">{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedRequest && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedRequest(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-medical-500 to-indigo-600 px-6 py-5 text-white">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {selectedRequest.user.image ? (
+                      <img src={selectedRequest.user.image} alt={selectedRequest.user.name || "صورة"} className="w-14 h-14 rounded-2xl object-cover border-2 border-white/40" />
+                    ) : (
+                      <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center font-black text-lg uppercase border-2 border-white/40">
+                        {(selectedRequest.user.name || "U").substring(0, 2)}
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="text-xl font-black">{selectedRequest.user.name || "مستخدم"}</h2>
+                      <p className="text-xs text-white/80 font-bold">ملف شخصي</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedRequest(null)}
+                    className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+                    aria-label="إغلاق"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 md:p-6 space-y-5">
+                <div className="grid gap-4 text-right">
+                  <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                    <p className="text-[10px] font-black text-slate-400 mb-2">البريد الإلكتروني</p>
+                    <p className="text-base font-black text-slate-800 dark:text-slate-200 break-all" dir="ltr">
+                      {selectedRequest.user.email}
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {selectedRequest.user.studyYear ? (
+                      <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                        <p className="text-[10px] font-black text-slate-400 mb-2">السنة الدراسية</p>
+                        <p className="text-base font-black text-medical-600 dark:text-medical-400">
+                          {selectedRequest.user.studyYear}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                        <p className="text-[10px] font-black text-slate-400 mb-2">السنة الدراسية</p>
+                        <p className="text-base font-black text-slate-500">غير محددة</p>
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                      <p className="text-[10px] font-black text-slate-400 mb-2">الحالة</p>
+                      <p className="text-base font-black text-emerald-600 dark:text-emerald-400">طلب صداقة وارد</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                    <p className="text-[10px] font-black text-slate-400 mb-3">روابط الحسابات الشخصية</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRequest.user.telegram ? (
+                        <a
+                          href={`https://t.me/${selectedRequest.user.telegram.replace("@", "")}`}
+                          target="_self"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-black hover:bg-sky-500 hover:text-white transition-all"
+                        >
+                          تيليجرام
+                        </a>
+                      ) : null}
+
+                      {selectedRequest.user.instagram ? (
+                        <a
+                          href={`https://instagram.com/${selectedRequest.user.instagram}`}
+                          target="_self"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-black hover:bg-pink-500 hover:text-white transition-all"
+                        >
+                          إنستغرام
+                        </a>
+                      ) : null}
+
+                      {selectedRequest.user.facebook ? (
+                        <a
+                          href={`https://facebook.com/${selectedRequest.user.facebook}`}
+                          target="_self"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-black hover:bg-blue-600 hover:text-white transition-all"
+                        >
+                          فيسبوك
+                        </a>
+                      ) : null}
+
+                      {!selectedRequest.user.telegram && !selectedRequest.user.instagram && !selectedRequest.user.facebook && (
+                        <span className="text-xs font-black text-slate-400">لا توجد روابط شخصية مرفقة</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRequest(null);
+                      handleRejectCancelRequest(selectedRequest.friendshipId, selectedRequest.user.id, true);
+                    }}
+                    disabled={loadingId === selectedRequest.friendshipId}
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-2xl py-3 px-4 font-black text-sm transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                    رفض
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRequest(null);
+                      handleAcceptRequest(selectedRequest.friendshipId, selectedRequest.user);
+                    }}
+                    disabled={loadingId === selectedRequest.friendshipId}
+                    className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-3 px-4 font-black text-sm transition-all"
+                  >
+                    <Check className="w-4 h-4" />
+                    قبول
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -627,7 +775,8 @@ export default function FriendsClient({
                         {incoming.map(req => (
                           <div
                             key={req.friendshipId}
-                            className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800 flex items-center justify-between gap-4"
+                            onClick={() => setSelectedRequest(req)}
+                            className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800 flex items-center justify-between gap-4 cursor-pointer hover:border-medical-200 dark:hover:border-medical-700 transition-all"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="relative shrink-0">
@@ -656,7 +805,7 @@ export default function FriendsClient({
                               </div>
                             </div>
 
-                            <div className="flex gap-2 shrink-0">
+                            <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                               <button
                                 onClick={() => handleAcceptRequest(req.friendshipId, req.user)}
                                 disabled={loadingId === req.friendshipId}
