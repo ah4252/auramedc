@@ -131,6 +131,21 @@ export async function acceptFriendRequest(requestId: string) {
     });
 
     const acceptorUser = await prisma.user.findUnique({ where: { id: activeUserId } });
+
+    // Create a server-side decision/notification for the original sender
+    try {
+      await prisma.friendshipDecision.create({
+        data: {
+          actorId: activeUserId,
+          targetUserId: request.userId,
+          type: "ACCEPTED",
+          message: `لقد قبل ${acceptorUser?.name || 'المستخدم'} طلب صداقتك.`,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        }
+      });
+    } catch (e) {
+      console.error("Failed to create friendship decision on accept:", e);
+    }
     if (acceptorUser) {
       await sendPushNotification(request.userId, "تم قبول طلب الصداقة", `لقد قبل ${acceptorUser.name || 'المستخدم'} طلب صداقتك!`, '/friends');
     }
@@ -162,13 +177,30 @@ export async function rejectFriendRequest(requestId: string) {
     });
 
     const otherUserId = request.userId === activeUserId ? request.friendId : request.userId;
-    if (otherUserId && request.friendId === activeUserId) {
-      await sendPushNotification(
-        otherUserId,
-        "تم رفض طلب الصداقة",
-        `رفض ${request.friendId === activeUserId ? "مستخدم" : "العضو"} طلب صداقتك.`,
-        "/friends"
-      );
+    if (otherUserId) {
+      // Create a FriendshipDecision to persist the rejection/ cancellation for the other user
+      try {
+        await prisma.friendshipDecision.create({
+          data: {
+            actorId: activeUserId,
+            targetUserId: otherUserId,
+            type: "REJECTED",
+            message: `تم رفض طلب الصداقة.`,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          }
+        });
+      } catch (e) {
+        console.error("Failed to create friendship decision on reject:", e);
+      }
+
+      if (request.friendId === activeUserId) {
+        await sendPushNotification(
+          otherUserId,
+          "تم رفض طلب الصداقة",
+          `رفض ${request.friendId === activeUserId ? "مستخدم" : "العضو"} طلب صداقتك.`,
+          "/friends"
+        );
+      }
     }
 
     revalidatePath("/friends");
@@ -290,6 +322,61 @@ export async function getFriendsData() {
   } catch (err) {
     console.error("GetFriendsData Error:", err);
     return { success: false, error: "فشل جلب قائمة الأصدقاء" };
+  }
+}
+
+// Get outgoing decisions (server-side) for the active user
+export async function getOutgoingDecisions() {
+  try {
+    const activeUserId = await getActiveUserId();
+    if (!activeUserId) return { success: false, error: "يجب تسجيل الدخول أولاً" };
+
+    const now = new Date();
+    const decisions = await prisma.friendshipDecision.findMany({
+      where: {
+        targetUserId: activeUserId,
+        expiresAt: { gt: now },
+        readAt: null,
+      },
+      include: {
+        actor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            studyYear: true,
+            telegram: true,
+            instagram: true,
+            facebook: true,
+            lastActiveAt: true
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    return { success: true, decisions };
+  } catch (err) {
+    console.error("getOutgoingDecisions error:", err);
+    return { success: false, error: "فشل جلب إشعارات الطلبات" };
+  }
+}
+
+// Mark a server-side decision as read
+export async function markDecisionRead(decisionId: string) {
+  try {
+    const activeUserId = await getActiveUserId();
+    if (!activeUserId) return { success: false, error: "يجب تسجيل الدخول أولاً" };
+
+    const decision = await prisma.friendshipDecision.findUnique({ where: { id: decisionId } });
+    if (!decision || decision.targetUserId !== activeUserId) return { success: false, error: "غير مصرح" };
+
+    await prisma.friendshipDecision.update({ where: { id: decisionId }, data: { readAt: new Date() } });
+    return { success: true };
+  } catch (err) {
+    console.error("markDecisionRead error:", err);
+    return { success: false, error: "فشل تعليم الإشعار كمقروء" };
   }
 }
 

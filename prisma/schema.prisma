@@ -27,6 +27,8 @@ model User {
   favorites            Favorite[]
   friendshipsReceived  Friendship[]          @relation("FriendFriendships")
   friendshipsInitiated Friendship[]          @relation("UserFriendships")
+  friendshipDecisionsSent FriendshipDecision[] @relation("FriendshipDecisionActor")
+  friendshipDecisionsReceived FriendshipDecision[] @relation("FriendshipDecisionTarget")
   gpaCalculations      GPACalculation[]
   newsComments         NewsComment[]
   progress             Progress[]
@@ -246,6 +248,21 @@ model Friendship {
   user      User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, friendId])
+}
+
+model FriendshipDecision {
+  id           String   @id @default(cuid())
+  actorId      String
+  targetUserId String
+  type         String
+  message      String?
+  expiresAt    DateTime
+  readAt       DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  actor User @relation("FriendshipDecisionActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser User @relation("FriendshipDecisionTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
 }
 
 model SubscriptionRequest {

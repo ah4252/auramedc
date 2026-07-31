@@ -9,7 +9,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   sendFriendRequest, acceptFriendRequest, 
-  rejectFriendRequest, removeFriend, searchUsersLive 
+  rejectFriendRequest, removeFriend, searchUsersLive,
+  getOutgoingDecisions, markDecisionRead
 } from "@/app/actions/friends";
 
 interface Friend {
@@ -51,27 +52,77 @@ export default function FriendsClient({
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Friend | null>(null);
-  const [friendshipStatusBanner, setFriendshipStatusBanner] = useState<{ title: string; body: string } | null>(null);
+  const [outgoingDecisions, setOutgoingDecisions] = useState<Record<string, { id: string; status: "accepted" | "rejected"; expiresAt: number; readAt: number | null; message: string }>>({});
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const loadServerOutgoingDecisions = async () => {
+    try {
+      const res = await getOutgoingDecisions();
+      if (res.success && Array.isArray(res.decisions)) {
+        const mapped: Record<string, { id: string; status: "accepted" | "rejected"; expiresAt: number; readAt: number | null; message: string }> = {};
+        res.decisions.forEach((d: any) => {
+          const userId = d.actor.id;
+          mapped[userId] = {
+            id: d.id,
+            status: d.type === "REJECTED" ? "rejected" : "accepted",
+            expiresAt: new Date(d.expiresAt).getTime(),
+            readAt: d.readAt ? new Date(d.readAt).getTime() : null,
+            message: d.message || (d.type === "REJECTED" ? "تم رفض طلب الصداقة" : "تم قبول طلب الصداقة"),
+          };
+        });
+        setOutgoingDecisions(mapped);
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
 
-    const raw = window.localStorage.getItem("friendship_status_banner");
-    if (!raw) return;
+  const markOutgoingDecisionRead = async (userId: string) => {
+    const decision = outgoingDecisions[userId];
+    if (!decision) return;
 
     try {
-      const parsed = JSON.parse(raw) as { title?: string; body?: string };
-      if (parsed.title || parsed.body) {
-        setFriendshipStatusBanner({
-          title: parsed.title || "تحديث الصداقة",
-          body: parsed.body || ""
-        });
-        window.localStorage.removeItem("friendship_status_banner");
-      }
-    } catch {
-      window.localStorage.removeItem("friendship_status_banner");
+      await markDecisionRead(decision.id);
+    } catch (e) {
+      // ignore
     }
+    // Refresh from server
+    await loadServerOutgoingDecisions();
+  };
+
+  const rejectedOutgoing = Object.entries(outgoingDecisions)
+    .filter(([, decision]) => decision.status === "rejected" && decision.expiresAt > Date.now() && !decision.readAt)
+    .map(([userId, decision]) => {
+      const req = outgoing.find(item => item.user.id === userId);
+      const actorUser = req?.user || null;
+      return {
+        user: actorUser || {
+          id: userId,
+          name: "مستخدم",
+          email: "",
+          image: null,
+          studyYear: null,
+          telegram: null,
+          instagram: null,
+          facebook: null,
+          lastActiveAt: null,
+        },
+        decision,
+      };
+    });
+
+  useEffect(() => {
+    // Load server-side outgoing decisions on mount
+    loadServerOutgoingDecisions();
   }, []);
+
+  useEffect(() => {
+    // Poll server-side decisions every 30s
+    const timer = setInterval(() => {
+      loadServerOutgoingDecisions();
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, [outgoingDecisions]);
 
   const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -166,6 +217,8 @@ export default function FriendsClient({
       const res = await acceptFriendRequest(requestId);
       if (res.success) {
         showNotification("success", `أنت الآن صديق مع ${friendUser.name || "العضو"}!`);
+        // Server will create the decision; refresh server-side decisions
+        await loadServerOutgoingDecisions();
         
         // Remove from incoming requests list
         setIncoming(prev => prev.filter(req => req.friendshipId !== requestId));
@@ -207,6 +260,10 @@ export default function FriendsClient({
 
       if (res.success) {
         showNotification("success", isIncoming ? "تم رفض طلب الصداقة" : "تم إلغاء طلب الصداقة بنجاح");
+        if (isIncoming && targetUserId) {
+          // Server created the rejection decision; refresh server-side decisions
+          await loadServerOutgoingDecisions();
+        }
         
         if (isIncoming) {
           setIncoming(prev => prev.filter(req => req.user.id !== targetUserId));
@@ -273,27 +330,6 @@ export default function FriendsClient({
               <AlertTriangle className="w-5 h-5 shrink-0" />
             )}
             <span className="text-sm font-black">{notification.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {friendshipStatusBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-md w-[calc(100%-2rem)] rounded-2xl border border-emerald-500/20 bg-emerald-500/10 backdrop-blur-md px-4 py-3 shadow-xl"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div className="text-right min-w-0">
-                <p className="text-xs font-black text-emerald-700 dark:text-emerald-300">{friendshipStatusBanner.title}</p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300 font-bold break-words">{friendshipStatusBanner.body}</p>
-              </div>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -887,54 +923,100 @@ export default function FriendsClient({
                       <span>الطلبات المرسلة ({outgoing.length})</span>
                     </h3>
 
-                    {outgoing.length === 0 ? (
+                    {outgoing.length === 0 && rejectedOutgoing.length === 0 ? (
                       <p className="text-xs text-slate-400 font-bold py-6 text-center">
                         لا توجد طلبات معلقة مرسلة
                       </p>
                     ) : (
                       <div className="space-y-3">
-                        {outgoing.map(req => (
+                        {rejectedOutgoing.map(({ user, decision }) => (
                           <div
-                            key={req.friendshipId}
-                            className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800 flex items-center justify-between gap-4"
+                            key={user.id}
+                            className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-500/20"
                           >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="relative shrink-0">
-                                {req.user.image ? (
-                                  <img
-                                    src={req.user.image}
-                                    alt={req.user.name || "صورة"}
-                                    className="w-10 h-10 rounded-xl object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
-                                    {(req.user.name || "U").substring(0, 2)}
-                                  </div>
-                                )}
-                                {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
-                                )}
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="relative shrink-0">
+                                  {user.image ? (
+                                    <img src={user.image} alt={user.name || "صورة"} className="w-10 h-10 rounded-xl object-cover" />
+                                  ) : (
+                                    <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
+                                      {(user.name || "U").substring(0, 2)}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-right min-w-0">
+                                  <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
+                                    {user.name || "زميل"}
+                                  </span>
+                                  <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
+                                    {user.email}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="text-right min-w-0">
-                                <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
-                                  {req.user.name || "زميل"}
-                                </span>
-                                <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
-                                  {req.user.email}
-                                </span>
-                              </div>
+
+                              <button
+                                onClick={() => markOutgoingDecisionRead(user.id)}
+                                className="text-[10px] font-black text-slate-600 dark:text-slate-300 underline"
+                              >
+                                قرأت
+                              </button>
                             </div>
 
-                            <button
-                              onClick={() => handleRejectCancelRequest(req.friendshipId, req.user.id, false)}
-                              disabled={loadingId === req.friendshipId}
-                              className="p-2 px-3 hover:bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black transition-all flex items-center gap-1 shrink-0"
-                            >
-                              <UserX className="w-3.5 h-3.5" />
-                              <span>إلغاء الطلب</span>
-                            </button>
+                            <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 flex items-center justify-between gap-3">
+                              <span className="text-[10px] font-black text-amber-700 dark:text-amber-300">
+                                {decision.message || "تم رفض طلب الصداقة"}
+                              </span>
+                            </div>
                           </div>
                         ))}
+
+                        {outgoing
+                          .filter(req => !outgoingDecisions[req.user.id] || outgoingDecisions[req.user.id].status !== "rejected")
+                          .map(req => (
+                            <div
+                              key={req.friendshipId}
+                              className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/40 dark:border-slate-800"
+                            >
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="relative shrink-0">
+                                    {req.user.image ? (
+                                      <img
+                                        src={req.user.image}
+                                        alt={req.user.name || "صورة"}
+                                        className="w-10 h-10 rounded-xl object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
+                                        {(req.user.name || "U").substring(0, 2)}
+                                      </div>
+                                    )}
+                                    {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
+                                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                    )}
+                                  </div>
+                                  <div className="text-right min-w-0">
+                                    <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
+                                      {req.user.name || "زميل"}
+                                    </span>
+                                    <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
+                                      {req.user.email}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={() => handleRejectCancelRequest(req.friendshipId, req.user.id, false)}
+                                  disabled={loadingId === req.friendshipId}
+                                  className="p-2 px-3 hover:bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black transition-all flex items-center gap-1 shrink-0"
+                                >
+                                  <UserX className="w-3.5 h-3.5" />
+                                  <span>إلغاء الطلب</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
