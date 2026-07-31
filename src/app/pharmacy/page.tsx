@@ -5,7 +5,7 @@ import { tServer, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
 export const metadata = async (): Promise<Metadata> => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
 
   return {
