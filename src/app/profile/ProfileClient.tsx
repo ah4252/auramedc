@@ -786,10 +786,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           <Calendar className="w-4 h-4 text-medical-500" /> السنة الدراسية
                         </label>
                         <input 
-                          id="studyYear" name="studyYear" defaultValue={user.studyYear || ""} required
+                          id="studyYear" name="studyYear" defaultValue={user.studyYear || ""} required readOnly
                           placeholder="مثال: السنة الأولى طب"
-                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
+                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/30 text-slate-700 dark:text-slate-300 cursor-not-allowed outline-none transition-all font-bold shadow-sm"
                         />
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mr-1">يتم تحديد السنة الدراسية عند التسجيل ولا يمكن تعديلها لاحقاً.</p>
                       </div>
                     </div>
 

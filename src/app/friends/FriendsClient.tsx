@@ -19,6 +19,7 @@ interface Friend {
     name: string;
     email: string;
     image: string | null;
+    studyYear?: string | null;
     telegram: string | null;
     instagram: string | null;
     facebook: string | null;
@@ -352,6 +353,11 @@ export default function FriendsClient({
                             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold font-mono truncate mt-0.5" dir="ltr">
                               {result.email}
                             </p>
+                            {result.studyYear && (
+                              <p className="mt-1 text-[10px] font-black text-medical-600 dark:text-medical-400">
+                                السنة: {result.studyYear}
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -531,6 +537,11 @@ export default function FriendsClient({
                               <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold font-mono truncate mt-0.5" dir="ltr">
                                 {f.user.email}
                               </p>
+                              {f.user.studyYear && (
+                                <p className="mt-1 text-[10px] font-black text-medical-600 dark:text-medical-400">
+                                  السنة: {f.user.studyYear}
+                                </p>
+                              )}
                             </div>
                           </div>
 

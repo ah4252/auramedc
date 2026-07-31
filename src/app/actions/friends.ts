@@ -304,6 +304,7 @@ export async function searchUsersLive(query: string) {
         name: true,
         email: true,
         image: true,
+        studyYear: true,
         lastActiveAt: true
       },
       take: 5
