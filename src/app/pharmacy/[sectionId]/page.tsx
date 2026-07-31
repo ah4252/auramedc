@@ -5,7 +5,7 @@ import { tServer, type Locale } from "@/lib/i18n";
 import SectionClient from "./SectionClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ sectionId: string }> }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
   const { sectionId } = await params;
   const section = await (prisma as any).pharmacySection.findUnique({
