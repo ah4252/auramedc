@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FlaskConical, X, Search, ArrowRight, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 type PharmacyImage = {
   id: string;
@@ -25,6 +26,7 @@ type PharmacySection = {
 export default function SectionClient({ section }: { section: PharmacySection }) {
   const [lightboxImage, setLightboxImage] = useState<PharmacyImage | null>(null);
   const [search, setSearch] = useState("");
+  const { t } = useLocale();
 
   const filteredImages = section.images.filter(img =>
     (img.title || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -62,7 +64,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5 text-white/90 text-sm font-bold transition-colors"
             >
               <ArrowRight className="w-4 h-4" />
-              العودة للأقسام
+              {t("pharmacy_back_to_sections", "Retour aux sections")}
             </Link>
           </motion.div>
 
@@ -106,7 +108,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="البحث السريع عن دواء داخل القسم..."
+              placeholder={t("pharmacy_section_search_placeholder", "Recherche rapide de médicament dans la section...")}
               className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 outline-none focus:border-white/40 focus:bg-white/15 transition-all font-medium shadow-lg"
             />
           </motion.div>
@@ -123,10 +125,10 @@ export default function SectionClient({ section }: { section: PharmacySection })
           >
             <ImageIcon className="w-20 h-20 mx-auto text-slate-300 dark:text-slate-600 mb-6" />
             <h2 className="text-2xl font-black text-slate-400 dark:text-slate-500">
-              {search ? "لم يتم العثور على أدوية مطابقة للبحث" : "لا توجد أدوية في هذا القسم بعد"}
+              {search ? t("pharmacy_section_no_results_title", "Aucun médicament correspondant trouvé") : t("pharmacy_section_no_images_title", "Aucun médicament dans cette section pour le moment")}
             </h2>
             <p className="text-slate-400 dark:text-slate-600 mt-2">
-              {search ? "جرب البحث باسم آخر" : "سيتم إضافة الأدوية قريباً"}
+              {search ? t("pharmacy_section_no_results_description", "Essayez une autre recherche") : t("pharmacy_section_no_images_description", "Les médicaments seront ajoutés bientôt")}
             </p>
           </motion.div>
         ) : (
@@ -209,7 +211,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
               
               <button
                 onClick={() => setLightboxImage(null)}
-                title="إغلاق"
+                title={t("pharmacy_section_close_button", "Fermer")}
                 className="absolute -top-12 right-0 md:-right-12 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors border border-white/10"
               >
                 <X className="w-5 h-5" />

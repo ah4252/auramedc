@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/context/LocaleProvider.client";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
 import { submitSubscriptionRequest } from "@/app/actions/payment";
 import { deleteGPACalculation, deleteAllGPACalculations } from "@/app/actions/gpaUser";
@@ -14,6 +15,7 @@ import { getYoutubeThumbnail, getSocialUrl } from "@/lib/utils";
 export default function ProfileClient({ user, news = [], latestSubscription = null }: { user: any, news?: any[], latestSubscription?: any }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t, lang } = useLocale();
   const initialTab = searchParams.get("tab") || "overview";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
@@ -45,22 +47,22 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [deleteError, setDeleteError] = useState("");
 
   async function handleDeleteGpa(id: string) {
-    if (!confirm("تحذير: هل أنت متأكد أنك تريد حذف هذا المعدل نهائياً دون رجعة؟")) return;
+    if (!confirm(t("profile_confirm_delete_gpa"))) return;
     const res = await deleteGPACalculation(id);
     if (res.success) {
       router.refresh();
     } else {
-      alert(res.error || "فشل الحذف");
+      alert(res.error || t("profile_delete_failed"));
     }
   }
 
   async function handleDeleteAllGpa() {
-    if (!confirm("تحذير هام: هل أنت متأكد أنك تريد حذف جميع سجلات المعدلات الخاصة بك نهائياً دون رجعة؟ لا يمكن استعادة هذه البيانات لاحقاً.")) return;
+    if (!confirm(t("profile_confirm_delete_all_gpa"))) return;
     const res = await deleteAllGPACalculations();
     if (res.success) {
       router.refresh();
     } else {
-      alert(res.error || "فشل الحذف");
+      alert(res.error || t("profile_delete_failed"));
     }
   }
 
@@ -72,7 +74,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     if (res?.error) {
       setPwMessage({ text: res.error, type: "error" });
     } else {
-      setPwMessage({ text: "تم تغيير كلمة المرور بنجاح! ✅", type: "success" });
+      setPwMessage({ text: t("profile_password_updated_success"), type: "success" });
       setCurrentPw("");
       setNewPw("");
     }
@@ -86,7 +88,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     if (res?.error) {
       setMessage({ text: res.error, type: "error" });
     } else {
-      setMessage({ text: "تم تحديث ملفك الشخصي بنجاح!", type: "success" });
+      setMessage({ text: t("profile_update_success"), type: "success" });
       router.refresh(); // This will update the 'user' prop data
     }
     setLoading(false);
@@ -101,7 +103,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
       setDeleteError(res.error);
       setDeleteLoading(false);
     } else {
-      // تم الحذف - إعادة التوجيه للصفحة الرئيسية
+      // Deleted successfully - redirect to homepage
       router.push("/");
       router.refresh();
     }
@@ -120,7 +122,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     
     const res = await updateProfile(formData);
     if (res?.error) {
-       alert(res.error);
+       alert(res.error || t("profile_update_failed"));
     } else {
        setShowImageModal(false);
        router.refresh();
@@ -134,10 +136,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const watchHours = Math.round((user.progress?.reduce((acc: number, curr: any) => acc + curr.watchedSec, 0) || 0) / 3600);
 
   const stats = [
-    { label: "دروس مكتملة", value: completedCount, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]" },
-    { label: "في المفضلة", value: favoritesCount, icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]" },
-    { label: "آخر معدل", value: latestGpa, icon: GraduationCap, color: "text-medical-500", bg: "bg-medical-500/10", border: "border-medical-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]" },
-    { label: "ساعات المشاهدة", value: watchHours, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]" },
+    { label: t("profile_stats_completed_lessons"), value: completedCount, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)]" },
+    { label: t("profile_stats_favorites"), value: favoritesCount, icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.3)]" },
+    { label: t("profile_stats_latest_gpa"), value: latestGpa, icon: GraduationCap, color: "text-medical-500", bg: "bg-medical-500/10", border: "border-medical-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(14,165,233,0.3)]" },
+    { label: t("profile_stats_watch_hours"), value: watchHours, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", glow: "group-hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)]" },
   ];
 
   return (
@@ -173,7 +175,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                 <button 
                   onClick={() => setShowImageModal(true)}
                   className="absolute bottom-1 right-1 p-2.5 bg-medical-500 hover:bg-medical-400 text-white rounded-full shadow-[0_0_20px_rgba(14,165,233,0.5)] border-2 border-white dark:border-slate-900 hover:scale-110 transition-all z-10"
-                  title="تغيير الصورة"
+                  title={t("profile_change_image_title")}
                 >
                   <Camera className="w-4 h-4" />
                 </button>
@@ -200,17 +202,17 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                   </a>
                 )}
                 {(!user.telegram && !user.instagram && !user.facebook) && (
-                  <div className="text-xs text-slate-400 font-bold bg-slate-100 dark:bg-slate-800/50 py-2 px-4 rounded-xl">لا يوجد حسابات تواصل مربوطة</div>
+                  <div className="text-xs text-slate-400 font-bold bg-slate-100 dark:bg-slate-800/50 py-2 px-4 rounded-xl">{t("profile_no_social_accounts")}</div>
                 )}
               </div>
               
               {/* Tabs Navigation */}
               <div className="flex flex-col gap-2 relative">
                 {[
-                  { id: "overview", label: "نظرة عامة", icon: BookOpen },
-                  { id: "favorites", label: "المفضلة", icon: Heart },
-                  { id: "subscription", label: "دفع الاشتراك", icon: Zap },
-                  { id: "settings", label: "إعدادات الحساب", icon: User },
+                  { id: "overview", label: t("profile_tab_overview"), icon: BookOpen },
+                  { id: "favorites", label: t("profile_tab_favorites"), icon: Heart },
+                  { id: "subscription", label: t("profile_tab_subscription"), icon: Zap },
+                  { id: "settings", label: t("profile_tab_settings"), icon: User },
                 ].map((tab) => {
                   const isActive = activeTab === tab.id;
                   return (
@@ -250,7 +252,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
             <Link href="/" className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-medical-600 dark:hover:text-medical-400 font-bold transition-colors bg-white/50 dark:bg-slate-900/30 backdrop-blur-md py-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 hover:border-medical-500/30 group mt-6">
               <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span>العودة للرئيسية</span>
+              <span>{t("profile_back_home")}</span>
             </Link>
           </aside>
 
@@ -298,7 +300,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           <div className="p-2 bg-medical-500/10 rounded-xl text-medical-500">
                             <PlayCircle className="w-5 h-5" />
                           </div>
-                          آخر الدروس المشاهدة
+                          {t("profile_recent_lessons")}
                         </h2>
                       </div>
                       
@@ -317,7 +319,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{p.lesson.subject.name}</p>
                             </div>
                             <div className={`text-[10px] font-black px-3 py-1.5 rounded-full border whitespace-nowrap ${p.completed ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
-                              {p.completed ? "مكتمل" : "قيد المشاهدة"}
+                              {p.completed ? t("profile_status_completed") : t("profile_status_in_progress")}
                             </div>
                           </Link>
                         ))}
@@ -326,8 +328,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                               <Inbox className="w-8 h-8 text-slate-400" />
                             </div>
-                            <p className="text-slate-500 font-bold">لا يوجد نشاط مؤخراً</p>
-                            <p className="text-xs text-slate-400 mt-1">ابدأ بمشاهدة الدروس الآن!</p>
+                            <p className="text-slate-500 font-bold">{t("profile_no_activity")}</p>
+                            <p className="text-xs text-slate-400 mt-1">{t("profile_start_watching")}</p>
                           </div>
                         )}
                       </div>
@@ -342,16 +344,16 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500">
                             <TrendingUp className="w-5 h-5" />
                           </div>
-                          سجل المعدلات
+                          {t("profile_gpa_history_title")}
                         </h2>
                         {user.gpaCalculations?.length > 0 && (
                           <button
                             onClick={handleDeleteAllGpa}
                             className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white rounded-lg transition-colors border border-red-500/20"
-                            title="حذف جميع السجلات نهائياً"
+                            title={t("profile_delete_all_gpa_title")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            حذف السجل بالكامل
+                            {t("profile_delete_all_gpa_button")}
                           </button>
                         )}
                       </div>
@@ -364,7 +366,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 {calc.gpa}
                               </div>
                               <div>
-                                <div className="font-bold text-sm text-slate-800 dark:text-slate-200">معدل الفصل</div>
+                                <div className="font-bold text-sm text-slate-800 dark:text-slate-200">{t("profile_gpa_item_label")}</div>
                                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
                                   {new Date(calc.createdAt).toLocaleDateString('ar-EG', { month: 'short', year: 'numeric' })}
@@ -373,12 +375,12 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                             </div>
                             <div className="flex items-center gap-3">
                               <div className="text-xs font-black text-slate-500 bg-slate-200/50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full whitespace-nowrap">
-                                {calc.subjects.split(',').length} مواد
+                                {calc.subjects.split(',').length} {t("profile_gpa_subjects")}
                               </div>
                               <button
                                 onClick={() => handleDeleteGpa(calc.id)}
                                 className="p-1.5 text-red-400 hover:text-white hover:bg-red-500 rounded-lg transition-colors"
-                                title="حذف هذا السجل نهائياً"
+                                title={t("profile_delete_gpa_title")}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -390,7 +392,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
                               <Award className="w-8 h-8 text-slate-400" />
                             </div>
-                            <p className="text-slate-500 font-bold">لم تقم بحساب معدلك بعد</p>
+                            <p className="text-slate-500 font-bold">{t("profile_no_gpa_yet")}</p>
                           </div>
                         )}
                       </div>
@@ -458,8 +460,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <Heart className="w-12 h-12 text-rose-400 absolute z-10" />
                         <div className="w-full h-full rounded-full animate-ping border-2 border-rose-500/50 absolute inset-0" />
                       </div>
-                      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">قائمتك المفضلة فارغة</h3>
-                      <p className="text-slate-500 dark:text-slate-400 font-bold">أضف بعض الدروس للرجوع إليها لاحقاً بسهولة</p>
+                      <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">{t("profile_favorites_empty_title")}</h3>
+                      <p className="text-slate-500 dark:text-slate-400 font-bold">{t("profile_favorites_empty_description")}</p>
                     </div>
                   )}
                 </motion.div>
@@ -481,10 +483,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     {/* Status Banner - Dynamic by Subscription Type */}
                     {latestSubscription && (() => {
                       const txId = latestSubscription.transactionId || "";
-                      const subType = txId.startsWith("TIMETABLE:") ? "جداول الدراسة" 
-                        : txId.startsWith("GPA:") ? "نتائج المعدل" 
-                        : txId.startsWith("SUPPORT:") ? "دعم المنصة" 
-                        : "الميزات المميزة";
+                      const subType = txId.startsWith("TIMETABLE:") ? t("profile_subscription_type_timetable")
+                        : txId.startsWith("GPA:") ? t("profile_subscription_type_gpa")
+                        : txId.startsWith("SUPPORT:") ? t("profile_subscription_type_support")
+                        : t("profile_subscription_type_default");
 
                       if (latestSubscription.status === "APPROVED") {
                         return (
@@ -493,15 +495,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               <CheckCircle className="w-6 h-6" />
                             </div>
                             <div>
-                              <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">تم تفعيل اشتراك {subType}! 🎉</h4>
+                              <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">{t("profile_subscription_approved_heading")}</h4>
                               <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-1">
-                                {txId.startsWith("TIMETABLE:")
-                                  ? "أصبح بإمكانك تحميل جدولك الدراسي الأسبوعي كصورة بدون أي قيود."
-                                  : txId.startsWith("GPA:")
-                                  ? "أصبح بإمكانك تحميل كشف نقاط معدلك كصورة بدون أي قيود."
-                                  : txId.startsWith("SUPPORT:")
-                                  ? "شكراً جزيلاً على دعمك لمنصة AuraMed! مساهمتك تُحدث فرقاً حقيقياً."
-                                  : "تم استلام دفعتك وتفعيل حسابك بنجاح. استمتع بكافة المحتويات."}
+                                {t("profile_subscription_approved_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_approved_description_suffix")}
                               </p>
                             </div>
                           </div>
@@ -514,8 +510,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               <AlertCircle className="w-6 h-6" />
                             </div>
                             <div>
-                              <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">تم رفض طلب اشتراك {subType}</h4>
-                              <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">لم يتم التحقق من عملية الدفع. يرجى التواصل مع الدعم عبر تيليجرام أو إعادة إرسال طلب جديد.</p>
+                              <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">{t("profile_subscription_rejected_heading")}</h4>
+                              <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">
+                                {t("profile_subscription_rejected_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_rejected_description_suffix")}
+                              </p>
                             </div>
                           </div>
                         );
@@ -527,8 +525,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               <Clock className="w-6 h-6" />
                             </div>
                             <div>
-                              <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">طلب اشتراك {subType} قيد المراجعة</h4>
-                              <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">تم إرسال طلب التفعيل بنجاح. سيتم مراجعته وتفعيل الميزة المطلوبة قريباً إن شاء الله.</p>
+                              <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">{t("profile_subscription_pending_heading")}</h4>
+                              <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">
+                                {t("profile_subscription_pending_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_pending_description_suffix")}
+                              </p>
                             </div>
                           </div>
                         );
@@ -541,8 +541,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <Zap className="w-8 h-8" />
                       </div>
                       <div>
-                        <h2 className="text-3xl font-black text-slate-800 dark:text-white">دفع الاشتراك</h2>
-                        <p className="text-slate-500 font-bold mt-1">قم بترقية حسابك للوصول إلى كافة المحتويات والمميزات</p>
+                        <h2 className="text-3xl font-black text-slate-800 dark:text-white">{t("profile_subscription_title")}</h2>
+                        <p className="text-slate-500 font-bold mt-1">{t("profile_subscription_description")}</p>
                       </div>
                     </div>
 
@@ -554,8 +554,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         
                         <div className="flex justify-between items-start mb-8 relative z-10">
                           <div>
-                            <h3 className="text-2xl font-black mb-1 text-yellow-400">بريدي موب - BaridiMob</h3>
-                            <p className="text-slate-400 text-sm font-bold">الدفع عبر تطبيق بريدي موب</p>
+                            <h3 className="text-2xl font-black mb-1 text-yellow-400">{t("profile_payment_baridimob_title")}</h3>
+                            <p className="text-slate-400 text-sm font-bold">{t("profile_payment_baridimob_description")}</p>
                           </div>
                           <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-inner">
                             <Zap className="w-7 h-7 text-yellow-400" />
@@ -565,15 +565,15 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <div className="space-y-4 relative z-10">
                           <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors group relative">
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-2 text-right flex items-center justify-between">
-                              <span>رقم الحساب (RIP)</span>
+                              <span>{t("profile_subscription_account_number_label")}</span>
                             </p>
                             <div 
                               className="relative cursor-pointer" 
                               onClick={() => {
                                 navigator.clipboard.writeText("00799999004272170042");
-                                alert("تم نسخ رقم الحساب بنجاح! ✅");
+                                alert(t("profile_subscription_account_copied"));
                               }}
-                              title="اضغط للنسخ"
+                              title={t("profile_subscription_copy_title")}
                             >
                               <p className="font-mono text-lg md:text-xl font-bold tracking-widest text-center py-4 bg-black/30 rounded-xl select-all border border-white/5 group-hover:border-yellow-500/30 transition-colors" dir="ltr">
                                 007 99999 0042721700 42
@@ -585,13 +585,13 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           </div>
                           
                           <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">الاسم واللقب</p>
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_full_name_label")}</p>
                             <p className="text-lg font-bold text-center py-1">Ahmed BD</p>
                           </div>
 
                           <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">مبلغ الاشتراك</p>
-                            <p className="text-3xl font-black text-yellow-400 text-center py-2">500 د.ج</p>
+                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_fee_label")}</p>
+                            <p className="text-3xl font-black text-yellow-400 text-center py-2">{t("profile_subscription_fee_amount")}</p>
                           </div>
                         </div>
                       </div>
@@ -600,10 +600,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       <div className="flex flex-col justify-center">
                         <div className="bg-slate-50 dark:bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
                           <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-emerald-500" /> تأكيد الدفع
+                            <CheckCircle className="w-5 h-5 text-emerald-500" /> {t("profile_payment_confirm_title")}
                           </h3>
                           <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
-                            بعد إرسال المبلغ عبر التطبيق، يرجى إدخال رقم العملية (Transaction ID) لتأكيد وتفعيل حسابك.
+                            {t("profile_payment_confirm_description")}
                           </p>
                           
                           <form className="space-y-5" onSubmit={async (e) => { 
@@ -619,24 +619,24 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                               setTransactionId("");
                               setPaymentDate("");
                             } else {
-                              alert(res?.error || "حدث خطأ");
+                              alert(res?.error || t("profile_generic_error"));
                             }
                           }}>
                             {paymentSuccess ? (
                               <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center text-amber-600 dark:text-amber-400">
                                 <Clock className="w-12 h-12 mx-auto mb-3 text-amber-500 animate-pulse" />
-                                <h4 className="font-black text-lg mb-1">تم إرسال طلبك بنجاح! ⏳</h4>
-                                <p className="text-sm font-bold">طلبك قيد المراجعة الآن. سيتم تفعيل الميزة بمجرد قبول الطلب وتفعيله من قبل الإدارة.</p>
+                                <h4 className="font-black text-lg mb-1">{t("profile_payment_request_sent_title")}</h4>
+                                <p className="text-sm font-bold">{t("profile_payment_request_sent_description")}</p>
                               </div>
                             ) : (
                               <>
                                 <div className="space-y-3 mb-6">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">اختر نوع الاشتراك والتفعيل:</label>
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_subscription_select_label")}</label>
                                   <div className="grid grid-cols-1 gap-3">
                                     {[
-                                      { id: "TIMETABLE", label: "تحميل غير محدود لصور الجداول", desc: "يمكّنك من حفظ وتحميل جدولك الأسبوعي كصورة دون قيود", price: "500 د.ج" },
-                                      { id: "GPA", label: "تحميل غير محدود لصور النتائج", desc: "يمكّنك من تصدير وتحميل كشف نقاط المعدل كصورة دون قيود", price: "500 د.ج" },
-                                      { id: "SUPPORT", label: "دعم الموقع والمنصة فقط", desc: "مساهمة رمزية لدعم استمرار وتطوير منصة AuraMed", price: "500 د.ج" }
+                                      { id: "TIMETABLE", label: t("profile_subscription_option_timetable_label"), desc: t("profile_subscription_option_timetable_desc"), price: t("profile_subscription_fee_amount") },
+                                      { id: "GPA", label: t("profile_subscription_option_gpa_label"), desc: t("profile_subscription_option_gpa_desc"), price: t("profile_subscription_fee_amount") },
+                                      { id: "SUPPORT", label: t("profile_subscription_option_support_label"), desc: t("profile_subscription_option_support_desc"), price: t("profile_subscription_fee_amount") }
                                     ].map((opt) => (
                                       <button
                                         key={opt.id}
@@ -666,10 +666,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 </div>
 
                                 <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">رقم العملية (Transaction ID)</label>
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_transaction_id_label")}</label>
                                   <input 
                                     type="text" 
-                                    placeholder="مثال: 1234567890" 
+                                    placeholder={t("profile_payment_transaction_id_placeholder")} 
                                     required
                                     value={transactionId}
                                     onChange={(e) => setTransactionId(e.target.value)}
@@ -678,12 +678,12 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 </div>
                                 
                                 <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">تاريخ الدفع</label>
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_date_label")}</label>
                                   <input 
                                     type="date" 
                                     required
-                                    title="تاريخ الدفع"
-                                    placeholder="تاريخ الدفع"
+                                    title={t("profile_payment_date_label")}
+                                    placeholder={t("profile_payment_date_placeholder")}
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                     className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
@@ -695,8 +695,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                   disabled={paymentLoading}
                                   className="w-full py-4 mt-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2 text-lg hover:-translate-y-1 group disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  {paymentLoading ? "جاري الإرسال..." : (
-                                    <><Send className="w-5 h-5 group-hover:scale-110 transition-transform" /> إرسال طلب التفعيل</>
+                                  {paymentLoading ? t("profile_payment_sending") : (
+                                    <><Send className="w-5 h-5 group-hover:scale-110 transition-transform" /> {t("profile_payment_submit_button")}</>
                                   )}
                                 </button>
                               </>
@@ -704,9 +704,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           </form>
 
                           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
-                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">أو أرسل وصل الدفع مباشرة عبر تيليجرام لتفعيل أسرع</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">{t("profile_payment_receipt_note")}</p>
                             <a href="https://t.me/Lio_nard0" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl font-black transition-all text-sm hover:shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
-                              <Send className="w-4 h-4" /> تواصل مع الدعم
+                              <Send className="w-4 h-4" /> {t("profile_contact_support_button")}
                             </a>
                           </div>
                         </div>
@@ -733,8 +733,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       <Sparkles className="w-8 h-8" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-black text-slate-800 dark:text-white">إعدادات الحساب</h2>
-                      <p className="text-slate-500 font-bold mt-1">قم بتخصيص ملفك الشخصي وحسابات التواصل</p>
+                      <h2 className="text-3xl font-black text-slate-800 dark:text-white">{t("profile_settings_title")}</h2>
+                      <p className="text-slate-500 font-bold mt-1">{t("profile_settings_description")}</p>
                     </div>
                   </div>
                   
@@ -762,18 +762,18 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
                         <label htmlFor="name" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
-                          <User className="w-4 h-4 text-medical-500" /> اسم العرض
+                          <User className="w-4 h-4 text-medical-500" /> {t("profile_display_name_label")}
                         </label>
                         <input 
                           id="name" name="name" defaultValue={user.name || ""} required
-                          placeholder="الاسم الكامل"
+                          placeholder={t("profile_display_name_placeholder")}
                           className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
                         />
                       </div>
 
                       <div className="space-y-3">
                         <label className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
-                          <Camera className="w-4 h-4 text-purple-500" /> رابط الصورة الشخصية
+                          <Camera className="w-4 h-4 text-purple-500" /> {t("profile_profile_image_url_label")}
                         </label>
                         <input 
                           name="image" defaultValue={user.image || ""} placeholder="https://example.com/image.jpg" dir="ltr"
@@ -783,20 +783,20 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
                       <div className="space-y-3">
                         <label htmlFor="studyYear" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-medical-500" /> السنة الدراسية
+                          <Calendar className="w-4 h-4 text-medical-500" /> {t("profile_study_year_label")}
                         </label>
                         <input 
                           id="studyYear" name="studyYear" defaultValue={user.studyYear || ""} required readOnly
-                          placeholder="مثال: السنة الأولى طب"
+                          placeholder={t("profile_study_year_placeholder")}
                           className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/30 text-slate-700 dark:text-slate-300 cursor-not-allowed outline-none transition-all font-bold shadow-sm"
                         />
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mr-1">يتم تحديد السنة الدراسية عند التسجيل ولا يمكن تعديلها لاحقاً.</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mr-1">{t("profile_settings_study_year_note")}</p>
                       </div>
                     </div>
 
                     <div className="p-8 rounded-[2rem] bg-slate-50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-700/50">
                       <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                        <Inbox className="w-5 h-5 text-sky-500" /> حسابات التواصل الاجتماعي
+                        <Inbox className="w-5 h-5 text-sky-500" /> {t("profile_social_accounts_title")}
                       </h3>
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Telegram */}
@@ -810,7 +810,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                            />
                            {user.telegram && (
                              <div className="absolute top-10 left-4 bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
-                                مفعّل <CheckCircle className="w-3 h-3" />
+                                {t("profile_social_status_active")} <CheckCircle className="w-3 h-3" />
                              </div>
                            )}
                         </div>
@@ -825,7 +825,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                            />
                            {user.instagram && (
                              <div className="absolute top-10 left-4 bg-pink-500/10 text-pink-600 dark:text-pink-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
-                                مفعّل <CheckCircle className="w-3 h-3" />
+                                {t("profile_social_status_active")} <CheckCircle className="w-3 h-3" />
                              </div>
                            )}
                         </div>
@@ -839,11 +839,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                              className="w-full p-4 pl-24 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm"
                            />
                            <p className="text-[10px] text-blue-500/70 font-bold px-1 mt-1">
-                             💡 لتجنب مشاكل الخصوصية، يرجى لصق رابط حسابك كاملاً كما يظهر في المتصفح.
+                             💡 {t("profile_privacy_note")}
                            </p>
                            {user.facebook && (
                              <div className="absolute top-10 left-4 bg-blue-600/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
-                                مفعّل <CheckCircle className="w-3 h-3" />
+                                {t("profile_social_status_active")} <CheckCircle className="w-3 h-3" />
                              </div>
                            )}
                         </div>
@@ -861,7 +861,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         ) : (
                           <>
                             <Save className="w-5 h-5 group-hover:scale-110 transition-transform" /> 
-                            حفظ التعديلات
+                            {t("profile_save_changes_button")}
                           </>
                         )}
                       </motion.button>
@@ -875,9 +875,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <Lock className="w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">تغيير كلمة المرور</h3>
+                        <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-1">{t("profile_change_password_title")}</h3>
                         <p className="text-sm font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 inline-block px-3 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 mt-1 shadow-sm">
-                          لأسباب أمنية، مسموح بالتغيير مرة واحدة فقط كل 30 يوماً
+                          {t("profile_change_password_note")}
                         </p>
                       </div>
                     </div>
@@ -896,13 +896,13 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     <div className="bg-slate-50 dark:bg-slate-800/30 p-6 md:p-8 rounded-[2rem] border border-slate-200/50 dark:border-slate-700/50 max-w-2xl shadow-inner">
                       <div className="space-y-6">
                         <div className="relative">
-                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الحالية</label>
+                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">{t("profile_current_password_label")}</label>
                           <input type={showCurrentPw ? 'text' : 'password'} value={currentPw} onChange={e => setCurrentPw(e.target.value)} placeholder="••••••••" required className="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white tracking-widest text-lg shadow-sm" dir="ltr" />
                           <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-amber-500 transition-colors bg-slate-100 dark:bg-slate-700 p-2 rounded-xl">{showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
                         </div>
                         
                         <div className="relative">
-                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">كلمة المرور الجديدة</label>
+                          <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2">{t("profile_new_password_label")}</label>
                           <input type={showNewPw ? 'text' : 'password'} value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="••••••••" required minLength={6} className="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white tracking-widest text-lg shadow-sm" dir="ltr" />
                           <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute left-4 bottom-4 text-slate-400 hover:text-amber-500 transition-colors bg-slate-100 dark:bg-slate-700 p-2 rounded-xl">{showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
                         </div>
@@ -912,7 +912,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                           className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] mt-4 text-lg"
                         >
-                          {pwLoading ? <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" /> : <><Lock className="w-5 h-5" /><span>تحديث كلمة المرور</span></>}
+                          {pwLoading ? <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" /> : <><Lock className="w-5 h-5" /><span>{t("profile_change_password_button")}</span></>}
                         </motion.button>
                       </div>
                     </div>
@@ -925,13 +925,13 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <Trash2 className="w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-red-600 dark:text-red-400 mb-1">منطقة الخطر</h3>
-                        <p className="text-sm text-red-600/70 dark:text-red-400/70 font-bold">حذف حسابك نهائياً وبشكل لا رجعة منه</p>
+                        <h3 className="text-2xl font-black text-red-600 dark:text-red-400 mb-1">{t("profile_danger_zone_title")}</h3>
+                        <p className="text-sm text-red-600/70 dark:text-red-400/70 font-bold">{t("profile_danger_zone_description")}</p>
                       </div>
                     </div>
                     <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20 rounded-[2rem] p-6 md:p-8 max-w-2xl">
                       <p className="text-sm text-red-700 dark:text-red-300 font-bold mb-6 leading-relaxed">
-                        ⚠️ سيتم حذف جميع بياناتك بما تشمل تعليقاتك ومفضلاتك وسجل تقدمك وكل معلوماتك. هذا الإجراء غير قابل للتراجع.
+                        ⚠️ {t("profile_delete_warning_text")}
                       </p>
                       <motion.button
                         type="button"
@@ -941,7 +941,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         className="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-[0_10px_30px_-10px_rgba(239,68,68,0.5)] text-lg"
                       >
                         <Trash2 className="w-5 h-5" />
-                        حذف حسابي نهائياً
+                        {t("profile_delete_account_button")}
                       </motion.button>
                     </div>
                   </div>
@@ -970,9 +970,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-medical-500" /> تغيير الصورة الشخصية
+                  <Camera className="w-5 h-5 text-medical-500" /> {t("profile_change_image_modal_title")}
                 </h3>
-                <button title="إغلاق" aria-label="إغلاق" onClick={() => setShowImageModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <button title={t("profile_close_button")} aria-label={t("profile_close_button")} onClick={() => setShowImageModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -989,7 +989,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
               <form onSubmit={handleImageUpdate}>
                 <div className="space-y-2 mb-6">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">رابط الصورة الجديد</label>
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">{t("profile_new_image_url_label")}</label>
                   <input 
                     type="url"
                     value={tempImageUrl}
@@ -1002,10 +1002,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                 
                 <div className="flex gap-3">
                   <button type="submit" disabled={loading} className="flex-1 py-4 bg-medical-500 hover:bg-medical-600 text-white rounded-2xl font-black transition-all shadow-[0_10px_20px_-10px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 disabled:opacity-50">
-                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> حفظ الصورة</>}
+                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> {t("profile_save_image_button")}</>}
                   </button>
                   <button type="button" onClick={() => setShowImageModal(false)} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all">
-                    إلغاء
+                    {t("profile_cancel_button")}
                   </button>
                 </div>
               </form>
@@ -1033,8 +1033,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
               <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-red-600 to-orange-500 rounded-t-[2.5rem]" />
 
               <button
-                title="إغلاق"
-                aria-label="إغلاق"
+                title={t("profile_close_button")}
+                aria-label={t("profile_close_button")}
                 onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
                 className="absolute top-5 left-5 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
               >
@@ -1045,16 +1045,16 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                 <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-3xl flex items-center justify-center mb-4 border border-red-200 dark:border-red-500/30">
                   <Trash2 className="w-10 h-10 text-red-500" />
                 </div>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">تأكيد حذف الحساب</h3>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-2">{t("profile_delete_confirm_title")}</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
-                  هذا الإجراء <span className="text-red-500 font-black">لا يمكن التراجع عنه.</span> أدخل كلمة المرور لتأكيد هويتك.
+                  {t("profile_delete_confirm_description_prefix")} <span className="text-red-500 font-black">{t("profile_delete_confirm_description_strong")}</span> {t("profile_delete_confirm_description_suffix")}
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div className="relative">
                   <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 text-right">
-                    كلمة المرور
+                    {t("profile_delete_password_label")}
                   </label>
                   <input
                     type="password"
@@ -1093,7 +1093,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     {deleteLoading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
-                      <><Trash2 className="w-4 h-4" />حذف نهائياً</>
+                      <><Trash2 className="w-4 h-4" />{t("profile_delete_confirm_button")}</>
                     )}
                   </motion.button>
                   <button
@@ -1101,7 +1101,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     onClick={() => { setShowDeleteModal(false); setDeletePassword(""); setDeleteError(""); }}
                     className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all"
                   >
-                    إلغاء
+                    {t("profile_cancel_button")}
                   </button>
                 </div>
               </div>

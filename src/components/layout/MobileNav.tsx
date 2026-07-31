@@ -4,19 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, PlayCircle, Calculator, User, FlaskConical } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const { lang } = useLocale();
   const isAuthRoute = pathname === "/login" || pathname === "/register";
 
   if (isAuthRoute) return null;
 
   const navItems = [
-    { name: "الرئيسية", icon: Home, path: "/" },
-    { name: "الدروس", icon: PlayCircle, path: "/courses" },
-    { name: "الصيدلة", icon: FlaskConical, path: "/pharmacy" },
-    { name: "الحاسبة", icon: Calculator, path: "/gpa-calculator" },
-    { name: "حسابي", icon: User, path: "/profile" },
+    { name: lang === "fr" ? "Accueil" : "الرئيسية", icon: Home, path: "/" },
+    { name: lang === "fr" ? "Cours" : "الدروس", icon: PlayCircle, path: "/courses" },
+    { name: lang === "fr" ? "Pharmacie" : "الصيدلة", icon: FlaskConical, path: "/pharmacy" },
+    { name: lang === "fr" ? "Calculateur" : "الحاسبة", icon: Calculator, path: "/gpa-calculator" },
+    { name: lang === "fr" ? "Mon compte" : "حسابي", icon: User, path: "/profile" },
   ];
 
   return (

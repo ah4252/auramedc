@@ -186,7 +186,7 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
                 {lesson.pdfUrl && !lesson.resources.some(r => r.url === lesson.pdfUrl) && (
                   <a 
                     href={lesson.pdfUrl}
-                    target="_self"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-medical-500 hover:shadow-lg hover:shadow-medical-600/10 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-dark-card transition-all group"
                   >
@@ -209,7 +209,7 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
                   <a 
                     key={res.id}
                     href={res.url}
-                    target="_self"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-medical-500 hover:shadow-lg hover:shadow-medical-600/10 bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-dark-card transition-all group"
                   >

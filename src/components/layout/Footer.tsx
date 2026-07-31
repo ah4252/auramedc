@@ -7,11 +7,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getSettings } from "@/app/actions/settings";
 import { Instagram, Facebook, Send as TelegramIcon } from "lucide-react";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 export default function Footer() {
   const pathname = usePathname();
   const [settings, setSettings] = useState<any>({});
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const { t } = useLocale();
   
   useEffect(() => {
     getSettings().then(setSettings);
@@ -49,7 +51,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-lg leading-relaxed text-slate-500">
-              النظام التعليمي الطبي الأكثر رقياً وفخامة في العالم العربي. نبتكر لمستقبل الأطباء النخبة.
+              {t("footer_description", "النظام التعليمي الطبي الأكثر رقياً وفخامة في العالم العربي. نبتكر لمستقبل الأطباء النخبة.")}
             </p>
             <div className="flex flex-wrap items-center gap-4 text-slate-500 pt-4">
                {settings.socialEmail && (
@@ -75,22 +77,22 @@ export default function Footer() {
             <div>
               <h4 className="text-white font-black text-xl mb-6 flex items-center gap-2">
                 <ExternalLink className="w-5 h-5 text-medical-500" />
-                أقسام الموقع
+                {t("footer_sections_title", "أقسام الموقع")}
               </h4>
               <ul className="space-y-4 text-lg">
-                <li><Link href="/" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">الرئيسية</Link></li>
-                <li><Link href="/courses" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">السنوات الدراسية</Link></li>
-                <li><Link href="/subjects" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">التخصصات الطبية</Link></li>
-                <li><Link href="/timetable" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">جدول الدراسة</Link></li>
-                <li><Link href="/gpa-calculator" className="text-medical-500 hover:text-medical-400 font-black">حاسبة المعدل</Link></li>
+                <li><Link href="/" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_home", "الرئيسية")}</Link></li>
+                <li><Link href="/courses" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_courses", "السنوات الدراسية")}</Link></li>
+                <li><Link href="/subjects" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_subjects", "التخصصات الطبية")}</Link></li>
+                <li><Link href="/timetable" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_timetable", "جدول الدراسة")}</Link></li>
+                <li><Link href="/gpa-calculator" className="text-medical-500 hover:text-medical-400 font-black">{t("footer_gpa_calculator", "حاسبة المعدل")}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-black text-xl mb-6">معلومات</h4>
+              <h4 className="text-white font-black text-xl mb-6">{t("footer_information_title", "معلومات")}</h4>
               <ul className="space-y-4 text-lg">
-                <li><Link href="/about" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">عن المنصة</Link></li>
-                <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">الشروط والأحكام</Link></li>
-                <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">سياسة الخصوصية</Link></li>
+                <li><Link href="/about" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_about", "عن المنصة")}</Link></li>
+                <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_terms", "الشروط والأحكام")}</Link></li>
+                <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_privacy", "سياسة الخصوصية")}</Link></li>
               </ul>
             </div>
           </div>
@@ -108,25 +110,25 @@ export default function Footer() {
                 {settings.socialTelegram && (
                   <a href={settings.socialTelegram} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <TelegramIcon className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
-                     <span className="font-bold text-white">تيليجرام (Telegram)</span>
+                     <span className="font-bold text-white">{t("footer_telegram", "تيليجرام (Telegram)")}</span>
                   </a>
                 )}
                 {settings.socialInstagram && (
                   <a href={settings.socialInstagram} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <Instagram className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" />
-                     <span className="font-bold text-white">إنستغرام (Instagram)</span>
+                     <span className="font-bold text-white">{t("footer_instagram", "إنستغرام (Instagram)")}</span>
                   </a>
                 )}
                 {settings.socialFacebook && (
                   <a href={settings.socialFacebook} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <Facebook className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
-                     <span className="font-bold text-white">فيسبوك (Facebook)</span>
+                     <span className="font-bold text-white">{t("footer_facebook", "فيسبوك (Facebook)")}</span>
                   </a>
                 )}
                 {(!settings.socialWhatsapp && !settings.socialTelegram && !settings.socialInstagram && !settings.socialFacebook) && (
                   <div className="flex items-center gap-3 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
                      <MapPin className="w-5 h-5 text-medical-500" />
-                     <span className="font-bold text-slate-300">امجدل - بوسعادة - الجزائر</span>
+                     <span className="font-bold text-slate-300">{t("footer_location", "امجدل - بوسعادة - الجزائر")}</span>
                   </div>
                 )}
              </div>
@@ -136,10 +138,10 @@ export default function Footer() {
         {/* Bottom Bar (Keep small as requested) */}
         <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-[11px] text-slate-600 font-medium">
-            &copy; {new Date().getFullYear()} Aura Med Elite Education. جميع الحقوق محفوظة.
+            &copy; {new Date().getFullYear()} Aura Med Elite Education. {t("footer_rights_reserved", "جميع الحقوق محفوظة.")}
           </p>
           <div className="flex items-center gap-3 text-[11px] text-slate-600 font-medium">
-            <span>بكل رقي من المطور</span>
+            <span>{t("footer_built_by", "بكل رقي من المطور")}</span>
           </div>
         </div>
       </div>

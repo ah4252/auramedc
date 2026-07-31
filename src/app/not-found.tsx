@@ -1,11 +1,16 @@
 import { Stethoscope, Home, Search } from "lucide-react";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { tServer, Locale } from "@/lib/i18n";
 
 /**
  * 404 Not Found — يُعرض عند أي مسار غير موجود في المشروع
  * Next.js 15: not-found.tsx في app/ يطبق على جميع الـ routes
  */
-export default function NotFound() {
+export default async function NotFound() {
+  const cookieStore = await cookies();
+  const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-dark-bg px-4">
       <div className="max-w-lg w-full text-center space-y-8">
@@ -25,12 +30,12 @@ export default function NotFound() {
         {/* Message */}
         <div className="space-y-3">
           <h1 className="text-3xl font-black text-slate-900 dark:text-white">
-            الصفحة غير موجودة
+            {tServer("page_not_found", siteLang, "الصفحة غير موجودة")}
           </h1>
           <p className="text-lg text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            يبدو أن هذه الصفحة انتقلت إلى مكان آخر أو لم تُنشأ بعد.
+            {tServer("page_moved_or_missing", siteLang, "يبدو أن هذه الصفحة انتقلت إلى مكان آخر أو لم تُنشأ بعد.")}
             <br />
-            تحقق من الرابط أو ابدأ من الصفحة الرئيسية.
+            {tServer("check_link_start_from_home", siteLang, "تحقق من الرابط أو ابدأ من الصفحة الرئيسية.")}
           </p>
         </div>
 
@@ -41,14 +46,14 @@ export default function NotFound() {
             className="flex items-center justify-center gap-2 bg-medical-600 hover:bg-medical-700 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-lg shadow-medical-600/20 hover:scale-105 active:scale-95"
           >
             <Home className="w-5 h-5" />
-            الصفحة الرئيسية
+            {tServer("home_button", siteLang, "الصفحة الرئيسية")}
           </Link>
           <Link
             href="/courses"
             className="flex items-center justify-center gap-2 bg-white dark:bg-dark-card hover:bg-slate-50 dark:hover:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-medical-500 text-slate-700 dark:text-slate-200 font-bold px-8 py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
           >
             <Search className="w-5 h-5" />
-            تصفح الدروس
+            {tServer("browse_courses", siteLang, "تصفح الدروس")}
           </Link>
         </div>
       </div>

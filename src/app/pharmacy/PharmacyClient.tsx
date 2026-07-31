@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FlaskConical, ChevronRight, Search, FolderOpen } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 type PharmacyImage = {
   id: string;
@@ -24,6 +25,7 @@ type PharmacySection = {
 
 export default function PharmacyClient({ sections }: { sections: PharmacySection[] }) {
   const [search, setSearch] = useState("");
+  const { t } = useLocale();
 
   const filteredSections = sections.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -49,7 +51,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2.5 text-white/90 text-sm font-bold mb-6"
           >
             <FlaskConical className="w-4 h-4" />
-            AuraMed Elite — قسم الصيدلة
+            {t("pharmacy_hero_badge", "AuraMed Elite — Pharmacie")}
           </motion.div>
 
           <motion.h1
@@ -58,7 +60,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight"
           >
-            الصيدلة
+            {t("pharmacy_page_title", "Pharmacie")}
           </motion.h1>
 
           <motion.p
@@ -67,7 +69,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             transition={{ delay: 0.2 }}
             className="text-white/80 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10"
           >
-            استعرض الأقسام والمواد الدوائية المتاحة — اضغط على أي قسم لمشاهدة صوره
+            {t("pharmacy_page_description", "Découvrez les sections et les médicaments disponibles — cliquez sur une section pour voir les images")}
           </motion.p>
 
           {/* Search */}
@@ -81,7 +83,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="ابحث عن قسم..."
+              placeholder={t("pharmacy_search_placeholder", "Rechercher une section...")}
               className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 outline-none focus:border-white/40 focus:bg-white/15 transition-all font-medium"
             />
           </motion.div>
@@ -98,17 +100,17 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
           >
             <FlaskConical className="w-20 h-20 mx-auto text-slate-300 dark:text-slate-600 mb-6" />
             <h2 className="text-2xl font-black text-slate-400 dark:text-slate-500">
-              {search ? "لا توجد نتائج مطابقة" : "لا توجد أقسام بعد"}
+              {search ? t("pharmacy_no_results_title", "Aucun résultat correspondant") : t("pharmacy_no_sections_title", "Aucune section pour le moment")}
             </h2>
             <p className="text-slate-400 dark:text-slate-600 mt-2">
-              {search ? "جرب البحث بكلمة مختلفة" : "سيتم إضافة المحتوى قريباً"}
+              {search ? t("pharmacy_no_results_description", "Essayez une autre recherche") : t("pharmacy_no_sections_description", "Le contenu sera ajouté bientôt")}
             </p>
           </motion.div>
         ) : (
           <>
             <div className="mb-8">
               <p className="text-slate-500 dark:text-slate-400 font-medium">
-                {filteredSections.length} قسم متاح
+                {filteredSections.length} {t("pharmacy_sections_available", "sections disponibles")}
               </p>
             </div>
 
@@ -188,7 +190,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
                         <FlaskConical className="w-3.5 h-3.5 text-emerald-500" />
                       </div>
                       <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                        {section.images.length} دواء متاح
+                        {section.images.length} {t("pharmacy_section_item_label", "médicaments disponibles")}
                       </span>
                     </div>
                   </div>

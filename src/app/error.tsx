@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 /**
  * Global Error Boundary — يُعرض عند أي خطأ غير متوقع في أي صفحة
@@ -15,6 +16,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLocale();
+
   useEffect(() => {
     // يمكن إرسال الخطأ لخدمة monitoring هنا (Sentry, etc.)
     console.error("Global Error:", error);
@@ -32,10 +35,10 @@ export default function GlobalError({
         {/* Title */}
         <div className="space-y-2">
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-            حدث خطأ غير متوقع
+            {t("unexpected_error", "حدث خطأ غير متوقع")}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            واجهت المنصة مشكلة تقنية. الفريق على علم بالأمر وسيتم إصلاحه قريباً.
+            {t("technical_issue", "واجهت المنصة مشكلة تقنية. الفريق على علم بالأمر وسيتم إصلاحه قريباً.")}
           </p>
         </div>
 

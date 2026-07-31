@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { logoutAdmin, logoutUser } from "@/app/actions/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null, incomingRequestsCount = 0, unreadNewsCount = 0 }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null, incomingRequestsCount?: number, unreadNewsCount?: number }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
 
   const router = useRouter();
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+  const { t, lang, setLang } = useLocale();
 
   const handleLogoClick = (e: React.MouseEvent) => {
     // Increment clicks
@@ -73,7 +75,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
   return (
     <>
       <nav className={`${pathname?.startsWith("/admin") ? "" : "sticky top-0"} z-40 w-full glass-panel border-b`}>
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-16 flex flex-wrap items-center justify-between gap-3 min-w-0">
 
           {/* Premium Logo */}
           <Link
@@ -102,31 +104,30 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
           </Link>
 
           {/* Desktop Links */}
-          {/* Desktop Links */}
-          <div className="hidden lg:flex items-center gap-3 xl:gap-6 font-bold text-xs lg:text-xs xl:text-sm">
+          <div className="hidden lg:flex flex-1 min-w-0 items-center gap-3 xl:gap-6 font-bold text-xs lg:text-xs xl:text-sm overflow-x-auto whitespace-nowrap scrollbar-none">
             <Link href="/" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              الرئيسية
+              {t("home", "الرئيسية")}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link href="/courses" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              السنوات الدراسية
+              {t("courses", "السنوات الدراسية")}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link href="/subjects" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              التخصصات
+              {t("subjects", "التخصصات")}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link href="/pharmacy" className="relative group text-slate-700 dark:text-slate-300 hover:text-emerald-600 transition-colors shrink-0">
-              الصيدلة
+              {t("pharmacy", "الصيدلة")}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-emerald-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link href="/timetable" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0">
-              جدول الدراسة
+              {t("timetable", "جدول الدراسة")}
               <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-medical-500 group-hover:w-full transition-all duration-300"></span>
             </Link>
 
             <Link href="/news" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0 flex items-center gap-1.5">
-              <span>الأخبار</span>
+              <span>{t("news", "الأخبار")}</span>
               {unreadNewsCount > 0 && (
                 <span className="flex items-center justify-center min-w-[1.1rem] h-4 px-1 bg-medical-500 text-white text-[10px] font-black rounded-full shadow-md animate-bounce">
                   {unreadNewsCount > 99 ? "+99" : unreadNewsCount}
@@ -136,7 +137,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
             </Link>
             {isUser && (
               <Link href="/friends" className="relative group text-slate-700 dark:text-slate-300 hover:text-medical-600 transition-colors shrink-0 flex items-center gap-1.5">
-                <span>الأصدقاء</span>
+                <span>{t("friends", "الأصدقاء")}</span>
                 {incomingRequestsCount > 0 && (
                   <span className="flex items-center justify-center min-w-[1.1rem] h-4 px-1 bg-red-500 text-white text-[10px] font-black rounded-full shadow-md animate-bounce">
                     {incomingRequestsCount > 99 ? "+99" : incomingRequestsCount}
@@ -149,24 +150,23 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               href="/gpa-calculator"
               className="px-4 py-2 bg-gradient-to-r from-medical-600 to-medical-400 text-white rounded-xl hover:shadow-md hover:shadow-medical-600/30 hover:scale-105 active:scale-95 transition-all font-black text-[11px] lg:text-xs xl:text-sm shadow-sm shadow-medical-600/10 shrink-0 whitespace-nowrap"
             >
-              حاسبة المعدل
+              {t("gpa", "حاسبة المعدل")}
             </Link>
             {isAdmin && (
               <Link href="/admin" className="group text-medical-600 dark:text-medical-400 font-bold flex items-center gap-1 bg-medical-50 dark:bg-medical-900/30 px-3 py-1.5 rounded-lg hover:bg-medical-100 dark:hover:bg-medical-900/50 transition-all border border-medical-100 dark:border-medical-500/20 shadow-sm shrink-0">
                 <Lock className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-                <span>لوحة التحكم</span>
+                <span>{t("admin", "لوحة التحكم")}</span>
               </Link>
             )}
           </div>
 
-          <div className="flex items-center gap-2 lg:gap-4 shrink-0">
-
+          <div className="flex items-center gap-2 lg:gap-4 shrink min-w-0">
             {isUser ? (
-              <div className="flex items-center gap-2 lg:gap-3">
-                <Link href="/profile" className="flex items-center gap-2 group shrink-0">
-                  <div className="hidden xl:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors leading-tight">
-                    <span className="text-[10px] text-slate-400">أهلاً بك</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{userName}</span>
+              <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+                <Link href="/profile" className="flex items-center gap-2 group shrink min-w-0 max-w-[10rem]">
+                    <div className="hidden xl:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors leading-tight min-w-0">
+                    <span className="text-[10px] text-slate-400 truncate">{t("welcome", "أهلاً بك")}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[5.5rem]">{userName}</span>
                   </div>
                   <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-medical-100 dark:bg-medical-900/30 flex items-center justify-center border-2 border-transparent group-hover:border-medical-500 transition-all overflow-hidden shrink-0">
                     {userImage ? (
@@ -180,15 +180,45 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                   onClick={handleLogoutUser}
                   className="hidden lg:block bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-rose-50 hover:text-rose-600 transition-all shrink-0"
                 >
-                  خروج
+                  {t("logout", "خروج")}
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="hidden sm:flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-4 py-2 rounded-full transition-all shadow-md shadow-medical-600/20 shrink-0 text-xs">
+              <Link href="/login" className="hidden sm:flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white px-4 py-2 rounded-full transition-all shadow-md shadow-medical-600/20 shrink-0 text-xs whitespace-nowrap">
                 <User className="w-3.5 h-3.5" />
-                <span>تسجيل الدخول</span>
+                <span>{t("login", "تسجيل الدخول")}</span>
               </Link>
             )}
+
+            {/* Language switcher */}
+            <div className="hidden sm:flex items-center gap-2 shrink min-w-0">
+              <button
+                onClick={() => {
+                  try {
+                    document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
+                    window.localStorage.setItem("site_lang", "ar");
+                  } catch (e) {
+                    // ignore
+                  }
+                  setLang("ar");
+                  setTimeout(() => router.refresh(), 80);
+                }}
+                className={`px-2 py-1 rounded-lg text-xs font-bold min-w-[2.2rem] text-center ${lang === "ar" ? "bg-medical-600 text-white" : "bg-slate-100 text-slate-700"}`}
+              >ع</button>
+              <button
+                onClick={() => {
+                  try {
+                    document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
+                    window.localStorage.setItem("site_lang", "fr");
+                  } catch (e) {
+                    // ignore
+                  }
+                  setLang("fr");
+                  setTimeout(() => router.refresh(), 80);
+                }}
+                className={`px-2 py-1 rounded-lg text-xs font-bold min-w-[2.2rem] text-center ${lang === "fr" ? "bg-medical-600 text-white" : "bg-slate-100 text-slate-700"}`}
+              >FR</button>
+            </div>
 
             <button
               onClick={() => setShowMobileMenu(true)}
@@ -226,32 +256,32 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               className="fixed top-0 right-0 bottom-0 w-[280px] bg-white dark:bg-dark-bg z-[55] lg:hidden shadow-2xl flex flex-col"
             >
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="font-black text-xl text-medical-600">القائمة</span>
-                <button onClick={() => setShowMobileMenu(false)} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-full" title="إغلاق">
+                <span className="font-black text-xl text-medical-600">{t("menu", "القائمة")}</span>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-full" title={t("close", "إغلاق")}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6 space-y-4 font-bold text-lg">
                 <Link href="/" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  الرئيسية
+                  {t("home", "الرئيسية")}
                 </Link>
                 <Link href="/courses" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  السنوات الدراسية
+                  {t("courses", "السنوات الدراسية")}
                 </Link>
                 <Link href="/subjects" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  التخصصات
+                  {t("subjects", "التخصصات")}
                 </Link>
                 <Link href="/pharmacy" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors text-emerald-700 dark:text-emerald-400">
-                  الصيدلة
+                  {t("pharmacy", "الصيدلة")}
                 </Link>
                 <Link href="/timetable" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                  جدول الدراسة
+                  {t("timetable", "جدول الدراسة")}
                 </Link>
 
                 <Link href="/news" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
                   <div className="flex items-center gap-3">
-                    الأخبار
+                    {t("news", "الأخبار")}
                   </div>
                   {unreadNewsCount > 0 && (
                     <span className="flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 bg-medical-500 text-white text-[11px] font-black rounded-full shadow-md animate-pulse">
@@ -261,7 +291,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 </Link>
                 {isUser && (
                   <Link href="/friends" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors">
-                    <span>الأصدقاء</span>
+                    <span>{t("friends", "الأصدقاء")}</span>
                     {incomingRequestsCount > 0 && (
                       <span className="flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 bg-red-500 text-white text-[11px] font-black rounded-full shadow-md animate-pulse">
                         {incomingRequestsCount > 99 ? "+99" : incomingRequestsCount}
@@ -271,12 +301,12 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 )}
                 <Link href="/gpa-calculator" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-4 p-4 bg-medical-50 dark:bg-medical-900/20 text-medical-600 rounded-2xl">
                   <Sparkles className="w-5 h-5" />
-                  حاسبة المعدل
+                  {t("gpa", "حاسبة المعدل")}
                 </Link>
                 {isAdmin && (
                   <Link href="/admin" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-4 p-4 text-amber-600 bg-amber-50 dark:bg-amber-900/20 rounded-2xl">
                     <Lock className="w-5 h-5" />
-                    لوحة التحكم
+                    {t("admin", "لوحة التحكم")}
                   </Link>
                 )}
               </div>
@@ -287,7 +317,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                     onClick={() => { handleLogoutUser(); setShowMobileMenu(false); }}
                     className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-black"
                   >
-                    تسجيل الخروج
+                    {t("logout", "تسجيل الخروج")}
                   </button>
                 ) : isAdmin ? null : (
                   <Link
@@ -296,7 +326,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                     className="flex items-center justify-center gap-3 w-full py-4 bg-medical-600 text-white rounded-2xl font-black shadow-lg shadow-medical-600/20"
                   >
                     <User className="w-5 h-5" />
-                    تسجيل الدخول
+                    {t("login", "تسجيل الدخول")}
                   </Link>
                 )}
               </div>

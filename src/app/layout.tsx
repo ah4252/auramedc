@@ -34,6 +34,8 @@ export async function generateViewport() {
 }
 
 import SectionMaintenanceGuard from "@/components/layout/SectionMaintenanceGuard";
+import { LocaleProvider } from "@/context/LocaleProvider.client";
+import { Locale } from "@/lib/i18n";
 
 export default async function RootLayout({
   children,
@@ -44,6 +46,7 @@ export default async function RootLayout({
   const isAdmin = !!cookieStore.get("admin_token");
   const userId = cookieStore.get("user_token")?.value;
   const showTopNav = !!userId || isAdmin;
+  const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
 
   let userName = null;
   let userImage = null;
@@ -92,8 +95,10 @@ export default async function RootLayout({
     };
   }
 
+  const dir = siteLang === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang={siteLang} dir={dir} className="dark" suppressHydrationWarning>
       <head>
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
@@ -114,19 +119,21 @@ export default async function RootLayout({
         <AppLinkGuard />
         <SSENotificationListener />
         <PushNotificationManager />
-        <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
-          <ActivePresencePing userId={userId || null} />
-          {showTopNav && (
-            <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
-          )}
-          <main className="flex-1 pb-20 md:pb-0">
-            <SectionMaintenanceGuard settings={settings}>
-              {children}
-            </SectionMaintenanceGuard>
-          </main>
-          <Footer />
-          {showTopNav && <MobileNav />}
-        </MaintenanceGuard>
+        <LocaleProvider initialLang={siteLang as Locale}>
+          <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
+            <ActivePresencePing userId={userId || null} />
+            {showTopNav && (
+              <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
+            )}
+            <main className="flex-1 pb-20 md:pb-0">
+              <SectionMaintenanceGuard settings={settings}>
+                {children}
+              </SectionMaintenanceGuard>
+            </main>
+            <Footer />
+            {showTopNav && <MobileNav />}
+          </MaintenanceGuard>
+        </LocaleProvider>
       </body>
     </html>
   );
