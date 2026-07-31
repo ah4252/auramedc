@@ -160,11 +160,11 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
             )}
           </div>
 
-          <div className="flex items-center gap-2 lg:gap-4 shrink min-w-0">
+          <div className="flex items-center gap-2 lg:gap-4">
             {isUser ? (
-              <div className="flex items-center gap-2 lg:gap-3 min-w-0">
-                <Link href="/profile" className="flex items-center gap-2 group shrink min-w-0 max-w-[10rem]">
-                    <div className="hidden xl:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors leading-tight min-w-0">
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Link href="/profile" className="flex items-center gap-2 group">
+                  <div className="hidden xl:flex flex-col items-end mr-1 group-hover:text-medical-600 transition-colors leading-tight">
                     <span className="text-[10px] text-slate-400 truncate">{t("welcome", "أهلاً بك")}</span>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[5.5rem]">{userName}</span>
                   </div>
@@ -190,36 +190,33 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               </Link>
             )}
 
-            {/* Language switcher */}
-            <div className="hidden sm:flex items-center gap-2 shrink min-w-0">
+            {/* Language switcher — دائماً ظاهر */}
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => {
                   try {
                     document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
                     window.localStorage.setItem("site_lang", "ar");
-                  } catch (e) {
-                    // ignore
-                  }
+                  } catch (e) {}
                   setLang("ar");
                   setTimeout(() => router.refresh(), 80);
                 }}
-                className={`px-2 py-1 rounded-lg text-xs font-bold min-w-[2.2rem] text-center ${lang === "ar" ? "bg-medical-600 text-white" : "bg-slate-100 text-slate-700"}`}
+                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "ar" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
               >ع</button>
               <button
                 onClick={() => {
                   try {
                     document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
                     window.localStorage.setItem("site_lang", "fr");
-                  } catch (e) {
-                    // ignore
-                  }
+                  } catch (e) {}
                   setLang("fr");
                   setTimeout(() => router.refresh(), 80);
                 }}
-                className={`px-2 py-1 rounded-lg text-xs font-bold min-w-[2.2rem] text-center ${lang === "fr" ? "bg-medical-600 text-white" : "bg-slate-100 text-slate-700"}`}
+                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "fr" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
               >FR</button>
             </div>
 
+            {/* Mobile hamburger */}
             <button
               onClick={() => setShowMobileMenu(true)}
               className="lg:hidden relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
@@ -311,7 +308,39 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 )}
               </div>
 
-              <div className="p-6 border-t border-slate-100 dark:border-slate-800">
+              <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                {/* Language switcher for mobile */}
+                <div className="flex items-center gap-2 mb-1">
+                  <button
+                    onClick={() => {
+                      try {
+                        document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
+                        window.localStorage.setItem("site_lang", "ar");
+                      } catch (e) {}
+                      setLang("ar");
+                      setTimeout(() => router.refresh(), 80);
+                      setShowMobileMenu(false);
+                    }}
+                    className={`flex-1 py-3 rounded-2xl text-sm font-black transition-all ${lang === "ar" ? "bg-medical-600 text-white shadow-md shadow-medical-600/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
+                  >
+                    العربية
+                  </button>
+                  <button
+                    onClick={() => {
+                      try {
+                        document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
+                        window.localStorage.setItem("site_lang", "fr");
+                      } catch (e) {}
+                      setLang("fr");
+                      setTimeout(() => router.refresh(), 80);
+                      setShowMobileMenu(false);
+                    }}
+                    className={`flex-1 py-3 rounded-2xl text-sm font-black transition-all ${lang === "fr" ? "bg-medical-600 text-white shadow-md shadow-medical-600/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
+                  >
+                    Français
+                  </button>
+                </div>
+
                 {isUser ? (
                   <button
                     onClick={() => { handleLogoutUser(); setShowMobileMenu(false); }}
