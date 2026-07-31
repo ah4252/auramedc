@@ -51,6 +51,27 @@ export default function FriendsClient({
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Friend | null>(null);
+  const [friendshipStatusBanner, setFriendshipStatusBanner] = useState<{ title: string; body: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const raw = window.localStorage.getItem("friendship_status_banner");
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as { title?: string; body?: string };
+      if (parsed.title || parsed.body) {
+        setFriendshipStatusBanner({
+          title: parsed.title || "تحديث الصداقة",
+          body: parsed.body || ""
+        });
+        window.localStorage.removeItem("friendship_status_banner");
+      }
+    } catch {
+      window.localStorage.removeItem("friendship_status_banner");
+    }
+  }, []);
 
   const showNotification = (type: "success" | "error", message: string) => {
     setNotification({ type, message });
@@ -252,6 +273,27 @@ export default function FriendsClient({
               <AlertTriangle className="w-5 h-5 shrink-0" />
             )}
             <span className="text-sm font-black">{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {friendshipStatusBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-md w-[calc(100%-2rem)] rounded-2xl border border-emerald-500/20 bg-emerald-500/10 backdrop-blur-md px-4 py-3 shadow-xl"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <div className="text-right min-w-0">
+                <p className="text-xs font-black text-emerald-700 dark:text-emerald-300">{friendshipStatusBanner.title}</p>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 font-bold break-words">{friendshipStatusBanner.body}</p>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

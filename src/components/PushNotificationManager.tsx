@@ -95,6 +95,17 @@ export default function PushNotificationManager() {
           const messageHandler = (event: MessageEvent) => {
             console.log('Service Worker message received:', event.data);
             if (event.data && event.data.type === 'NOTIFICATION_RECEIVED') {
+              const payload = event.data.payload || {};
+              const title = payload.title || "";
+              const body = payload.body || "";
+
+              if (/(تم قبول|تم رفض|تم إلغاء)/i.test(`${title} ${body}`)) {
+                localStorage.setItem(
+                  "friendship_status_banner",
+                  JSON.stringify({ title, body, timestamp: Date.now() })
+                );
+              }
+
               const isSoundEnabled = localStorage.getItem('notification_sound') !== 'false';
               if (isSoundEnabled) {
                 playNotificationSound();

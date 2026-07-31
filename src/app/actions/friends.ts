@@ -161,6 +161,16 @@ export async function rejectFriendRequest(requestId: string) {
       where: { id: requestId }
     });
 
+    const otherUserId = request.userId === activeUserId ? request.friendId : request.userId;
+    if (otherUserId && request.friendId === activeUserId) {
+      await sendPushNotification(
+        otherUserId,
+        "تم رفض طلب الصداقة",
+        `رفض ${request.friendId === activeUserId ? "مستخدم" : "العضو"} طلب صداقتك.`,
+        "/friends"
+      );
+    }
+
     revalidatePath("/friends");
     return { success: true };
   } catch (err) {
