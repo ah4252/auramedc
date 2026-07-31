@@ -113,6 +113,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     const formData = new FormData();
     formData.append("name", user.name);
     formData.append("image", tempImageUrl);
+    formData.append("studyYear", user.studyYear || "");
     formData.append("telegram", user.telegram || "");
     formData.append("instagram", user.instagram || "");
     formData.append("facebook", user.facebook || "");
@@ -777,6 +778,17 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         <input 
                           name="image" defaultValue={user.image || ""} placeholder="https://example.com/image.jpg" dir="ltr"
                           className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label htmlFor="studyYear" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-medical-500" /> السنة الدراسية
+                        </label>
+                        <input 
+                          id="studyYear" name="studyYear" defaultValue={user.studyYear || ""} required
+                          placeholder="مثال: السنة الأولى طب"
+                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
                         />
                       </div>
                     </div>

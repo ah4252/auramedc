@@ -2,7 +2,7 @@
 
 import { registerUser } from "@/app/actions/auth";
 import { useState } from "react";
-import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X } from "lucide-react";
+import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -120,6 +120,22 @@ export default function RegisterPage() {
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
                   <Mail className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-black text-slate-300 mr-2">السنة الدراسية</label>
+              <div className="relative group">
+                <input 
+                  name="studyYear"
+                  type="text"
+                  required
+                  placeholder="مثال: السنة الأولى طب"
+                  className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
+                  <CalendarDays className="w-4 h-4" />
                 </div>
               </div>
             </div>
