@@ -100,11 +100,21 @@ export default function FriendsClient({
       const res = await sendFriendRequest(userId);
       if (res.success) {
         showNotification("success", "تم إرسال طلب الصداقة بنجاح!");
-        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification('AuraMed Elite', { body: 'تم إرسال طلب الصداقة بنجاح!', icon: '/icons/icon-192.webp' });
+
+        if (typeof window !== "undefined" && "Notification" in window) {
+          const browserNotification = window.Notification;
+          if (browserNotification && browserNotification.permission === "granted") {
+            try {
+              new browserNotification("AuraMed Elite", {
+                body: "تم إرسال طلب الصداقة بنجاح!",
+                icon: "/icons/icon-192.webp",
+              });
+            } catch {
+              // Ignore unsupported notification environment in mobile WebViews.
+            }
+          }
         }
 
-        
         // Update local state in live search results
         setSearchResults(prev => 
           prev.map(r => r.id === userId ? { ...r, status: "PENDING_SENT" } : r)

@@ -77,8 +77,11 @@ export default function PushNotificationManager() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
-      console.log("PushNotificationManager mounted. Permission:", Notification.permission);
-      setPermission(Notification.permission);
+      const browserNotification = window.Notification;
+      if (browserNotification) {
+        console.log("PushNotificationManager mounted. Permission:", browserNotification.permission);
+        setPermission(browserNotification.permission);
+      }
     }
   }, []);
 
@@ -109,7 +112,7 @@ export default function PushNotificationManager() {
       };
       registerSW();
       // If permission already granted, attempt silent subscription
-      if (Notification.permission === "granted") {
+      if (typeof window !== "undefined" && "Notification" in window && window.Notification && window.Notification.permission === "granted") {
         subscribeSilently();
       }
     }

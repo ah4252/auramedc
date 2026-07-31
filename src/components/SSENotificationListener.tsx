@@ -27,13 +27,16 @@ export default function SSENotificationListener() {
     }, 7000);
 
     // إشعار نظام إذا كانت الصلاحية ممنوحة
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      try {
-        new Notification(data.title, {
-          body: data.body,
-          icon: "/icons/icon-192.webp",
-        });
-      } catch {}
+    if (typeof window !== "undefined" && "Notification" in window) {
+      const browserNotification = window.Notification;
+      if (browserNotification && browserNotification.permission === "granted") {
+        try {
+          new browserNotification(data.title, {
+            body: data.body,
+            icon: "/icons/icon-192.webp",
+          });
+        } catch {}
+      }
     }
   };
 
