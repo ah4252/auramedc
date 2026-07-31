@@ -58,3 +58,20 @@ export function getSocialUrl(handle: string | null | undefined, platform: "faceb
   
   return "#";
 }
+
+export function openInAppLink(url: string | null | undefined) {
+  if (!url || url === "#") return;
+
+  try {
+    window.open(url, "_self", "noopener,noreferrer");
+  } catch {
+    window.location.href = url;
+  }
+}
+
+export function getInAppLinkProps() {
+  return {
+    target: "_self" as const,
+    rel: "noopener noreferrer",
+  };
+}

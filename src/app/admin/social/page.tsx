@@ -257,7 +257,7 @@ export default function AdminSocialPage() {
 
                     {selectedUser.telegram && (
                       <motion.a whileHover={{ scale: 1.01 }}
-                        href={getSocialUrl(selectedUser.telegram, "telegram")} target="_blank" rel="noopener noreferrer"
+                        href={getSocialUrl(selectedUser.telegram, "telegram")} target="_self" rel="noopener noreferrer"
                         className="flex flex-col gap-2 p-4 bg-sky-500/5 hover:bg-sky-500 text-sky-600 hover:text-white rounded-[1.5rem] border border-sky-500/10 transition-all group">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
@@ -274,7 +274,7 @@ export default function AdminSocialPage() {
 
                     {selectedUser.instagram && (
                       <motion.a whileHover={{ scale: 1.01 }}
-                        href={getSocialUrl(selectedUser.instagram, "instagram")} target="_blank" rel="noopener noreferrer"
+                        href={getSocialUrl(selectedUser.instagram, "instagram")} target="_self" rel="noopener noreferrer"
                         className="flex flex-col gap-2 p-4 bg-pink-500/5 hover:bg-pink-500 text-pink-600 hover:text-white rounded-[1.5rem] border border-pink-500/10 transition-all group">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
@@ -291,7 +291,7 @@ export default function AdminSocialPage() {
 
                     {selectedUser.facebook && (
                       <motion.a whileHover={{ scale: 1.01 }}
-                        href={getSocialUrl(selectedUser.facebook, "facebook")} target="_blank" rel="noopener noreferrer"
+                        href={getSocialUrl(selectedUser.facebook, "facebook")} target="_self" rel="noopener noreferrer"
                         className="flex flex-col gap-2 p-4 bg-blue-600/5 hover:bg-blue-600 text-blue-600 hover:text-white rounded-[1.5rem] border border-blue-600/10 transition-all group">
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">

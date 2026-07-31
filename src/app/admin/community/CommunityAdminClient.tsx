@@ -88,7 +88,6 @@ export default function CommunityAdminClient({ initialDiscussions, categoryName,
                     <div className="flex items-center justify-center gap-2">
                       <Link 
                         href={`/community/d/${d.id}`}
-                        target="_blank"
                         className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="عرض المنشور"
                       >

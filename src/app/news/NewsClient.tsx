@@ -345,7 +345,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                               <a 
                                 key={idx}
                                 href={file}
-                                target="_blank"
+                                target="_self"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black transition-all border border-slate-700 shadow-lg flex-1 min-w-[200px]"
                               >

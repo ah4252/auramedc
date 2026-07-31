@@ -121,17 +121,17 @@ export default function DiscussionViewClient({ discussion, user }: { discussion:
                   <h4 className="font-black text-white text-xl">{discussion.user?.name || "طالب آورا"}</h4>
                   <div className="flex items-center gap-2">
                     {discussion.user?.telegram && (
-                      <a href={getSocialUrl(discussion.user.telegram, "telegram")} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-sky-500/10 text-sky-500 rounded-lg hover:bg-sky-500 hover:text-white transition-all shadow-sm" title="Telegram">
+                      <a href={getSocialUrl(discussion.user.telegram, "telegram")} target="_self" rel="noopener noreferrer" className="p-1.5 bg-sky-500/10 text-sky-500 rounded-lg hover:bg-sky-500 hover:text-white transition-all shadow-sm" title="Telegram">
                         <Send className="w-3.5 h-3.5" />
                       </a>
                     )}
                     {discussion.user?.instagram && (
-                      <a href={getSocialUrl(discussion.user.instagram, "instagram")} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-pink-500/10 text-pink-500 rounded-lg hover:bg-pink-500 hover:text-white transition-all shadow-sm" title="Instagram">
+                      <a href={getSocialUrl(discussion.user.instagram, "instagram")} target="_self" rel="noopener noreferrer" className="p-1.5 bg-pink-500/10 text-pink-500 rounded-lg hover:bg-pink-500 hover:text-white transition-all shadow-sm" title="Instagram">
                         <Instagram className="w-3.5 h-3.5" />
                       </a>
                     )}
                     {discussion.user?.facebook && (
-                      <a href={getSocialUrl(discussion.user.facebook, "facebook")} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-blue-600/10 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Facebook">
+                      <a href={getSocialUrl(discussion.user.facebook, "facebook")} target="_self" rel="noopener noreferrer" className="p-1.5 bg-blue-600/10 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Facebook">
                         <Facebook className="w-3.5 h-3.5" />
                       </a>
                     )}
@@ -253,17 +253,17 @@ export default function DiscussionViewClient({ discussion, user }: { discussion:
                               <h5 className="font-black text-white text-lg">{comment.user?.name || "طالب آورا"}</h5>
                               <div className="flex items-center gap-1.5">
                                 {comment.user?.telegram && (
-                                  <a href={getSocialUrl(comment.user.telegram, "telegram")} target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:text-sky-400" title="Telegram">
+                                  <a href={getSocialUrl(comment.user.telegram, "telegram")} target="_self" rel="noopener noreferrer" className="text-sky-500 hover:text-sky-400" title="Telegram">
                                     <Send className="w-3 h-3" />
                                   </a>
                                 )}
                                 {comment.user?.instagram && (
-                                  <a href={getSocialUrl(comment.user.instagram, "instagram")} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-400" title="Instagram">
+                                  <a href={getSocialUrl(comment.user.instagram, "instagram")} target="_self" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-400" title="Instagram">
                                     <Instagram className="w-3 h-3" />
                                   </a>
                                 )}
                                 {comment.user?.facebook && (
-                                  <a href={getSocialUrl(comment.user.facebook, "facebook")} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-500" title="Facebook">
+                                  <a href={getSocialUrl(comment.user.facebook, "facebook")} target="_self" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-500" title="Facebook">
                                     <Facebook className="w-3 h-3" />
                                   </a>
                                 )}

@@ -252,7 +252,7 @@ export default function CommunityClient({ initialDiscussions, subjects, user, ca
                                  {d.user?.telegram && (
                                    <a 
                                      href={getSocialUrl(d.user.telegram, "telegram")} 
-                                     target="_blank" rel="noopener noreferrer" 
+                                     target="_self" rel="noopener noreferrer" 
                                      title="Telegram"
                                      className="p-1.5 bg-sky-500/10 text-sky-500 rounded-lg hover:bg-sky-500 hover:text-white transition-all shadow-sm"
                                      onClick={(e) => e.stopPropagation()}
@@ -263,7 +263,7 @@ export default function CommunityClient({ initialDiscussions, subjects, user, ca
                                  {d.user?.instagram && (
                                    <a 
                                      href={getSocialUrl(d.user.instagram, "instagram")} 
-                                     target="_blank" rel="noopener noreferrer" 
+                                     target="_self" rel="noopener noreferrer" 
                                      title="Instagram"
                                      className="p-1.5 bg-pink-500/10 text-pink-500 rounded-lg hover:bg-pink-500 hover:text-white transition-all shadow-sm"
                                      onClick={(e) => e.stopPropagation()}
@@ -274,7 +274,7 @@ export default function CommunityClient({ initialDiscussions, subjects, user, ca
                                  {d.user?.facebook && (
                                    <a 
                                      href={getSocialUrl(d.user.facebook, "facebook")} 
-                                     target="_blank" rel="noopener noreferrer" 
+                                     target="_self" rel="noopener noreferrer" 
                                      title="Facebook"
                                      className="p-1.5 bg-blue-600/10 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                      onClick={(e) => e.stopPropagation()}

@@ -1,17 +1,24 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, LayoutGrid, Calculator, Newspaper, Pill, Users, GraduationCap, Sparkles, ChevronLeft, Star, Zap, Clock, TrendingUp } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
 
 export default async function Home() {
+  const userId = (await cookies()).get("user_token")?.value;
+  if (!userId) {
+    redirect("/login");
+  }
+
   let latestLessons: any[] = [];
   let lessonCount = 0;
   let subjectCount = 0;
   let userCount = 0;
 
   try {
-    [latestLessons, lessonCount, subjectCount, userCount] = await Promise.all([
+    const [lessonsResult, lessonCountResult, subjectCountResult, userCountResult] = await Promise.allSettled([
       prisma.lesson.findMany({
         orderBy: { createdAt: "desc" },
         take: 3,
@@ -21,6 +28,22 @@ export default async function Home() {
       prisma.subject.count(),
       prisma.user.count(),
     ]);
+
+    if (lessonsResult.status === "fulfilled") {
+      latestLessons = lessonsResult.value;
+    }
+
+    if (lessonCountResult.status === "fulfilled") {
+      lessonCount = lessonCountResult.value;
+    }
+
+    if (subjectCountResult.status === "fulfilled") {
+      subjectCount = subjectCountResult.value;
+    }
+
+    if (userCountResult.status === "fulfilled") {
+      userCount = userCountResult.value;
+    }
   } catch (error) {
     console.error("Home DB Error:", error);
   }

@@ -100,25 +100,25 @@ export default function Footer() {
              <h4 className="text-white font-black text-xl mb-6">تواصل مباشر</h4>
              <div className="space-y-4">
                 {settings.socialWhatsapp && (
-                  <a href={`https://wa.me/${settings.socialWhatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
+                  <a href={`https://wa.me/${settings.socialWhatsapp.replace(/[^0-9]/g, '')}`} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <Phone className="w-5 h-5 text-green-500 group-hover:scale-110 transition-transform" />
                      <span className="font-bold text-white" dir="ltr">{settings.socialWhatsapp}</span>
                   </a>
                 )}
                 {settings.socialTelegram && (
-                  <a href={settings.socialTelegram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
+                  <a href={settings.socialTelegram} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <TelegramIcon className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
                      <span className="font-bold text-white">تيليجرام (Telegram)</span>
                   </a>
                 )}
                 {settings.socialInstagram && (
-                  <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
+                  <a href={settings.socialInstagram} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <Instagram className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" />
                      <span className="font-bold text-white">إنستغرام (Instagram)</span>
                   </a>
                 )}
                 {settings.socialFacebook && (
-                  <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
+                  <a href={settings.socialFacebook} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">
                      <Facebook className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
                      <span className="font-bold text-white">فيسبوك (Facebook)</span>
                   </a>

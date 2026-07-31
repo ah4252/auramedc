@@ -5,14 +5,31 @@ import { createRecoveryRequest } from "@/app/actions/recovery";
 import { useState } from "react";
 import { LogIn, Mail, Lock, ArrowRight, HeartPulse, X, Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const redirectPath = (() => {
+    const rawRedirect = searchParams.get("redirect") || "/";
+    const safeRedirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
+    return safeRedirect === "/login" ? "/" : safeRedirect;
+  })();
+  const loginMessage = searchParams.get("message") || "يرجى تسجيل الدخول للمتابعة";
+
   const [loading, setLoading] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+
+  const beginAuthenticatedTransition = () => {
+    setIsAuthenticating(true);
+    setTimeout(() => {
+      router.push(redirectPath);
+      router.refresh();
+    }, 1400);
+  };
 
   // Forgot password modal state
   const [showForgot, setShowForgot] = useState(false);
@@ -53,8 +70,7 @@ export default function LoginPage() {
       setShowResetModal(true);
       setLoading(false);
     } else {
-      router.push("/");
-      router.refresh();
+      beginAuthenticatedTransition();
     }
   }
 
@@ -79,8 +95,7 @@ export default function LoginPage() {
       setResetSuccess(true);
       setTimeout(() => {
         setShowResetModal(false);
-        router.push("/");
-        router.refresh();
+        beginAuthenticatedTransition();
       }, 1500);
     }
     setResetLoading(false);
@@ -120,6 +135,45 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-indigo-500/5 rounded-full blur-[150px]"></div>
       </div>
 
+      <AnimatePresence>
+        {isAuthenticating && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#020817]/90 backdrop-blur-xl"
+          >
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 10 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="flex flex-col items-center justify-center gap-6 px-8"
+            >
+              <div className="relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-[2rem] bg-medical-500/20 blur-2xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-[2rem] border border-medical-400/30 bg-slate-900/80 shadow-[0_0_50px_rgba(14,165,233,0.25)]">
+                  <HeartPulse className="h-11 w-11 text-medical-400" />
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-[10px] font-black tracking-[0.35em] text-slate-400">AURAMED</p>
+                <h2 className="mt-3 text-3xl font-black text-white">AuraMed Elite</h2>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-medical-400 animate-bounce [animation-delay:0ms]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-sky-400 animate-bounce [animation-delay:120ms]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:240ms]" />
+              </div>
+
+              <p className="text-sm font-bold text-slate-300">جاري تجهيز المنصة لك...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div 
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -142,16 +196,16 @@ export default function LoginPage() {
           </div>
 
           <AnimatePresence>
-            {error && (
+            {(error || loginMessage) && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden mb-6"
               >
-                <div className="bg-red-500/10 text-red-400 p-4 rounded-2xl text-sm font-black text-center border border-red-500/20 flex items-center justify-center gap-2">
-                  <X className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
+                <div className={`p-4 rounded-2xl text-sm font-black text-center border flex items-center justify-center gap-2 ${error ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-medical-500/10 text-medical-300 border-medical-500/20'}`}>
+                  {error ? <X className="w-4 h-4 shrink-0" /> : <Lock className="w-4 h-4 shrink-0" />}
+                  <span>{error || loginMessage}</span>
                 </div>
               </motion.div>
             )}
@@ -210,7 +264,7 @@ export default function LoginPage() {
 
             <button 
               type="submit"
-              disabled={loading}
+              disabled={loading || isAuthenticating}
               className="w-full relative group overflow-hidden bg-gradient-to-r from-medical-600 to-sky-500 hover:from-medical-500 hover:to-sky-400 text-white font-black py-4 rounded-2xl transition-all shadow-[0_0_40px_-10px_rgba(14,165,233,0.5)] disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
@@ -237,12 +291,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <Link href="/" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#0f172a]/50 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all group backdrop-blur-md font-bold">
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            <span className="text-sm">العودة للصفحة الرئيسية</span>
-          </Link>
-        </div>
       </motion.div>
 
       {/* Forgot Password Modal */}

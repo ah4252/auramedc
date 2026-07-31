@@ -1,5 +1,6 @@
 import { registerPlugin, Capacitor } from '@capacitor/core';
 import type { PluginListenerHandle } from '@capacitor/core';
+import { openInAppLink } from '@/lib/utils';
 
 export interface FileItem {
   name: string;
@@ -103,7 +104,7 @@ class WebAuraDownloader implements Partial<AuraDownloaderPlugin> {
     const a = document.createElement('a');
     a.href = options.url;
     a.download = options.fileName;
-    a.target = '_blank';
+    a.target = '_self';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -123,7 +124,7 @@ class WebAuraDownloader implements Partial<AuraDownloaderPlugin> {
   }
 
   async open(options: { url?: string; uri?: string }) {
-    window.open(options.url || options.uri, '_blank');
+    openInAppLink(options.url || options.uri);
   }
 
   async exists(options: { fileName: string }) {

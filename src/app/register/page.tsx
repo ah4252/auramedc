@@ -170,12 +170,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <Link href="/" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#0f172a]/50 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all group backdrop-blur-md font-bold">
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            <span className="text-sm">العودة للصفحة الرئيسية</span>
-          </Link>
-        </div>
       </motion.div>
     </div>
   );

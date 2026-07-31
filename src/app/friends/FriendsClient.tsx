@@ -540,7 +540,7 @@ export default function FriendsClient({
                               {f.user.telegram && (
                                 <a
                                   href={`https://t.me/${f.user.telegram.replace("@", "")}`}
-                                  target="_blank"
+                                  target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-sky-500/10 hover:bg-sky-500 text-sky-500 hover:text-white flex items-center justify-center transition-all"
                                   title="تليجرام"
@@ -551,7 +551,7 @@ export default function FriendsClient({
                               {f.user.instagram && (
                                 <a
                                   href={`https://instagram.com/${f.user.instagram}`}
-                                  target="_blank"
+                                  target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-pink-500/10 hover:bg-pink-500 text-pink-500 hover:text-white flex items-center justify-center transition-all"
                                   title="انستغرام"
@@ -562,7 +562,7 @@ export default function FriendsClient({
                               {f.user.facebook && (
                                 <a
                                   href={`https://facebook.com/${f.user.facebook}`}
-                                  target="_blank"
+                                  target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-blue-600/10 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all"
                                   title="فيسبوك"

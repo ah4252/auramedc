@@ -12,6 +12,7 @@ import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import SSENotificationListener from "@/components/SSENotificationListener";
+import AppLinkGuard from "@/components/AppLinkGuard";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], display: "swap" });
 
@@ -42,7 +43,8 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const isAdmin = !!cookieStore.get("admin_token");
   const userId = cookieStore.get("user_token")?.value;
-  
+  const showTopNav = !!userId || isAdmin;
+
   let userName = null;
   let userImage = null;
   let unreadNewsCount = 0;
@@ -109,18 +111,21 @@ export default async function RootLayout({
         `}} />
       </head>
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
+        <AppLinkGuard />
         <SSENotificationListener />
         <PushNotificationManager />
         <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
           <ActivePresencePing userId={userId || null} />
-          <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
+          {showTopNav && (
+            <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
+          )}
           <main className="flex-1 pb-20 md:pb-0">
             <SectionMaintenanceGuard settings={settings}>
               {children}
             </SectionMaintenanceGuard>
           </main>
           <Footer />
-          <MobileNav />
+          {showTopNav && <MobileNav />}
         </MaintenanceGuard>
       </body>
     </html>

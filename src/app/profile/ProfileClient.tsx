@@ -184,17 +184,17 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
               {/* Social Badges */}
               <div className="flex items-center justify-center gap-3 mb-8">
                 {user.telegram && (
-                  <a href={getSocialUrl(user.telegram, "telegram")} target="_blank" rel="noopener noreferrer" className="p-3 bg-sky-500/10 text-sky-500 rounded-2xl hover:bg-sky-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(14,165,233,0.4)]" title="Telegram">
+                  <a href={getSocialUrl(user.telegram, "telegram")} target="_self" rel="noopener noreferrer" className="p-3 bg-sky-500/10 text-sky-500 rounded-2xl hover:bg-sky-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(14,165,233,0.4)]" title="Telegram">
                     <Send className="w-5 h-5" />
                   </a>
                 )}
                 {user.instagram && (
-                  <a href={getSocialUrl(user.instagram, "instagram")} target="_blank" rel="noopener noreferrer" className="p-3 bg-pink-500/10 text-pink-500 rounded-2xl hover:bg-pink-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(236,72,153,0.4)]" title="Instagram">
+                  <a href={getSocialUrl(user.instagram, "instagram")} target="_self" rel="noopener noreferrer" className="p-3 bg-pink-500/10 text-pink-500 rounded-2xl hover:bg-pink-500 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(236,72,153,0.4)]" title="Instagram">
                     <Instagram className="w-5 h-5" />
                   </a>
                 )}
                 {user.facebook && (
-                  <a href={getSocialUrl(user.facebook, "facebook")} target="_blank" rel="noopener noreferrer" className="p-3 bg-blue-600/10 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(37,99,235,0.4)]" title="Facebook">
+                  <a href={getSocialUrl(user.facebook, "facebook")} target="_self" rel="noopener noreferrer" className="p-3 bg-blue-600/10 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white hover:-translate-y-1 transition-all shadow-sm hover:shadow-[0_5px_20px_rgba(37,99,235,0.4)]" title="Facebook">
                     <Facebook className="w-5 h-5" />
                   </a>
                 )}

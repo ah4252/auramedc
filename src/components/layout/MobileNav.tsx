@@ -7,6 +7,9 @@ import { motion } from "framer-motion";
 
 export default function MobileNav() {
   const pathname = usePathname();
+  const isAuthRoute = pathname === "/login" || pathname === "/register";
+
+  if (isAuthRoute) return null;
 
   const navItems = [
     { name: "الرئيسية", icon: Home, path: "/" },

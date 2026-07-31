@@ -200,7 +200,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                       <a 
                         key={idx}
                         href={link.url}
-                        target="_blank"
+                        target="_self"
                         rel="noopener noreferrer"
                         className="group flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/40 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/20 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 shadow-sm hover:shadow-md"
                       >

@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function Navbar({ isAdmin = false, isUser = false, userName = null, userImage = null, userId = null, incomingRequestsCount = 0, unreadNewsCount = 0 }: { isAdmin?: boolean, isUser?: boolean, userName?: string | null, userImage?: string | null, userId?: string | null, incomingRequestsCount?: number, unreadNewsCount?: number }) {
   const pathname = usePathname();
+  const isAuthRoute = pathname === "/login" || pathname === "/register";
+  const shouldShowNav = !isAuthRoute && (isUser || isAdmin);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [clicks, setClicks] = useState(0);
   const [showModal, setShowModal] = useState(false);
@@ -65,6 +67,8 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
     router.refresh();
     router.push("/");
   };
+
+  if (!shouldShowNav) return null;
 
   return (
     <>
