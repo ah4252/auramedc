@@ -2,7 +2,7 @@
 
 import { registerUser } from "@/app/actions/auth";
 import { useState } from "react";
-import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays } from "lucide-react";
+import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,16 +10,25 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
     
     // التحقق من أن الإيميل ينتهي بـ @gmail.com
     if (!email.toLowerCase().endsWith("@gmail.com")) {
       setError("عذراً، يُسمح فقط بإنشاء حساب باستخدام بريد @gmail.com");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("كلمتا المرور غير متطابقتين");
       return;
     }
 
@@ -145,15 +154,46 @@ export default function RegisterPage() {
               <div className="relative group">
                 <input 
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
+                  className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
                   dir="ltr"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors pointer-events-none">
                   <Lock className="w-4 h-4" />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-black text-slate-300 mr-2">تأكيد كلمة المرور</label>
+              <div className="relative group">
+                <input 
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
+                  dir="ltr"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors pointer-events-none">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
