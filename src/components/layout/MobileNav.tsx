@@ -22,8 +22,11 @@ export default function MobileNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-dark-card/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 px-2 pb-safe-area">
-      <div className="flex items-center justify-around h-16">
+    <div
+      className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-[calc(100%-2rem)] max-w-xl px-3 py-2 bg-white/40 dark:bg-dark-card/40 backdrop-blur-[10px] border border-white/20 dark:border-dark-card/30 rounded-3xl shadow-2xl"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}
+    >
+      <div className="flex items-center justify-around h-12">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           return (
