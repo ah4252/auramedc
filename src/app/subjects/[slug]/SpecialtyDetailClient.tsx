@@ -9,6 +9,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useLocale } from "@/context/LocaleProvider.client";
+
+// Helper function to safely parse description JSON
+function parseDescription(desc: string | null) {
+  if (!desc) return { brief: "", content: "", videoUrl: "", iconName: "Stethoscope", links: [], images: [] };
+  try {
+    if (desc.trim().startsWith("{")) {
+      const parsed = JSON.parse(desc);
+      return {
         brief: parsed.brief || "",
         content: parsed.content || "",
         videoUrl: parsed.videoUrl || "",

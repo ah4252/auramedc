@@ -64,7 +64,8 @@ export default function SectionClient({ section }: { section: PharmacySection })
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5 text-white/90 text-sm font-bold transition-colors"
             >
               <ArrowRight className="w-4 h-4" />
-                {t("pharmacy_back_to_sections", "Back to sections")}
+              {t("pharmacy_back_to_sections", "Back to sections")}
+            </Link>
           </motion.div>
 
           <motion.h1
