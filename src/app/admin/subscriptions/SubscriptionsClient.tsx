@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Trash2, Image as ImageIcon } from "lucide-react";
 import { updateSubscriptionStatus, deleteSubscriptionRequests } from "@/app/actions/payment";
 
 export default function SubscriptionsClient({ initialRequests }: { initialRequests: any[] }) {
@@ -9,6 +9,7 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showImageModal, setShowImageModal] = useState<string | null>(null);
 
   const parseTransactionId = (txId: string) => {
     if (!txId) return { type: "عام", id: "" };
@@ -159,6 +160,15 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center gap-2">
+                      {req.receiptUrl && (
+                        <button 
+                          onClick={() => setShowImageModal(req.receiptUrl)}
+                          className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"
+                          title="عرض الإيصال"
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                        </button>
+                      )}
                       {req.status === "PENDING" && (
                         <>
                           <button 
@@ -202,6 +212,27 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowImageModal(null)}>
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button 
+                onClick={() => setShowImageModal(null)}
+                className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <img 
+              src={showImageModal} 
+              alt="Receipt" 
+              className="w-full h-auto object-contain rounded-xl max-h-[85vh]"
+            />
+          </div>
         </div>
       )}
     </div>

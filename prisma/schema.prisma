@@ -270,6 +270,7 @@ model SubscriptionRequest {
   userId        String
   transactionId String
   paymentDate   DateTime
+  receiptUrl    String?
   status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

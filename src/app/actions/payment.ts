@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
 
-export async function submitSubscriptionRequest(transactionId: string, paymentDate: string) {
+export async function submitSubscriptionRequest(transactionId: string, paymentDate: string, receiptUrl?: string) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get("user_token")?.value;
@@ -23,6 +23,7 @@ export async function submitSubscriptionRequest(transactionId: string, paymentDa
         userId,
         transactionId,
         paymentDate: parsedDate,
+        receiptUrl,
         status: "PENDING",
       },
     });

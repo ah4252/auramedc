@@ -27,6 +27,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [subscriptionType, setSubscriptionType] = useState("TIMETABLE");
+  const [receiptBase64, setReceiptBase64] = useState("");
 
   // Password change state
   const [pwLoading, setPwLoading] = useState(false);
@@ -616,12 +617,13 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                             setPaymentLoading(true);
                             // Prefix the transactionId with subscriptionType
                             const prefixedTxId = `${subscriptionType}:${transactionId}`;
-                            const res = await submitSubscriptionRequest(prefixedTxId, paymentDate);
+                            const res = await submitSubscriptionRequest(prefixedTxId, paymentDate, receiptBase64);
                             setPaymentLoading(false);
                             if (res?.success) {
                               setPaymentSuccess(true);
                               setTransactionId("");
                               setPaymentDate("");
+                              setReceiptBase64("");
                             } else {
                               alert(res?.error || t("profile_generic_error"));
                             }
@@ -691,6 +693,25 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                     className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">صورة الإيصال (اختياري)</label>
+                                  <input 
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => setReceiptBase64(reader.result as string);
+                                        reader.readAsDataURL(file);
+                                      } else {
+                                        setReceiptBase64("");
+                                      }
+                                    }}
+                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 outline-none transition-all font-bold text-slate-800 dark:text-white text-right file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-yellow-500/10 file:text-yellow-600 hover:file:bg-yellow-500/20"
                                   />
                                 </div>
 
