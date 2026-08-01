@@ -731,7 +731,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
                           <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">{t("profile_payment_receipt_note")}</p>
-                            <a href="https://t.me/Lio_nard0" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl font-black transition-all text-sm hover:shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
+                            <a href="http://t.me/chi_jkoa" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl font-black transition-all text-sm hover:shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
                               <Send className="w-4 h-4" /> {t("profile_contact_support_button")}
                             </a>
                           </div>
