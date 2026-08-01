@@ -200,7 +200,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                     document.cookie = `site_lang=${newLang}; path=/; max-age=${60 * 60 * 24 * 365}`;
                     window.localStorage.setItem("site_lang", newLang);
                   } catch (err) {}
-                  setLang(newLang);
+                  setLang(newLang as any);
                   setTimeout(() => router.refresh(), 80);
                 }}
                 className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 h-8 rounded-lg text-xs font-black outline-none border border-transparent hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer text-center px-1"
