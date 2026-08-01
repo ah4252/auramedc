@@ -11,6 +11,7 @@ export default async function TimetablePage() {
   
   const timetableData = isUser ? await getTimetable() : null;
 
+  let activeSubscriptionsCount = 0;
   let hasActiveSubscription = false;
   let userEmail: string | null = null;
   if (userId) {
@@ -21,13 +22,14 @@ export default async function TimetablePage() {
       });
       if (user) userEmail = user.email;
 
-      const activeSub = await (prisma as any).subscriptionRequest.findFirst({
+      const activeSubs = await (prisma as any).subscriptionRequest.findMany({
         where: {
           userId,
           status: "APPROVED"
         }
       });
-      if (activeSub && (activeSub.transactionId.startsWith("TIMETABLE:") || activeSub.transactionId.startsWith("ALL:") || !activeSub.transactionId.includes(":"))) {
+      activeSubscriptionsCount = activeSubs.filter((sub: any) => sub.transactionId.startsWith("TIMETABLE:") || sub.transactionId.startsWith("ALL:") || !sub.transactionId.includes(":")).length;
+      if (activeSubscriptionsCount > 0) {
         hasActiveSubscription = true;
       }
     } catch (error) {
@@ -42,6 +44,7 @@ export default async function TimetablePage() {
         initialData={JSON.parse(JSON.stringify(timetableData))} 
         isUser={isUser} 
         hasActiveSubscription={hasActiveSubscription}
+        activeSubscriptionsCount={activeSubscriptionsCount}
         userEmail={userEmail}
       />
       

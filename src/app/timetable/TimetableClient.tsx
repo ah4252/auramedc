@@ -8,7 +8,7 @@ import Link from "next/link";
 import html2canvas from "html2canvas";
 import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 
-export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, userEmail?: string | null }) {
+export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, activeSubscriptionsCount = 0, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, activeSubscriptionsCount?: number, userEmail?: string | null }) {
   const days = [
     { ar: "الأحد", en: "Sun" },
     { ar: "الاثنين", en: "Mon" },
@@ -97,9 +97,10 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   };
 
   const handleExport = async () => {
-    const isExcluded = userEmail === "abendakfal07@gmail.com";
-    const isUnlimited = isExcluded || hasActiveSubscription || localStorage.getItem("unlimited_timetable") === "true";
-    if (!isUnlimited && downloadCount >= 2) {
+    const isExcluded = userEmail === "abendakfal07@gmail.com" || localStorage.getItem("unlimited_timetable") === "true";
+    const allowedDownloads = isExcluded ? Infinity : (activeSubscriptionsCount === 0 ? 2 : 2 + (activeSubscriptionsCount * 5));
+    
+    if (downloadCount >= allowedDownloads) {
       setShowPaymentModal(true);
       return;
     }
@@ -123,11 +124,11 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
       const image = canvas.toDataURL("image/png", 1.0);
       await saveFile(image, `AuraMed_Schedule_${new Date().getTime()}.png`, "image/png");
       
-      if (!isUnlimited) {
+      if (allowedDownloads !== Infinity) {
         const newCount = downloadCount + 1;
         setDownloadCount(newCount);
         localStorage.setItem(downloadKey, newCount.toString());
-        setMessage({ type: 'success', text: `تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: ${2 - newCount})` });
+        setMessage({ type: 'success', text: `تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: ${allowedDownloads - newCount})` });
       } else {
         setMessage({ type: 'success', text: "تم تحميل الجدول كصورة بنجاح! 📸" });
       }

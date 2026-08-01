@@ -35,16 +35,18 @@ export default async function GPACalculatorPage() {
     }
   }
 
+  let activeSubscriptionsCount = 0;
   let hasActiveSubscription = false;
   if (userId) {
     try {
-      const activeSub = await (prisma as any).subscriptionRequest.findFirst({
+      const activeSubs = await (prisma as any).subscriptionRequest.findMany({
         where: {
           userId,
           status: "APPROVED"
         }
       });
-      if (activeSub && (activeSub.transactionId.startsWith("GPA:") || activeSub.transactionId.startsWith("ALL:") || !activeSub.transactionId.includes(":"))) {
+      activeSubscriptionsCount = activeSubs.filter((sub: any) => sub.transactionId.startsWith("GPA:") || sub.transactionId.startsWith("ALL:") || !sub.transactionId.includes(":")).length;
+      if (activeSubscriptionsCount > 0) {
         hasActiveSubscription = true;
       }
     } catch (error) {
@@ -62,5 +64,5 @@ export default async function GPACalculatorPage() {
     console.error("Error fetching GPA years:", error);
   }
 
-  return <GPACalculatorClient userId={userId || null} userEmail={userEmail || null} hasActiveSubscription={hasActiveSubscription} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
+  return <GPACalculatorClient userId={userId || null} userEmail={userEmail || null} hasActiveSubscription={hasActiveSubscription} activeSubscriptionsCount={activeSubscriptionsCount} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
 }

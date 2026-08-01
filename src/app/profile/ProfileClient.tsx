@@ -613,7 +613,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           
                           <form className="space-y-5" onSubmit={async (e) => { 
                             e.preventDefault(); 
-                            if (!transactionId || !paymentDate) return;
+                            if (!transactionId || !paymentDate || !receiptBase64) return;
                             setPaymentLoading(true);
                             // Prefix the transactionId with subscriptionType
                             const prefixedTxId = `${subscriptionType}:${transactionId}`;
@@ -697,9 +697,10 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 </div>
 
                                 <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">صورة الإيصال (اختياري)</label>
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">صورة الإيصال <span className="text-rose-500">*</span></label>
                                   <input 
                                     type="file"
+                                    required
                                     accept="image/*"
                                     onChange={(e) => {
                                       const file = e.target.files?.[0];
@@ -717,7 +718,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
                                 <button 
                                   type="submit" 
-                                  disabled={paymentLoading}
+                                  disabled={paymentLoading || !receiptBase64}
                                   className="w-full py-4 mt-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2 text-lg hover:-translate-y-1 group disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {paymentLoading ? t("profile_payment_sending") : (

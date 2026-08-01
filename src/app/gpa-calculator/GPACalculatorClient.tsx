@@ -18,7 +18,7 @@ import html2canvas from "html2canvas";
 import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 import { useLocale } from "@/context/LocaleProvider.client";
 
-export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscription = false, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, hasActiveSubscription?: boolean, initialData: any, gpaYears: any[] }) {
+export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscription = false, activeSubscriptionsCount = 0, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, hasActiveSubscription?: boolean, activeSubscriptionsCount?: number, initialData: any, gpaYears: any[] }) {
   const [selectedYear, setSelectedYear] = useState<any>(null);
   const { saveFile } = useAuraDownloader();
   const { t, lang } = useLocale();
@@ -120,13 +120,14 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
   const handleExport = async () => {
     if (!certificateRef.current || !selectedYear) return;
     
-    // Check download limit (exclude specific account & active subscription)
-    const isExcluded = userEmail === "abendakfal07@gmail.com";
-    const hasInfiniteDownloads = isExcluded || hasActiveSubscription || (localStorage.getItem("unlimited_gpa") === "true");
+    // Check download limit
+    const isExcluded = userEmail === "abendakfal07@gmail.com" || localStorage.getItem("unlimited_gpa") === "true";
     const storageKey = `gpa_downloads_${userId || 'guest'}_${selectedYear.id}`;
     let downloads = parseInt(localStorage.getItem(storageKey) || "0", 10);
     
-    if (!hasInfiniteDownloads && downloads >= 2) {
+    const allowedDownloads = isExcluded ? Infinity : (activeSubscriptionsCount === 0 ? 2 : 2 + (activeSubscriptionsCount * 5));
+    
+    if (downloads >= allowedDownloads) {
       setShowPaymentModal(true);
       return;
     }
