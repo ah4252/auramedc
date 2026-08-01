@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useLocale } from "@/context/LocaleProvider.client";
 import { Clock, Plus, Trash2, Save, LogIn, AlertCircle, ChevronRight, ChevronLeft, Trash, Copy, Home, CheckCircle2, Circle, Calendar, FileText, Download, Award, Star, Laptop } from "lucide-react";
 import { saveTimetable } from "@/app/actions/timetable";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,14 +10,16 @@ import html2canvas from "html2canvas";
 import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 
 export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, activeSubscriptionsCount = 0, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, activeSubscriptionsCount?: number, userEmail?: string | null }) {
+  const { t, lang } = useLocale();
+
   const days = [
-    { ar: "الأحد", en: "Sun" },
-    { ar: "الاثنين", en: "Mon" },
-    { ar: "الثلاثاء", en: "Tue" },
-    { ar: "الأربعاء", en: "Wed" },
-    { ar: "الخميس", en: "Thu" },
-    { ar: "الجمعة", en: "Fri" },
-    { ar: "السبت", en: "Sat" }
+    { ar: "الأحد", frShort: "Dim", frFull: "Dimanche", enShort: "Sun", enFull: "Sunday" },
+    { ar: "الاثنين", frShort: "Lun", frFull: "Lundi", enShort: "Mon", enFull: "Monday" },
+    { ar: "الثلاثاء", frShort: "Mar", frFull: "Mardi", enShort: "Tue", enFull: "Tuesday" },
+    { ar: "الأربعاء", frShort: "Mer", frFull: "Mercredi", enShort: "Wed", enFull: "Wednesday" },
+    { ar: "الخميس", frShort: "Jeu", frFull: "Jeudi", enShort: "Thu", enFull: "Thursday" },
+    { ar: "الجمعة", frShort: "Ven", frFull: "Vendredi", enShort: "Fri", enFull: "Friday" },
+    { ar: "السبت", frShort: "Sam", frFull: "Samedi", enShort: "Sat", enFull: "Saturday" }
   ];
 
   const [schedule, setSchedule] = useState(initialData || {});
@@ -89,7 +92,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   };
 
   const clearWeek = () => {
-    if (confirm("هل أنت متأكد من مسح جدول الأسبوع بالكامل؟")) {
+    if (confirm(t("timetable_clear_confirm", "هل أنت متأكد من مسح جدول الأسبوع بالكامل؟"))) {
       const reset: Record<string, any[]> = {};
       days.forEach(d => reset[d.ar] = []);
       setSchedule(reset);
@@ -128,9 +131,9 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
         const newCount = downloadCount + 1;
         setDownloadCount(newCount);
         localStorage.setItem(downloadKey, newCount.toString());
-        setMessage({ type: 'success', text: `تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: ${allowedDownloads - newCount})` });
+          setMessage({ type: 'success', text: t("timetable_export_success_with_remaining", "تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: {{remaining}})",).replace("{{remaining}}", `${allowedDownloads - newCount}`) });
       } else {
-        setMessage({ type: 'success', text: "تم تحميل الجدول كصورة بنجاح! 📸" });
+        setMessage({ type: 'success', text: t("timetable_export_success", "تم تحميل الجدول كصورة بنجاح! 📸") });
       }
     } catch (error) {
       setMessage({ type: 'error', text: "حدث خطأ أثناء التصدير" });
@@ -146,12 +149,12 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
     try {
       const res = await saveTimetable(schedule);
       if (res && res.success) {
-        setMessage({ type: 'success', text: "تم حفظ بياناتك بنجاح! ✅" });
+        setMessage({ type: 'success', text: t("timetable_save_success", "تم حفظ بياناتك بنجاح! ✅") });
       } else {
-        setMessage({ type: 'error', text: res?.error || "حدث خطأ أثناء الحفظ" });
+        setMessage({ type: 'error', text: res?.error || t("timetable_save_error", "حدث خطأ أثناء الحفظ") });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: "تعذر الاتصال بالسيرفر" });
+      setMessage({ type: 'error', text: t("timetable_server_error", "تعذر الاتصال بالسيرفر") });
     } finally {
       setLoading(false);
       setTimeout(() => setMessage(null), 3000);
@@ -169,9 +172,9 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
            <div className="w-24 h-24 bg-blue-600/10 rounded-[2.5rem] flex items-center justify-center border border-blue-500/20 mb-8 animate-pulse">
               <Laptop className="w-12 h-12 text-blue-500" />
            </div>
-           <h2 className="text-3xl font-black mb-4 leading-tight">استمتع بـ <span className="text-blue-500">أفخم تجربة</span></h2>
+           <h2 className="text-3xl font-black mb-4 leading-tight">{t("timetable_mobile_headline", "استمتع بـ ")}<span className="text-blue-500">{t("timetable_mobile_headline_highlight","أفخم تجربة")}</span></h2>
            <p className="text-slate-400 text-sm font-medium leading-relaxed mb-10">
-             للحصول على أفضل تجربة تنظيم وتخطيط، نوصيك بفتح جدول الدراسة من خلال جهاز الكمبيوتر الخاص بك. المخطط التفاعلي صُمم لِيمنحك تحكماً كاملاً على الشاشات الكبيرة.
+             {t("timetable_mobile_description", "للحصول على أفضل تجربة تنظيم وتخطيط، نوصيك بفتح جدول الدراسة من خلال جهاز الكمبيوتر الخاص بك. المخطط التفاعلي صُمم لِيمنحك تحكماً كاملاً على الشاشات الكبيرة.")}
            </p>
         </div>
 
@@ -185,7 +188,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                animate={{ opacity: 1, x: 0 }}
                className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6 backdrop-blur-md"
              >
-               <Calendar className="w-3.5 h-3.5" /> منظم الوقت الشخصي
+               <Calendar className="w-3.5 h-3.5" /> {t("timetable_personal_label", "منظم الوقت الشخصي")}
              </motion.div>
              
              <motion.h1 
@@ -193,11 +196,11 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                animate={{ opacity: 1, y: 0 }}
                className="text-5xl md:text-6xl font-black tracking-tighter leading-[1.1] mb-6"
              >
-               نظم <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">جدولك</span> الدراسي بذكاء
+               {t("timetable_title", "نظم ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">{t("timetable_title_highlight", "جدولك")}</span>{t("timetable_title_suffix"," الدراسي بذكاء")}
              </motion.h1>
              
              <p className="text-slate-400 text-lg max-w-2xl font-medium leading-relaxed opacity-80">
-               أداة تفاعلية تتيح لك تخطيط يومك، تحديد مهامك الدراسية، وحفظها للوصول إليها في أي وقت ومن أي مكان.
+               {t("timetable_description", "أداة تفاعلية تتيح لك تخطيط يومك، تحديد مهامك الدراسية، وحفظها للوصول إليها في أي وقت ومن أي مكان.")}
              </p>
           </div>
 
@@ -247,8 +250,8 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                         : 'bg-slate-900/20 text-slate-500 border-slate-800/40'
                     }`}>
                         <div className="flex flex-col items-center gap-1.5">
-                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{day.ar}</h3>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100/60' : 'text-slate-600'}`}>{day.en}</p>
+                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{lang === 'fr' ? day.frFull : day.ar}</h3>
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100/60' : 'text-slate-600'}`}>{lang === 'fr' ? day.frShort : day.enShort}</p>
                         </div>
                     </div>
                     <div className="flex-1 p-5 space-y-5">
@@ -270,7 +273,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                                 <textarea 
                                   value={task.subject}
                                   onChange={(e) => updateTask(day.ar, task.id, 'subject', e.target.value)}
-                                  placeholder="المهمة..."
+                                  placeholder={t("timetable_task_placeholder", "المهمة...")}
                                   rows={2}
                                   className={`w-full bg-transparent border-none text-center text-lg font-black outline-none resize-none leading-snug ${task.completed ? 'text-emerald-500/60 line-through' : 'text-white'}`}
                                 />
@@ -286,7 +289,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                           </motion.div>
                         ))}
                         <button 
-                          title="إضافة مهمة جديدة" aria-label="إضافة مهمة جديدة"
+                          title={t("timetable_add_task", "إضافة مهمة جديدة")} aria-label={t("timetable_add_task", "إضافة مهمة جديدة")}
                           onClick={() => addTask(day.ar)}
                           className="w-full py-8 rounded-[2rem] border-2 border-dashed border-slate-900 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all flex items-center justify-center group"
                         >
@@ -305,14 +308,14 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
              <div className="flex flex-wrap items-center justify-center gap-4">
                 <button onClick={handleExport} disabled={exportLoading} className="px-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-[2rem] font-black flex items-center gap-3 transition-all border border-slate-800 disabled:opacity-50 shadow-xl">
                    {exportLoading ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> : <Download className="w-6 h-6 text-blue-500" />}
-                   تحميل الجدول كصورة
+                   {t("timetable_export_button", "تحميل الجدول كصورة")}
                 </button>
                 <button onClick={handleSave} disabled={loading} className="px-12 py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] font-black flex items-center gap-3 transition-all shadow-2xl shadow-blue-600/30 disabled:opacity-50">
                    {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-6 h-6" />}
-                   حفظ كافة التغييرات
+                   {t("timetable_save_button", "حفظ كافة التغييرات")}
                 </button>
                 <button onClick={clearWeek} className="px-10 py-5 bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-[2rem] font-black flex items-center gap-3 transition-all border border-rose-500/20">
-                   <Trash className="w-6 h-6" /> مسح الأسبوع
+                   <Trash className="w-6 h-6" /> {t("timetable_clear_button", "مسح الأسبوع")}
                 </button>
              </div>
            )}
@@ -345,9 +348,9 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                   <Award className="w-10 h-10 text-white" />
                 </div>
                 
-                <h3 className="text-2xl font-black text-white mb-2">استنفدت محاولاتك المجانية</h3>
+                <h3 className="text-2xl font-black text-white mb-2">{t("timetable_payment_heading","استنفدت محاولاتك المجانية")}</h3>
                 <p className="text-slate-400 mb-8 leading-relaxed">
-                  لقد وصلت إلى الحد الأقصى لتحميل الجدول كصورة (مرتان). للاستمرار في التحميل غير المحدود ودعم المنصة، يرجى الاشتراك بمبلغ رمزي.
+                  {t("timetable_payment_body","لقد وصلت إلى الحد الأقصى لتحميل الجدول كصورة (مرتان). للاستمرار في التحميل غير المحدود ودعم المنصة، يرجى الاشتراك بمبلغ رمزي.")}
                 </p>
                 
                 <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700">
@@ -392,21 +395,21 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
             </div>
           </div>
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-black text-slate-900 mb-2">مخطط الدراسة الأسبوعي</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-2">{t("timetable_certificate_title", "مخطط الدراسة الأسبوعي")}</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-7 gap-3 mb-10 items-start">
             {days.map((day, idx) => (
               <div key={idx} className="bg-slate-50/50 rounded-3xl overflow-hidden border border-slate-100 flex flex-col">
                 <div className="p-4 text-center bg-blue-600 text-white">
-                  <h3 className="text-base font-black">{day.ar}</h3>
-                  <p className="text-[8px] font-black opacity-60 uppercase tracking-widest">{day.en}</p>
+                  <h3 className="text-base font-black">{lang === 'fr' ? day.frFull : day.ar}</h3>
+                  <p className="text-[8px] font-black opacity-60 uppercase tracking-widest">{lang === 'fr' ? day.frShort : day.enShort}</p>
                 </div>
                 <div className="p-3 space-y-2 h-auto">
                   {schedule[day.ar]?.map((task: any) => (
                     <div key={task.id} className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
                       <p className="text-[8px] font-black text-blue-600 mb-1 flex items-center gap-1">
-                        <Clock className="w-2 h-2" /> {task.time || "غير محدد"}
+                        <Clock className="w-2 h-2" /> {task.time || t("timetable_time_undefined", "غير محدد")}
                       </p>
                       <p className="text-xs font-bold text-slate-800 leading-tight">
                         {task.subject}

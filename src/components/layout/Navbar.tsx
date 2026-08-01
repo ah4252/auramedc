@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, User, Menu, Stethoscope, Lock, X, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, User, Menu, Stethoscope, Lock, X, ShieldCheck, Sparkles, Globe, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { logoutAdmin, logoutUser } from "@/app/actions/auth";
 import { useRouter, usePathname } from "next/navigation";
@@ -22,6 +22,9 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
   const router = useRouter();
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
   const { t, lang, setLang } = useLocale();
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
+  const isRtl = lang === "ar";
 
   const handleLogoClick = (e: React.MouseEvent) => {
     // Increment clicks
@@ -41,6 +44,16 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
       if (clickTimeout.current) clearTimeout(clickTimeout.current);
     }
   }, [clicks]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setShowLangMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,30 +203,75 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               </Link>
             )}
 
-            {/* Language switcher — دائماً ظاهر */}
-            <div className="flex items-center gap-1">
+            {/* Language dropdown — محفوظة المساحة وتصميم جذاب */}
+            <div className="relative" ref={langMenuRef as any}>
               <button
-                onClick={() => {
-                  try {
-                    document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
-                    window.localStorage.setItem("site_lang", "ar");
-                  } catch (e) {}
-                  setLang("ar");
-                  setTimeout(() => router.refresh(), 80);
-                }}
-                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "ar" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
-              >ع</button>
-              <button
-                onClick={() => {
-                  try {
-                    document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
-                    window.localStorage.setItem("site_lang", "fr");
-                  } catch (e) {}
-                  setLang("fr");
-                  setTimeout(() => router.refresh(), 80);
-                }}
-                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "fr" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
-              >FR</button>
+                onClick={() => setShowLangMenu((v) => !v)}
+                aria-expanded={showLangMenu}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-black transition-all ${"bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+                title={t("change_language", "تغيير اللغة")}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-xs">{lang === "ar" ? "ع" : "FR"}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"}`} />
+              </button>
+
+              <AnimatePresence>
+                {showLangMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                    className={`absolute mt-2 w-48 bg-white dark:bg-dark-card rounded-xl shadow-xl z-50 overflow-hidden border border-slate-100 dark:border-slate-800 ${isRtl ? 'left-0' : 'right-0'}`}
+                    style={{ transformOrigin: isRtl ? 'left top' : 'right top' }}
+                  >
+                    {/* Arabic item - styled as highlighted when selected */}
+                    <button
+                      onClick={() => {
+                        try { document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "ar"); } catch (e) {}
+                        setLang("ar");
+                        setShowLangMenu(false);
+                        setTimeout(() => router.refresh(), 80);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "ar" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "ar" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>
+                          ع
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-black">العربية</div>
+                          <div className="text-[11px] opacity-60">AR</div>
+                        </div>
+                      </div>
+                      {lang === "ar" && <span className="text-[12px] font-black">✓</span>}
+                    </button>
+
+                    {/* French item */}
+                    <button
+                      onClick={() => {
+                        try { document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "fr"); } catch (e) {}
+                        setLang("fr");
+                        setShowLangMenu(false);
+                        setTimeout(() => router.refresh(), 80);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "fr" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "fr" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>
+                          FR
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-black">Français</div>
+                          <div className="text-[11px] opacity-60">FR</div>
+                        </div>
+                      </div>
+                      {lang === "fr" && <span className="text-[12px] font-black">✓</span>}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Mobile hamburger */}
@@ -310,34 +368,43 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
 
               <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
                 {/* Language switcher for mobile */}
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-col gap-2 mb-1">
                   <button
                     onClick={() => {
-                      try {
-                        document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
-                        window.localStorage.setItem("site_lang", "ar");
-                      } catch (e) {}
+                      try { document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "ar"); } catch (e) {}
                       setLang("ar");
                       setTimeout(() => router.refresh(), 80);
                       setShowMobileMenu(false);
                     }}
-                    className={`flex-1 py-3 rounded-2xl text-sm font-black transition-all ${lang === "ar" ? "bg-medical-600 text-white shadow-md shadow-medical-600/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${lang === "ar" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                   >
-                    العربية
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "ar" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>ع</div>
+                      <div className="text-right">
+                        <div className="text-sm font-black">العربية</div>
+                        <div className="text-[11px] opacity-60">AR</div>
+                      </div>
+                    </div>
+                    {lang === "ar" && <span className="text-[12px] font-black">✓</span>}
                   </button>
+
                   <button
                     onClick={() => {
-                      try {
-                        document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
-                        window.localStorage.setItem("site_lang", "fr");
-                      } catch (e) {}
+                      try { document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "fr"); } catch (e) {}
                       setLang("fr");
                       setTimeout(() => router.refresh(), 80);
                       setShowMobileMenu(false);
                     }}
-                    className={`flex-1 py-3 rounded-2xl text-sm font-black transition-all ${lang === "fr" ? "bg-medical-600 text-white shadow-md shadow-medical-600/20" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"}`}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${lang === "fr" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
                   >
-                    Français
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "fr" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>FR</div>
+                      <div className="text-right">
+                        <div className="text-sm font-black">Français</div>
+                        <div className="text-[11px] opacity-60">FR</div>
+                      </div>
+                    </div>
+                    {lang === "fr" && <span className="text-[12px] font-black">✓</span>}
                   </button>
                 </div>
 

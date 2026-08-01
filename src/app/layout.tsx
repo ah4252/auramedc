@@ -10,7 +10,6 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
-import PushNotificationManager from "@/components/PushNotificationManager";
 import SSENotificationListener from "@/components/SSENotificationListener";
 import AppLinkGuard from "@/components/AppLinkGuard";
 
@@ -118,7 +117,6 @@ export default async function RootLayout({
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
         <AppLinkGuard />
         <SSENotificationListener />
-        <PushNotificationManager />
         <LocaleProvider initialLang={siteLang as Locale}>
           <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
             <ActivePresencePing userId={userId || null} />

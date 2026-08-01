@@ -8,7 +8,7 @@ import { useLocale } from "@/context/LocaleProvider.client";
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { lang } = useLocale();
+  const { t, lang } = useLocale();
   const isAuthRoute = pathname === "/login" || pathname === "/register";
 
   if (isAuthRoute) return null;
@@ -17,7 +17,7 @@ export default function MobileNav() {
     { name: lang === "fr" ? "Accueil" : "الرئيسية", icon: Home, path: "/" },
     { name: lang === "fr" ? "Cours" : "الدروس", icon: PlayCircle, path: "/courses" },
     { name: lang === "fr" ? "Pharmacie" : "الصيدلة", icon: FlaskConical, path: "/pharmacy" },
-    { name: lang === "fr" ? "Calculateur" : "الحاسبة", icon: Calculator, path: "/gpa-calculator" },
+    { name: lang === "fr" ? t("gpa", "calculateur") : t("gpa", "الحاسبة"), icon: Calculator, path: "/gpa-calculator" },
     { name: lang === "fr" ? "Mon compte" : "حسابي", icon: User, path: "/profile" },
   ];
 

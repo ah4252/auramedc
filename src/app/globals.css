@@ -35,6 +35,11 @@
   }
 }
 
+/* Prevent page-level horizontal scrolling (hide annoying bottom scrollbar) */
+html, body {
+  overflow-x: hidden;
+}
+
 .hero-headline {
   line-height: 1.75;
 }
@@ -130,6 +135,15 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: #0ea5e9 transparent;
+}
+
+/* Utility: hide scrollbars when needed (cross-browser) */
+.scrollbar-none, .scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar, .scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .bg-grid-pattern-light {
