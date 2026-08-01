@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { tServer } from "@/lib/i18n";
 
 export async function generateMetadata() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
 
   return {
