@@ -161,7 +161,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
       localStorage.setItem(storageKey, (downloads + 1).toString());
     } catch (error) {
       console.error("Export failed:", error);
-      alert(t("gpa_export_error", "حدث خطأ أثناء تصدير النتيجة"));
+      alert(t("gpa_export_error"));
     } finally {
       setExportLoading(false);
     }
@@ -169,11 +169,11 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
 
   const gpa = calculateGPA();
   const gpaValue = parseFloat(gpa);
-  const dateLocale = lang === "fr" ? "fr-FR" : "ar-DZ";
+  const dateLocale = lang === "fr" ? "fr-FR" : lang === "en" ? "en-US" : "ar-DZ";
 
   const translateYearName = (year: any) => {
     const value = (year?.name || "").trim();
-    if (lang !== "fr") return value;
+    if (lang === "ar") return value;
 
     const normalized = value
       .replace(/[أإآ]/g, "ا")
@@ -185,16 +185,16 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
       .toLowerCase();
 
     const translations: Array<[RegExp, string]> = [
-      [/(?:السنة|السنه)\s*(?:ال)?اول(?:ى|ي|ه)?/, "1re année"],
-      [/(?:السنة|السنه)\s*(?:ال)?ثان(?:ية|ي|ه)?/, "2e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?ثال(?:ثة|ثه|ته)?/, "3e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?راب(?:عة|عه|ته)?/, "4e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?خامس(?:ة|ه)?/, "5e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?سادس(?:ة|ه)?/, "6e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?سابع(?:ة|ه)?/, "7e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?ثامن(?:ة|ه)?/, "8e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?تاسع(?:ة|ه)?/, "9e année"],
-      [/(?:السنة|السنه)\s*(?:ال)?عاشر(?:ة|ه)?/, "10e année"],
+      [/(?:السنة|السنه)\s*(?:ال)?اول(?:ى|ي|ه)?/, lang === "fr" ? "1re année" : "1st year"],
+      [/(?:السنة|السنه)\s*(?:ال)?ثان(?:ية|ي|ه)?/, lang === "fr" ? "2e année" : "2nd year"],
+      [/(?:السنة|السنه)\s*(?:ال)?ثال(?:ثة|ثه|ته)?/, lang === "fr" ? "3e année" : "3rd year"],
+      [/(?:السنة|السنه)\s*(?:ال)?راب(?:عة|عه|ته)?/, lang === "fr" ? "4e année" : "4th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?خامس(?:ة|ه)?/, lang === "fr" ? "5e année" : "5th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?سادس(?:ة|ه)?/, lang === "fr" ? "6e année" : "6th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?سابع(?:ة|ه)?/, lang === "fr" ? "7e année" : "7th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?ثامن(?:ة|ه)?/, lang === "fr" ? "8e année" : "8th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?تاسع(?:ة|ه)?/, lang === "fr" ? "9e année" : "9th year"],
+      [/(?:السنة|السنه)\s*(?:ال)?عاشر(?:ة|ه)?/, lang === "fr" ? "10e année" : "10th year"],
     ];
 
     for (const [pattern, translation] of translations) {
@@ -236,8 +236,8 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
           >
             <Calculator className="w-10 h-10" />
           </motion.div>
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4">{t("gpa_page_title", "حاسبة المعدل التراكمي")}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-lg">{t("gpa_page_description", "احسب معدلك الفصلي بسهولة وبدقة عالية وفق المنهج الطبي الرسمي")}</p>
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4">{t("gpa_page_title")}</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">{t("gpa_page_description")}</p>
         </div>
 
         <AnimatePresence mode="wait">
@@ -252,7 +252,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
             >
               <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center gap-2">
                 <Calendar className="w-6 h-6 text-medical-600" />
-                {t("gpa_select_year", "اختر السنة الدراسية")}
+                {t("gpa_select_year")}
               </h2>
               
               {gpaYears && gpaYears.length > 0 ? (
@@ -269,7 +269,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                         </div>
                         <div>
                           <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-medical-600 transition-colors">{getDisplayedYearName(year)}</h3>
-                          <p className="text-sm text-slate-500">{year.subjects?.length || 0} {t("gpa_subjects_count_label", "مواد مبرمجة")}</p>
+                          <p className="text-sm text-slate-500">{year.subjects?.length || 0} {t("gpa_subjects_count_label")}</p>
                         </div>
                       </div>
                       <ChevronLeft className="w-6 h-6 text-slate-300 group-hover:text-medical-600 transform group-hover:-translate-x-2 transition-all" />
@@ -279,8 +279,8 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
               ) : (
                 <div className="text-center bg-white dark:bg-dark-card p-12 rounded-[2.5rem] border border-slate-200 dark:border-slate-800">
                   <Calculator className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-600">{t("gpa_no_years_title", "لا توجد سنوات مبرمجة بعد")}</h3>
-                  <p className="text-slate-500 mt-2">{t("gpa_no_years_subtitle", "يرجى من الإدارة إضافة السنوات والمواد من لوحة التحكم.")}</p>
+                  <h3 className="text-xl font-bold text-slate-600">{t("gpa_no_years_title")}</h3>
+                  <p className="text-slate-500 mt-2">{t("gpa_no_years_subtitle")}</p>
                 </div>
               )}
             </motion.div>
@@ -302,19 +302,19 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                       <button 
                         onClick={() => setSelectedYear(null)}
                         className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-medical-100 hover:text-medical-600 text-slate-600 dark:text-slate-400 rounded-xl transition-colors"
-                        title={t("gpa_back_button", "العودة")}
+                        title={t("gpa_back_button")}
                       >
                         <ArrowRight className="w-5 h-5" />
                       </button>
                       <h2 className="text-xl font-bold flex items-center gap-2">
                         <GraduationCap className="w-6 h-6 text-medical-600" />
-                        {t("gpa_points_label", "نقاط:")} {getDisplayedYearName(selectedYear)}
+                        {t("gpa_points_label")} {getDisplayedYearName(selectedYear)}
                       </h2>
                     </div>
                     <button 
                       onClick={reset}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all"
-                      title={t("gpa_reset_button", "إعادة تعيين النقاط")}
+                      title={t("gpa_reset_button")}
                     >
                       <RotateCcw className="w-5 h-5" />
                     </button>
@@ -322,15 +322,15 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
 
                   <div className="space-y-4">
                     {subjects.length === 0 ? (
-                      <div className="text-center py-10 text-slate-400">{t("gpa_no_subjects", "لا توجد مواد مضافة لهذه السنة في النظام.")}</div>
+                      <div className="text-center py-10 text-slate-400">{t("gpa_no_subjects")}</div>
                     ) : (
                       <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
                         <table className="w-full text-right">
                           <thead className="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
-                                      <th className="p-4 font-bold text-slate-600 dark:text-slate-300">{t("gpa_table_subject", "المادة")}</th>
-                              <th className="p-4 font-bold text-slate-600 dark:text-slate-300 text-center w-24 hidden md:table-cell">{t("gpa_table_coefficient", "المعامل")}</th>
-                              <th className="p-4 font-bold text-slate-600 dark:text-slate-300 text-center w-32">{t("gpa_table_grade", "العلامة / 20")}</th>
+                                      <th className="p-4 font-bold text-slate-600 dark:text-slate-300">{t("gpa_table_subject")}</th>
+                              <th className="p-4 font-bold text-slate-600 dark:text-slate-300 text-center w-24 hidden md:table-cell">{t("gpa_table_coefficient")}</th>
+                              <th className="p-4 font-bold text-slate-600 dark:text-slate-300 text-center w-32">{t("gpa_table_grade")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -338,7 +338,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                               <tr key={subject.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                                 <td className="p-4">
                                   <div className="font-bold text-slate-800 dark:text-slate-200">{subject.name}</div>
-                                  <div className="md:hidden text-xs text-medical-600 mt-1 font-bold">{t("gpa_coefficient_label", "المعامل")} : {subject.coefficient}</div>
+                                  <div className="md:hidden text-xs text-medical-600 mt-1 font-bold">{t("gpa_coefficient_label")} : {subject.coefficient}</div>
                                 </td>
                                 <td className="p-4 text-center hidden md:table-cell">
                                   <span className="bg-medical-50 dark:bg-medical-900/30 text-medical-700 px-3 py-1 rounded-lg font-black inline-block min-w-[3rem]">
@@ -351,7 +351,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                                     min="0"
                                     max="20"
                                     step="0.25"
-                                    placeholder={t("gpa_input_placeholder", "العلامة")}
+                                    placeholder={t("gpa_input_placeholder")}
                                     className={`w-full bg-slate-100 dark:bg-slate-900 border-2 border-transparent focus:border-medical-500 p-3 rounded-xl outline-none transition-all text-center font-bold text-lg ${
                                       subject.grade >= 10 
                                       ? "text-green-600 dark:text-green-400" 
@@ -376,7 +376,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                 <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
                   <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
                     <Award className="w-6 h-6 text-medical-600" />
-                    {t("gpa_result_title", "النتيجة المتوقعة")}
+                    {t("gpa_result_title")}
                   </h3>
 
                   <div className="relative flex flex-col items-center py-10">
@@ -393,13 +393,13 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                     </div>
                     
                     <span className="text-5xl font-black text-slate-900 dark:text-white z-10">{gpa}</span>
-                    <span className="text-sm font-bold text-slate-500 mt-2 z-10 uppercase tracking-widest">{t("gpa_overall_label", "معدلك العام")}</span>
+                    <span className="text-sm font-bold text-slate-500 mt-2 z-10 uppercase tracking-widest">{t("gpa_overall_label")}</span>
                   </div>
 
                   {hasActiveSubscription && didRedirect && (
                     <div className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 text-center flex items-center justify-center gap-2 font-bold text-sm">
                       <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500 animate-bounce" />
-                      <span>تم تفعيل التحميل اللانهائي لنتائج المعدل بنجاح! 🎉</span>
+                      <span>{t("gpa_unlimited_download_active")}</span>
                     </div>
                   )}
 
@@ -412,16 +412,16 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                           <div className="p-2 bg-medical-500 rounded-lg">
                             <Star className="w-4 h-4 text-white fill-current" />
                           </div>
-                          <span className="text-xs font-black uppercase tracking-wider text-medical-400">{t("gpa_promo_title", "مميزات حصرية للمسجلين")}</span>
+                          <span className="text-xs font-black uppercase tracking-wider text-medical-400">{t("gpa_promo_title")}</span>
                         </div>
                         
-                        <h4 className="text-lg font-bold mb-4 leading-tight">{t("gpa_promo_cta", "سجل الآن لفتح كافة المميزات!")}</h4>
+                        <h4 className="text-lg font-bold mb-4 leading-tight">{t("gpa_promo_cta")}</h4>
                         
                         <ul className="space-y-3 mb-6">
                           {[
-                            { icon: Database, text: t("gpa_promo_save", "حفظ وأرشفة جميع معدلاتك السابقة") },
-                            { icon: Download, text: t("gpa_promo_export", "تحميل كشف النقاط كصورة احترافية") },
-                            { icon: Calendar, text: t("gpa_promo_progress", "متابعة تطور مستواك الدراسي") },
+                            { icon: Database, text: t("gpa_promo_save") },
+                            { icon: Download, text: t("gpa_promo_export") },
+                            { icon: Calendar, text: t("gpa_promo_progress") },
                           ].map((item, idx) => (
                             <li key={idx} className="flex items-center gap-3 text-sm text-slate-300">
                               <item.icon className="w-4 h-4 text-medical-500" />
@@ -431,7 +431,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                         </ul>
 
                         <Link href="/register" className="w-full py-3 bg-white text-slate-900 rounded-xl font-black text-center block hover:bg-medical-500 hover:text-white transition-all shadow-lg active:scale-95">
-                          {t("gpa_promo_register", "إنشاء حساب مجاني")}
+                          {t("gpa_promo_register")}
                         </Link>
                       </div>
                     </div>
@@ -448,7 +448,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                           : "bg-medical-600 hover:bg-medical-700 text-white shadow-lg shadow-medical-600/30 disabled:opacity-50"
                         }`}
                       >
-                        {saveLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : saveSuccess ? t("gpa_save_success", "تم الحفظ بنجاح! ✓") : t("gpa_save_button", "حفظ النتيجة في حسابي")}
+                        {saveLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : saveSuccess ? t("gpa_save_success") : t("gpa_save_button")}
                       </button>
 
                       <button 
@@ -461,18 +461,18 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                         ) : (
                           <Download className="w-5 h-5 text-medical-600" />
                         )}
-                        {t("gpa_export_button", "تحميل النتيجة كصورة")}
+                        {t("gpa_export_button")}
                       </button>
                     </div>
                   )}
 
                   <div className="mt-10 p-6 rounded-3xl bg-medical-50 dark:bg-medical-900/20 text-medical-700 dark:text-medical-400 text-center">
                     <p className="text-sm font-bold">
-                      {gpaValue >= 16 ? t("gpa_rating_excellent", "ممتاز جداً، استمر يا بطل! 🌟") :
-                       gpaValue >= 14 ? t("gpa_rating_very_good", "جيد جداً، أداء رائع! ✨") :
-                       gpaValue >= 12 ? t("gpa_rating_good", "جيد، واصل الجهد! 💪") :
-                       gpaValue >= 10 ? t("gpa_rating_pass", "مقبول، يمكنك التحسن! 👍") :
-                       t("gpa_rating_fail", "لا تيأس، المرة القادمة أفضل! ❤️")}
+                      {gpaValue >= 16 ? t("gpa_rating_excellent") :
+                       gpaValue >= 14 ? t("gpa_rating_very_good") :
+                       gpaValue >= 12 ? t("gpa_rating_good") :
+                       gpaValue >= 10 ? t("gpa_rating_pass") :
+                       t("gpa_rating_fail")}
                     </p>
                   </div>
                 </div>
@@ -505,14 +505,14 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
               </div>
             </div>
             <div className="text-left text-xs text-slate-500 font-medium">
-              <p>{t("gpa_certificate_year", "السنة:")} {selectedYear?.name || t("gpa_certificate_year_unknown", "غير محدد")}</p>
-              <p>{t("gpa_certificate_date", "تاريخ الإصدار:")} {new Date().toLocaleDateString(dateLocale)}</p>
-              <p>{t("gpa_certificate_number", "رقم الكشف:")} {reportId}</p>
+              <p>{t("gpa_certificate_year")} {selectedYear?.name || t("gpa_certificate_year_unknown")}</p>
+              <p>{t("gpa_certificate_date")} {new Date().toLocaleDateString(dateLocale)}</p>
+              <p>{t("gpa_certificate_number")} {reportId}</p>
             </div>
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-800">{t("gpa_certificate_heading", "كشف نقاط المعدل الفصلي التقديري")}</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t("gpa_certificate_heading")}</h2>
             <div className="w-24 h-1 bg-medical-500 mx-auto mt-2 rounded-full opacity-20"></div>
           </div>
 
@@ -520,21 +520,21 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
           <div className="mb-10">
             <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-medical-600" />
-              {t("gpa_certificate_subjects_heading", "تفاصيل المواد والنتائج:")}
+              {t("gpa_certificate_subjects_heading")}
             </h3>
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-slate-50 text-slate-600 text-sm">
-                  <th className="border border-slate-100 p-4 text-right rounded-tr-xl">{t("gpa_certificate_table_subject", "المادة")}</th>
-                  <th className="border border-slate-100 p-4 text-center">{t("gpa_certificate_table_coefficient", "المعامل")}</th>
-                  <th className="border border-slate-100 p-4 text-center">{t("gpa_certificate_table_grade", "العلامة")}</th>
-                  <th className="border border-slate-100 p-4 text-center rounded-tl-xl">{t("gpa_certificate_table_total", "المجموع")}</th>
+                  <th className="border border-slate-100 p-4 text-right rounded-tr-xl">{t("gpa_certificate_table_subject")}</th>
+                  <th className="border border-slate-100 p-4 text-center">{t("gpa_certificate_table_coefficient")}</th>
+                  <th className="border border-slate-100 p-4 text-center">{t("gpa_certificate_table_grade")}</th>
+                  <th className="border border-slate-100 p-4 text-center rounded-tl-xl">{t("gpa_certificate_table_total")}</th>
                 </tr>
               </thead>
               <tbody>
                 {subjects.map((s, i) => (
                   <tr key={i} className="text-slate-800 border-b border-slate-50">
-                    <td className="p-4 font-medium">{s.name || `${t("gpa_subject_fallback", "مادة")} ${i+1}`}</td>
+                    <td className="p-4 font-medium">{s.name || `${t("gpa_subject_fallback")} ${i+1}`}</td>
                     <td className="p-4 text-center">{s.coefficient}</td>
                     <td className="p-4 text-center font-bold text-medical-600">{s.grade}</td>
                     <td className="p-4 text-center font-bold">{(s.grade * s.coefficient).toFixed(2)}</td>
@@ -556,20 +556,20 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                   <Award className="w-10 h-10 text-medical-400" />
                 </div>
                 <div>
-                  <p className="text-medical-400 text-xs font-bold mb-2">{t("gpa_certificate_final_result_label", "النتيجة النهائية للمعدل")}</p>
+                  <p className="text-medical-400 text-xs font-bold mb-2">{t("gpa_certificate_final_result_label")}</p>
                   <h3 className="text-7xl font-black text-white tracking-tighter leading-none">{gpa}</h3>
                 </div>
               </div>
               
               <div className="text-left">
                 <div className="inline-block px-8 py-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl min-w-[200px]">
-                  <span className="block text-[10px] text-slate-400 font-bold mb-1 text-right">{t("gpa_certificate_overall_label", "التقدير العام")}</span>
+                  <span className="block text-[10px] text-slate-400 font-bold mb-1 text-right">{t("gpa_certificate_overall_label")}</span>
                   <p className="text-3xl font-black text-medical-400 text-right">
-                    {gpaValue >= 16 ? t("gpa_certificate_rating_excellent", "ممتاز جداً") :
-                     gpaValue >= 14 ? t("gpa_certificate_rating_very_good", "جيد جداً") :
-                     gpaValue >= 12 ? t("gpa_certificate_rating_good", "جيد") :
-                     gpaValue >= 10 ? t("gpa_certificate_rating_pass", "مقبول") :
-                     t("gpa_certificate_rating_fail", "راسب")}
+                    {gpaValue >= 16 ? t("gpa_certificate_rating_excellent") :
+                     gpaValue >= 14 ? t("gpa_certificate_rating_very_good") :
+                     gpaValue >= 12 ? t("gpa_certificate_rating_good") :
+                     gpaValue >= 10 ? t("gpa_certificate_rating_pass") :
+                     t("gpa_certificate_rating_fail")}
                   </p>
                 </div>
               </div>
@@ -592,8 +592,8 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
           {/* Footer */}
           <div className="border-t border-slate-100 pt-8 mt-12 text-right" dir="rtl">
             <p className="text-slate-400 text-[10px] font-bold">
-              {t("gpa_certificate_disclaimer_line1", "هذا المستند تم توليده آلياً ولا يعوض كشف النقاط الرسمي المسلم من طرف الهيئات الجامعية المختصة.")}
-              <br />{t("gpa_certificate_disclaimer_line2", "حقوق الطبع محفوظة لمنصة Aura Med 2026.")}
+              {t("gpa_certificate_disclaimer_line1")}
+              <br />{t("gpa_certificate_disclaimer_line2")}
             </p>
           </div>
         </div>
@@ -620,9 +620,9 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                 <div className="w-20 h-20 bg-yellow-500/10 rounded-[2rem] flex items-center justify-center mb-5 border border-yellow-500/20">
                   <Award className="w-10 h-10 text-yellow-500" />
                 </div>
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-3">{t("gpa_payment_modal_title", "تجاوزت الحد المجاني")}</h3>
+                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-3">{t("gpa_payment_modal_title")}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
-                    {t("gpa_payment_modal_body_prefix", "لقد استنفدت الحد الأقصى لتحميل النتيجة (مرتين) لهذه السنة. يرجى دفع اشتراك بقيمة ")}<span className="text-yellow-500 font-black">500 د.ج</span>{t("gpa_payment_modal_body_suffix", " لمواصلة التحميل بلا حدود.")}
+                    {t("gpa_payment_modal_body_prefix")}<span className="text-yellow-500 font-black">{t("gpa_payment_modal_price")}</span>{t("gpa_payment_modal_body_suffix")}
                   </p>
                 <Link 
                   href="/profile?tab=subscription"
@@ -632,14 +632,14 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                   }}
                   className="w-full py-4 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] text-lg hover:-translate-y-1 group"
                 >
-                  <span>{t("gpa_payment_modal_action", "الذهاب للدفع والتفعيل")}</span>
+                  <span>{t("gpa_payment_modal_action")}</span>
                   <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform rotate-180" />
                 </Link>
                 <button 
                   onClick={() => setShowPaymentModal(false)} 
                   className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all"
                 >
-                  {t("gpa_payment_modal_cancel", "إلغاء")}
+                  {t("gpa_payment_modal_cancel")}
                 </button>
               </div>
             </motion.div>

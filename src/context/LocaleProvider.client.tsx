@@ -3,12 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import ar from "@/locales/ar.json";
 import fr from "@/locales/fr.json";
+import en from "@/locales/en.json";
 
-type Locale = "ar" | "fr";
+type Locale = "ar" | "fr" | "en";
 
 const translations: Record<Locale, Record<string, string>> = {
   ar,
   fr,
+  en,
 };
 
 const LocaleContext = createContext({

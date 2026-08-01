@@ -1,5 +1,5 @@
 /**
- * Loading skeleton لصفحة الجدول الدراسي /timetable
+ * Loading skeleton for the timetable page /timetable
  */
 export default function TimetableLoading() {
   return (

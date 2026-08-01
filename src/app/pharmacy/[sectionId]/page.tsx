@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
     where: { id: sectionId },
   });
 
-  if (!section) return { title: tServer("pharmacy_section_not_found_title", siteLang, "قسم غير موجود") };
+  if (!section) return { title: tServer("pharmacy_section_not_found_title", siteLang, "Section not found") };
 
   return {
     title: `${section.name} | AuraMed Elite`,
-    description: section.description || tServer("pharmacy_section_description_meta", siteLang, "قسم الصيدلة في منصة AuraMed Elite"),
+    description: section.description || tServer("pharmacy_section_description_meta", siteLang, "Pharmacy section in AuraMed Elite"),
   };
 }
 

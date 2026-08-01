@@ -22,7 +22,7 @@ export default function NewsLoginRequired() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-500 text-xs font-black tracking-widest uppercase mb-8">
             <ShieldAlert className="w-4 h-4" />
-            {t("news_locked_badge", "محتوى حصري للأعضاء")}
+            {t("news_locked_badge", "Members only content")}
           </div>
 
           <div className="w-24 h-24 bg-gradient-to-tr from-medical-600 to-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-medical-500/20 rotate-3 hover:rotate-0 transition-transform duration-500">
@@ -30,13 +30,13 @@ export default function NewsLoginRequired() {
           </div>
 
           <h1 className="text-4xl md:text-5xl font-black text-white mb-6 italic">
-            {t("news_title_prefix", "أخبار")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-indigo-500">{t("news_title_highlight", "المنصة")}</span>
+            {t("news_title_prefix", "News")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-indigo-500">{t("news_title_highlight", "the platform")}</span>
           </h1>
           
           <p className="text-slate-400 text-lg font-bold mb-12 leading-relaxed">
             {t(
               "news_locked_message",
-              "عذراً، قسم الأخبار والإعلانات متاح فقط للطلاب المسجلين في AuraMed. قم بتسجيل الدخول أو إنشاء حساب جديد لتبقى على إطلاع بآخر التحديثات."
+              "Sorry, the news and announcements section is only available for registered AuraMed students. Log in or create an account to stay informed of the latest updates."
             )}
           </p>
 
@@ -46,7 +46,7 @@ export default function NewsLoginRequired() {
               className="flex items-center justify-center gap-3 py-5 bg-white text-slate-950 rounded-2xl font-black text-xl hover:bg-medical-500 hover:text-white transition-all shadow-xl group"
             >
               <LogIn className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-              {t("login_button", "تسجيل الدخول")}
+              {t("login_button", "Login")}
             </Link>
             
             <Link 
@@ -54,19 +54,19 @@ export default function NewsLoginRequired() {
               className="flex items-center justify-center gap-3 py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-xl hover:bg-white/10 transition-all group"
             >
               <UserPlus className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              {t("register_button", "إنشاء حساب")}
+              {t("register_button", "Register")}
             </Link>
           </div>
 
           <div className="mt-12 flex items-center justify-center gap-6 text-slate-500 font-bold text-sm border-t border-white/5 pt-8">
               <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-medical-400" />
-                    <span>{t("news_locked_updates", "تحديثات هامة")}</span>
+                    <span>{t("news_locked_updates", "Important updates")}</span>
               </div>
               <div className="w-1 h-1 bg-white/10 rounded-full" />
               <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-medical-400" />
-                    <span>{t("news_locked_exclusive", "إعلانات حصرية")}</span>
+                    <span>{t("news_locked_exclusive", "Exclusive announcements")}</span>
               </div>
           </div>
         </motion.div>

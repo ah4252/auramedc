@@ -20,7 +20,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
     router.refresh();
   }, [router]);
 
-  // لمنع التمرير في الخلفية عند فتح النافذة
+  // Prevent background scrolling while the modal is open
   useEffect(() => {
     if (selectedNews) {
       document.body.style.overflow = "hidden";
@@ -94,13 +94,13 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
       }
       setCommentText("");
     } else {
-      alert(result.error || t("news_add_comment_error", "حدث خطأ أثناء إضافة التعليق"));
+      alert(result.error || t("news_add_comment_error", "An error occurred while adding the comment"));
     }
     setIsSubmitting(false);
   };
 
   const handleDeleteComment = async (commentId: string, parentId?: string) => {
-    if (!confirm(t("news_confirm_delete_comment", "هل أنت متأكد من حذف هذا التعليق؟"))) return;
+    if (!confirm(t("news_confirm_delete_comment", "Are you sure you want to delete this comment?"))) return;
 
     const result = await deleteNewsComment(commentId);
     if (result.success) {
@@ -128,7 +128,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
         setSelectedNews(updatedNews);
       }
     } else {
-      alert(result.error || t("news_delete_comment_error", "حدث خطأ أثناء حذف التعليق"));
+      alert(result.error || t("news_delete_comment_error", "An error occurred while deleting the comment"));
     }
   };
 
@@ -155,8 +155,8 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
               {news.length === 0 ? (
             <div className="text-center py-20 bg-slate-800/30 backdrop-blur-sm rounded-[3rem] border border-slate-700/50 max-w-4xl mx-auto">
               <Newspaper className="w-20 h-20 text-slate-600 mx-auto mb-6 opacity-50" />
-              <h2 className="text-2xl font-black text-slate-400">{t("news_no_news_title","لا توجد أخبار حالياً")}</h2>
-              <p className="text-slate-500 mt-2 font-bold">{t("news_no_news_description","سنقوم بنشر التحديثات هنا قريباً، ابق على تواصل!")}</p>
+              <h2 className="text-2xl font-black text-slate-400">{t("news_no_news_title","No news at the moment")}</h2>
+              <p className="text-slate-500 mt-2 font-bold">{t("news_no_news_description","We will post updates here soon, stay tuned!")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -175,13 +175,13 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     {/* Badges for Links/Videos */}
                     <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                       {videos.length > 0 && (
-                        <div className="bg-red-500/80 backdrop-blur-md text-white p-2 rounded-xl shadow-lg border border-red-500/50 flex items-center gap-1.5" title={`${videos.length} فيديو`}>
+                        <div className="bg-red-500/80 backdrop-blur-md text-white p-2 rounded-xl shadow-lg border border-red-500/50 flex items-center gap-1.5" title={`${videos.length} ${t("news_video_count_label", "video")}`}>
                           <Video className="w-4 h-4" />
                           {videos.length > 1 && <span className="text-[10px] font-black leading-none">{videos.length}</span>}
                         </div>
                       )}
                       {files.length > 0 && (
-                        <div className="bg-blue-500/80 backdrop-blur-md text-white p-2 rounded-xl shadow-lg border border-blue-500/50 flex items-center gap-1.5" title={`${files.length} مرفق`}>
+                        <div className="bg-blue-500/80 backdrop-blur-md text-white p-2 rounded-xl shadow-lg border border-blue-500/50 flex items-center gap-1.5" title={`${files.length} ${t("news_attachment_count_label", "attachment")}`}>
                           <LinkIcon className="w-4 h-4" />
                           {files.length > 1 && <span className="text-[10px] font-black leading-none">{files.length}</span>}
                         </div>
@@ -207,7 +207,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     <div className="p-6 flex-1 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
                           <span className="px-3 py-1 bg-medical-500/10 text-medical-400 text-[10px] font-black rounded-full border border-medical-500/20">
-                          {t("news_badge","إعلان")}
+                          {t("news_badge","Announcement")}
                         </span>
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-bold">
                           <Calendar className="w-3.5 h-3.5" />
@@ -227,12 +227,12 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
 
                       <div className="mt-auto flex items-center justify-between border-t border-slate-700/50 pt-4">
                         <div className="flex items-center gap-2 text-medical-400 text-sm font-black group-hover:gap-3 transition-all">
-                          <span>{t("news_details","التفاصيل")}</span>
+                          <span>{t("news_details","Details")}</span>
                           <ChevronRight className="w-4 h-4 rotate-180" />
                         </div>
                         <div className="flex items-center gap-1.5 text-slate-500 font-bold text-xs">
                           <MessageCircle className="w-3.5 h-3.5" />
-                          <span>{totalCommentsCount} {t("news_comment_label","تعليق")}</span>
+                          <span>{totalCommentsCount} {t("news_comment_label","Comment")}</span>
                         </div>
                       </div>
                     </div>
@@ -266,7 +266,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                 <button 
                   onClick={() => setSelectedNews(null)}
                   className="p-2.5 bg-black/40 hover:bg-red-500 text-white rounded-full backdrop-blur-md transition-all shadow-lg"
-                  title={t("close","إغلاق")}
+                  title={t("close","Close")}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -316,7 +316,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                   <div className={`p-8 ${!selectedNews.image && parseUrls(selectedNews.videoUrl).length === 0 ? 'pt-16' : ''}`}>
                     <div className="flex items-center gap-4 mb-6 flex-wrap">
                       <span className="px-4 py-1.5 bg-medical-500/10 text-medical-400 text-xs font-black rounded-full border border-medical-500/20 shadow-sm">
-                        إعلان هام
+                        {t("news_important_announcement", "Important announcement")}
                       </span>
                       <div className="flex items-center gap-2 text-sm text-slate-400 font-bold">
                         <Calendar className="w-4 h-4" />
@@ -352,7 +352,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                                 className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black transition-all border border-slate-700 shadow-lg flex-1 min-w-[200px]"
                               >
                                 <LinkIcon className="w-5 h-5 text-blue-400" />
-                                {files.length > 1 ? `${t("news_attachment_number","المرفق رقم")} ${idx + 1}` : t("news_attachment_open","فتح المرفق / الملف المرتبط")}
+                                {files.length > 1 ? `${t("news_attachment_number","Attachment") } ${idx + 1}` : t("news_attachment_open","Open attachment / linked file")}
                               </a>
                             ))}
                           </div>
@@ -367,7 +367,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                 <div className="w-full lg:w-96 bg-[#0B1120] flex flex-col h-[50vh] lg:h-auto shrink-0 relative">
                   <div className="p-6 border-b border-slate-800 flex items-center gap-3">
                     <MessageCircle className="w-5 h-5 text-medical-500" />
-                    <h3 className="text-lg font-black text-white">{t("news_comments","التعليقات")}</h3>
+                    <h3 className="text-lg font-black text-white">{t("news_comments","Comments")}</h3>
                     <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-lg text-xs font-bold">
                       {getCommentsCount(selectedNews)}
                     </span>
@@ -377,7 +377,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                   <div className="mx-6 mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-2 text-xs text-amber-500 font-black">
                     <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-500 animate-pulse" />
                     <p className="leading-relaxed">
-                      {t("news_comments_retention_note","ملاحظة: تُحذف التعليقات والردود تلقائياً كل 4 ساعات لتنشيط التفاعل والحفاظ على الخصوصية.")}
+                      {t("news_comments_retention_note","Note: Comments and replies are automatically deleted every 4 hours to boost interaction and protect privacy.")}
                     </p>
                   </div>
 
@@ -385,7 +385,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     {(!selectedNews.comments || selectedNews.comments.length === 0) ? (
                       <div className="text-center py-10 opacity-50">
                         <MessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-400 font-bold text-sm">{t("news_comments_empty","كن أول من يشارك برأيه!")}</p>
+                        <p className="text-slate-400 font-bold text-sm">{t("news_comments_empty","Be the first to share your opinion!")}</p>
                       </div>
                     ) : (
                       <div className="space-y-6">
@@ -412,7 +412,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                                 <div className="flex-1 bg-slate-800/50 p-4 rounded-2xl rounded-tr-sm border border-slate-700/50 hover:border-slate-600 transition-colors relative">
                                   <div className="flex items-center justify-between mb-1">
                                     <span className="font-black text-sm text-slate-200">
-                                      {comment.user?.name || t("user_default","مستخدم غير معروف")}
+                                      {comment.user?.name || t("user_default","Unknown user")}
                                     </span>
                                     <span className="text-[10px] text-slate-500 font-bold">
                                       {new Date(comment.createdAt).toLocaleDateString('ar-EG')}
@@ -427,21 +427,21 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                                     <div className="flex items-center gap-3 mt-3 border-t border-slate-700/30 pt-2">
                                       {userId && (
                                         <button 
-                                          onClick={() => setReplyTo({ id: comment.id, userName: comment.user?.name || t("user_default","مستخدم غير معروف") })}
+                                          onClick={() => setReplyTo({ id: comment.id, userName: comment.user?.name || t("user_default","Unknown user") })}
                                           className="inline-flex items-center gap-1 text-[10px] font-black text-medical-400 hover:text-medical-300 transition-colors"
                                         >
                                           <CornerDownLeft className="w-3 h-3" />
-                                          <span>{t("reply","رد")}</span>
+                                          <span>{t("reply","Reply")}</span>
                                         </button>
                                       )}
                                       {(comment.userId === userId || isAdmin) && (
                                         <button 
                                           onClick={() => handleDeleteComment(comment.id)}
                                           className="inline-flex items-center gap-1 text-[10px] font-black text-red-500 hover:text-red-400 transition-colors mr-auto"
-                                          title={t("news_delete_comment","حذف التعليق")}
+                                          title={t("news_delete_comment","Delete comment")}
                                         >
                                           <Trash2 className="w-3 h-3" />
-                                          <span>{t("delete","حذف")}</span>
+                                          <span>{t("delete","Delete")}</span>
                                         </button>
                                       )}
                                     </div>
@@ -476,8 +476,8 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                                         <div className="flex-1 bg-slate-800/30 p-3.5 rounded-2xl rounded-tr-sm border border-slate-800 relative">
                                           <div className="flex items-center justify-between mb-1">
                                             <span className="font-black text-xs text-slate-300 flex items-center gap-1">
-                                              {reply.user?.name || t("user_default","مستخدم غير معروف")}
-                                              <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 text-[8px] font-black rounded uppercase">{t("reply","رد")}</span>
+                                              {reply.user?.name || t("user_default","Unknown user")}
+                                              <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 text-[8px] font-black rounded uppercase">{t("reply","Reply")}</span>
                                             </span>
                                             <span className="text-[9px] text-slate-500 font-bold">
                                               {new Date(reply.createdAt).toLocaleDateString('ar-EG')}
@@ -493,10 +493,10 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                                               <button 
                                                 onClick={() => handleDeleteComment(reply.id, comment.id)}
                                                 className="inline-flex items-center gap-1 text-[9px] font-black text-red-500 hover:text-red-400 transition-colors"
-                                                title={t("news_delete_reply","حذف الرد")}
+                                                title={t("news_delete_reply","Delete reply")}
                                               >
                                                 <Trash2 className="w-2.5 h-2.5" />
-                                                <span>{t("delete","حذف")}</span>
+                                                <span>{t("delete","Delete")}</span>
                                               </button>
                                             </div>
                                           )}
@@ -526,9 +526,9 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                           >
                             <span className="flex items-center gap-1.5">
                               <Reply className="w-3.5 h-3.5 rotate-180" />
-                              <span>{t("news_replying_to_prefix","الرد على تعليق")} @{replyTo.userName}</span>
+                              <span>{t("news_replying_to_prefix","Replying to comment")} @{replyTo.userName}</span>
                             </span>
-                            <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-slate-800 rounded-md transition-colors" title="إلغاء الرد" aria-label="إلغاء الرد">
+                            <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-slate-800 rounded-md transition-colors" title="Cancel reply" aria-label="Cancel reply">
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </motion.div>
@@ -540,15 +540,15 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                           type="text" 
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
-                          placeholder={replyTo ? `${t("news_reply_placeholder_prefix","اكتب ردك على")} ${replyTo.userName}...` : t("news_comment_input_placeholder","اكتب تعليقك هنا...")}
+                          placeholder={replyTo ? `${t("news_reply_placeholder_prefix","Write your reply to")} ${replyTo.userName}...` : t("news_comment_input_placeholder","Write your comment here...")}
                           className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white outline-none focus:border-medical-500 transition-colors"
                         />
                         <button 
                           type="submit"
                           disabled={!commentText.trim() || isSubmitting}
                           className="bg-medical-600 hover:bg-medical-700 text-white p-3 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={t("news_send_comment","إرسال التعليق")}
-                          aria-label={t("news_send_comment","إرسال التعليق")}
+                          title={t("news_send_comment","Send comment")}
+                          aria-label={t("news_send_comment","Send comment")}
                         >
                           <Send className="w-5 h-5 rotate-180" />
                         </button>
@@ -556,9 +556,9 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     </div>
                   ) : (
                     <div className="p-6 border-t border-slate-800 bg-[#0f172a] text-center">
-                      <p className="text-sm text-slate-400 font-bold mb-3">{t("news_login_required","يجب تسجيل الدخول لإضافة تعليق")}</p>
+                      <p className="text-sm text-slate-400 font-bold mb-3">{t("news_login_required","You must be logged in to add a comment")}</p>
                       <a href="/login" className="inline-block bg-slate-800 hover:bg-slate-700 text-white text-sm font-black px-6 py-2 rounded-full transition-colors">
-                        {t("login","تسجيل الدخول")}
+                        {t("login","Login")}
                       </a>
                     </div>
                   )}

@@ -1,0 +1,313 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                          String                @id @default(cuid())
+  name                        String?
+  email                       String                @unique
+  password                    String?
+  image                       String?
+  role                        String                @default("USER")
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+  facebook                    String?
+  instagram                   String?
+  telegram                    String?
+  passwordChangedAt           DateTime?
+  lastActiveAt                DateTime?
+  lastReadNewsAt              DateTime?
+  studyYear                   String?
+  comments                    Comment[]
+  favorites                   Favorite[]
+  friendshipsReceived         Friendship[]          @relation("FriendFriendships")
+  friendshipsInitiated        Friendship[]          @relation("UserFriendships")
+  friendshipDecisionsSent     FriendshipDecision[]  @relation("FriendshipDecisionActor")
+  friendshipDecisionsReceived FriendshipDecision[]  @relation("FriendshipDecisionTarget")
+  gpaCalculations             GPACalculation[]
+  newsComments                NewsComment[]
+  progress                    Progress[]
+  pushSubscriptions           PushSubscription[]
+  subscriptionRequests        SubscriptionRequest[]
+  timetable                   Timetable?
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  slug        String    @unique
+  type        String    @default("YEAR")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  subjects    Subject[]
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  semester    String?
+  lessons     Lesson[]
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  slug        String     @unique
+  thumbnail   String?
+  videoUrl    String?
+  pdfUrl      String?
+  summaryUrl  String?
+  views       Int        @default(0)
+  isPublished Boolean    @default(false)
+  subjectId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  comments    Comment[]
+  favorites   Favorite[]
+  subject     Subject    @relation(fields: [subjectId], references: [id])
+  progress    Progress[]
+  resources   Resource[]
+  tags        Tag[]      @relation("LessonTags")
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("VIDEO")
+  url         String
+  lessonId    String
+  createdAt   DateTime @default(now())
+  description String?
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  lessons Lesson[] @relation("LessonTags")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+model Progress {
+  id         String   @id @default(cuid())
+  userId     String
+  lessonId   String
+  completed  Boolean  @default(false)
+  watchedSec Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+model GPACalculation {
+  id        String   @id @default(cuid())
+  userId    String
+  gpa       String
+  subjects  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model SiteSettings {
+  id                     String   @id @default("global")
+  siteName               String   @default("AuraMed")
+  maintenanceMode        Boolean  @default(false)
+  allowRegistration      Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+  darkBg                 String?  @default("#0f172a")
+  primaryColor           String?  @default("#0ea5e9")
+  secondaryColor         String?  @default("#6366f1")
+  adminPassword          String?  @default("admin123")
+  toolsPassword          String?  @default("tools123")
+  toolsProtectionEnabled Boolean  @default(false)
+  statLectures           String?  @default("")
+  statSatisfaction       String?  @default("99%")
+  statSpecialties        String?  @default("")
+  statStudents           String?  @default("")
+  maintenanceCourses     Boolean  @default(false)
+  maintenanceGpa         Boolean  @default(false)
+  maintenanceNews        Boolean  @default(false)
+  maintenanceTimetable   Boolean  @default(false)
+  socialEmail            String?
+  socialFacebook         String?
+  socialInstagram        String?
+  socialTelegram         String?
+  socialWhatsapp         String?
+  maintenancePharmacy    Boolean  @default(false)
+  maintenanceSubjects    Boolean  @default(false)
+  statPharmacy           String?  @default("")
+}
+
+model Timetable {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  data      String
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GpaYear {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  subjects  GpaSubject[]
+}
+
+model GpaSubject {
+  id          String   @id @default(cuid())
+  name        String
+  coefficient Int      @default(1)
+  gpaYearId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  gpaYear     GpaYear  @relation(fields: [gpaYearId], references: [id], onDelete: Cascade)
+}
+
+model News {
+  id          String        @id @default(cuid())
+  title       String
+  content     String
+  image       String?
+  videoUrl    String?
+  fileUrl     String?
+  isPublished Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  comments    NewsComment[]
+}
+
+model NewsComment {
+  id        String        @id @default(cuid())
+  content   String
+  userId    String
+  newsId    String
+  parentId  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  news      News          @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  parent    NewsComment?  @relation("NewsCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   NewsComment[] @relation("NewsCommentReplies")
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ForgotPasswordRequest {
+  id           String   @id @default(cuid())
+  email        String
+  lastPassword String
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  friend    User     @relation("FriendFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+}
+
+model FriendshipDecision {
+  id           String    @id @default(cuid())
+  actorId      String
+  targetUserId String
+  type         String
+  message      String?
+  expiresAt    DateTime
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  actor        User      @relation("FriendshipDecisionActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser   User      @relation("FriendshipDecisionTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  transactionId String
+  paymentDate   DateTime
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  receiptUrl    String?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PharmacySection {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  order       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  imageUrl    String?
+  images      PharmacyImage[]
+}
+
+model PharmacyImage {
+  id          String          @id @default(cuid())
+  title       String?
+  url         String
+  description String?
+  order       Int             @default(0)
+  sectionId   String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  section     PharmacySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+

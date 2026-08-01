@@ -11,13 +11,13 @@ export async function generateMetadata() {
   const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
 
   return {
-    title: tServer("news_meta_title", siteLang ?? "ar", siteLang === "fr" ? "Actualités | AuraMed Elite" : "أخبار المنصة | AuraMed Elite"),
+    title: tServer("news_meta_title", siteLang ?? "ar", siteLang === "fr" ? "Actualités | AuraMed Elite" : "News | AuraMed Elite"),
     description: tServer(
       "news_meta_description",
       siteLang ?? "ar",
       siteLang === "fr"
         ? "Les dernières mises à jour et annonces de la plateforme AuraMed pour améliorer votre expérience d'apprentissage."
-        : "آخر التحديثات والإعلانات في منصة أوراميد التعليمية"
+        : "The latest updates and announcements from AuraMed to improve your learning experience."
     )
   };
 }
@@ -71,10 +71,10 @@ export default async function NewsPage() {
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-medical-500/10 border border-medical-500/20 text-medical-400 mb-6 font-bold text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>{tServer("news_hero_badge", siteLang ?? "ar", siteLang === "fr" ? "Nous vous tenons informés" : "نبقيك على اطلاع دائم")}</span>
+            <span>{tServer("news_hero_badge", siteLang ?? "ar", siteLang === "fr" ? "Nous vous tenons informés" : "We keep you informed")}</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black mb-6">
-            {tServer("news_title_prefix", siteLang ?? "ar", siteLang === "fr" ? "Actualités" : "أخبار")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-medical-600">{tServer("news_title_highlight", siteLang ?? "ar", siteLang === "fr" ? "la plateforme" : "المنصة")}</span>
+            {tServer("news_title_prefix", siteLang ?? "ar", siteLang === "fr" ? "Actualités" : "News")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-medical-600">{tServer("news_title_highlight", siteLang ?? "ar", siteLang === "fr" ? "la plateforme" : "the platform")}</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-bold leading-relaxed">
             {tServer(
@@ -82,7 +82,7 @@ export default async function NewsPage() {
               siteLang ?? "ar",
               siteLang === "fr"
                 ? "Suivez les dernières annonces, mises à jour importantes et nouvelles fonctionnalités que nous ajoutons continuellement pour améliorer votre expérience d'apprentissage."
-                : "تابع أحدث الإعلانات، التحديثات الهامة، والميزات الجديدة التي نضيفها باستمرار لتحسين تجربتك التعليمية."
+                : "Follow the latest announcements, important updates, and new features we continuously add to improve your learning experience."
             )}
           </p>
         </div>

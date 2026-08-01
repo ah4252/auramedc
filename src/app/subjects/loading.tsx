@@ -1,7 +1,7 @@
 import { CategoryCardSkeleton } from "@/components/ui/Skeleton";
 
 /**
- * Loading skeleton لصفحة التخصصات /subjects
+ * Loading skeleton for the specialties page /subjects
  */
 export default function SubjectsLoading() {
   return (

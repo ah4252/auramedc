@@ -64,17 +64,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5 text-white/90 text-sm font-bold transition-colors"
             >
               <ArrowRight className="w-4 h-4" />
-              {t("pharmacy_back_to_sections", "Retour aux sections")}
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2.5 text-white/90 text-sm font-bold mb-6 mt-8 md:mt-0"
-          >
-            <FlaskConical className="w-4 h-4" />
-            {section.images.length} دواء
+                {t("pharmacy_back_to_sections", "Back to sections")}
           </motion.div>
 
           <motion.h1
@@ -108,7 +98,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={t("pharmacy_section_search_placeholder", "Recherche rapide de médicament dans la section...")}
+              placeholder={t("pharmacy_section_search_placeholder", "Quick search for a medicine in this section...")}
               className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 outline-none focus:border-white/40 focus:bg-white/15 transition-all font-medium shadow-lg"
             />
           </motion.div>
@@ -125,10 +115,10 @@ export default function SectionClient({ section }: { section: PharmacySection })
           >
             <ImageIcon className="w-20 h-20 mx-auto text-slate-300 dark:text-slate-600 mb-6" />
             <h2 className="text-2xl font-black text-slate-400 dark:text-slate-500">
-              {search ? t("pharmacy_section_no_results_title", "Aucun médicament correspondant trouvé") : t("pharmacy_section_no_images_title", "Aucun médicament dans cette section pour le moment")}
+              {search ? t("pharmacy_section_no_results_title", "No matching medicine found") : t("pharmacy_section_no_images_title", "No medicines in this section yet")}
             </h2>
             <p className="text-slate-400 dark:text-slate-600 mt-2">
-              {search ? t("pharmacy_section_no_results_description", "Essayez une autre recherche") : t("pharmacy_section_no_images_description", "Les médicaments seront ajoutés bientôt")}
+              {search ? t("pharmacy_section_no_results_description", "Try another search") : t("pharmacy_section_no_images_description", "Medicines will be added soon")}
             </p>
           </motion.div>
         ) : (
@@ -145,7 +135,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
                 <div className="relative aspect-[4/5] w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-4">
                   <img
                     src={img.url}
-                    alt={img.title || "دواء"}
+                    alt={img.title || t("pharmacy_image_alt", "Medicine")}
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                   />
                   {/* Overlay on hover */}
@@ -211,7 +201,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
               
               <button
                 onClick={() => setLightboxImage(null)}
-                title={t("pharmacy_section_close_button", "Fermer")}
+                title={t("pharmacy_section_close_button", "Close")}
                 className="absolute -top-12 right-0 md:-right-12 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors border border-white/10"
               >
                 <X className="w-5 h-5" />

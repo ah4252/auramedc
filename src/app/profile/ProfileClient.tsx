@@ -448,7 +448,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           )}
                           <h3 className="font-black text-slate-800 dark:text-white group-hover:text-rose-500 transition-colors line-clamp-1 mb-2 px-1">{fav.lesson.title}</h3>
                           <div className="flex items-center gap-2 px-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md">مفضلة</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md">{t("profile_favorite_badge")}</span>
                             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold line-clamp-1">{fav.lesson.subject.name}</span>
                           </div>
                         </Link>
@@ -697,7 +697,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                 </div>
 
                                 <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">صورة الإيصال <span className="text-rose-500">*</span></label>
+                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_receipt_image_label")} <span className="text-rose-500">*</span></label>
                                   <input 
                                     type="file"
                                     required

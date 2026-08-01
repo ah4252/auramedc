@@ -68,7 +68,7 @@ export default function FriendsClient({
             status: d.type === "REJECTED" ? "rejected" : "accepted",
             expiresAt: new Date(d.expiresAt).getTime(),
             readAt: d.readAt ? new Date(d.readAt).getTime() : null,
-            message: d.message || (d.type === "REJECTED" ? "تم رفض طلب الصداقة" : "تم قبول طلب الصداقة"),
+            message: d.message || (d.type === "REJECTED" ? t("friend_request_rejected", "Friend request rejected.") : t("friend_request_accepted", "Friend request accepted.")),
           };
         });
         setOutgoingDecisions(mapped);
@@ -92,26 +92,25 @@ export default function FriendsClient({
   };
 
   const rejectedOutgoing = Object.entries(outgoingDecisions)
-    .filter(([, decision]) => decision.status === "rejected" && decision.expiresAt > Date.now() && !decision.readAt)
-    .map(([userId, decision]) => {
-      const req = outgoing.find(item => item.user.id === userId);
-      const actorUser = req?.user || null;
-      return {
-        user: actorUser || {
-          id: userId,
-          name: "مستخدم",
-          email: "",
-          image: null,
-          studyYear: null,
-          telegram: null,
-          instagram: null,
-          facebook: null,
-          lastActiveAt: null,
-        },
-        decision,
-      };
-    });
-
+      .filter(([, decision]) => decision.status === "rejected" && decision.expiresAt > Date.now() && !decision.readAt)
+      .map(([userId, decision]) => {
+        const req = outgoing.find(item => item.user.id === userId);
+        const actorUser = req?.user || null;
+        return {
+          user: actorUser || {
+            id: userId,
+            name: t("user_default", "Unknown user"),
+            email: "",
+            image: null,
+            studyYear: null,
+            telegram: null,
+            instagram: null,
+            facebook: null,
+            lastActiveAt: null,
+          },
+          decision,
+        };
+      });
   useEffect(() => {
     // Load server-side outgoing decisions on mount
     loadServerOutgoingDecisions();
@@ -150,14 +149,14 @@ export default function FriendsClient({
         if (res.success) {
           setSearchResults(res.users || []);
           if (res.users && res.users.length === 0) {
-            setSearchError(t("friends_search_no_results","لم يتم العثور على أي مستخدم بهذا البريد الإلكتروني"));
+            setSearchError(t("friends_search_no_results","No user found with that email address."));
           }
         } else {
-          setSearchError(res.error || t("friends_search_failed","فشل البحث المباشر"));
+          setSearchError(res.error || t("friends_search_failed","Live search failed."));
           setSearchResults([]);
         }
       } catch (err) {
-        setSearchError(t("friends_search_error","حدث خطأ أثناء البحث المباشر"));
+        setSearchError(t("friends_search_error","An error occurred during live search."));
         setSearchResults([]);
       } finally {
         setSearchLoading(false);
@@ -173,14 +172,14 @@ export default function FriendsClient({
     try {
       const res = await sendFriendRequest(userId);
       if (res.success) {
-        showNotification("success", t("friend_request_sent", "تم إرسال طلب الصداقة بنجاح!"));
+        showNotification("success", t("friend_request_sent", "Friend request sent successfully!"));
 
         if (typeof window !== "undefined" && "Notification" in window) {
           const browserNotification = window.Notification;
           if (browserNotification && browserNotification.permission === "granted") {
             try {
               new browserNotification("AuraMed Elite", {
-                body: t("friend_request_sent_browser", "تم إرسال طلب الصداقة بنجاح!"),
+                body: t("friend_request_sent_browser", "Friend request sent successfully!"),
                 icon: "/icons/icon-192.webp",
               });
             } catch {
@@ -203,10 +202,10 @@ export default function FriendsClient({
           ]);
         }
       } else {
-        showNotification("error", res.error || "فشل إرسال طلب الصداقة");
+        showNotification("error", res.error || t("friends_send_failed", "Failed to send friend request."));
       }
     } catch (err) {
-      showNotification("error", "حدث خطأ غير متوقع");
+      showNotification("error", t("unexpected_error", "An unexpected error occurred."));
     } finally {
       setLoadingId(null);
     }
@@ -218,7 +217,7 @@ export default function FriendsClient({
     try {
       const res = await acceptFriendRequest(requestId);
       if (res.success) {
-        showNotification("success", `${t("friend_now_connected_prefix", "أنت الآن صديق مع")} ${friendUser.name || t("user_default", "العضو")}!`);
+        showNotification("success", `${t("friend_now_connected_prefix", "You are now friends with")} ${friendUser.name || t("user_default", "member")}!`);
         // Server will create the decision; refresh server-side decisions
         await loadServerOutgoingDecisions();
         
@@ -236,10 +235,10 @@ export default function FriendsClient({
           prev.map(r => r.id === friendUser.id ? { ...r, status: "ACCEPTED", requestId } : r)
         );
       } else {
-        showNotification("error", res.error || "فشل قبول طلب الصداقة");
+        showNotification("error", res.error || t("friends_accept_failed", "Failed to accept friend request."));
       }
     } catch (err) {
-      showNotification("error", "حدث خطأ غير متوقع");
+      showNotification("error", t("unexpected_error", "An unexpected error occurred."));
     } finally {
       setLoadingId(null);
     }
@@ -261,12 +260,12 @@ export default function FriendsClient({
       }
 
       if (res.success) {
-        showNotification("success", isIncoming ? t("friend_request_rejected", "تم رفض طلب الصداقة") : t("friend_request_cancelled", "تم إلغاء طلب الصداقة بنجاح"));
+        showNotification("success", isIncoming ? t("friend_request_rejected", "Friend request rejected.") : t("friend_request_cancelled", "Friend request cancelled successfully."));
         if (isIncoming && targetUserId) {
           // Server created the rejection decision; refresh server-side decisions
           await loadServerOutgoingDecisions();
         }
-        
+
         if (isIncoming) {
           setIncoming(prev => prev.filter(req => req.user.id !== targetUserId));
         } else {
@@ -278,10 +277,10 @@ export default function FriendsClient({
           prev.map(r => r.id === targetUserId ? { ...r, status: "NONE", requestId: null } : r)
         );
       } else {
-        showNotification("error", res.error || t("friends_cancel_failed","فشل إلغاء الطلب"));
+        showNotification("error", res.error || t("friends_cancel_failed","Failed to cancel the request."));
       }
     } catch (err) {
-      showNotification("error", t("unexpected_error","حدث خطأ غير متوقع"));
+      showNotification("error", t("unexpected_error","An unexpected error occurred."));
     } finally {
       setLoadingId(null);
     }
@@ -289,12 +288,12 @@ export default function FriendsClient({
 
   // Unfriend Action
   const handleUnfriend = async (friendId: string, friendName: string) => {
-    if (!confirm(`${t("friend_unfriend_confirm_prefix", "هل أنت متأكد من إلغاء الصداقة مع")} ${friendName}?`)) return;
+    if (!confirm(`${t("friend_unfriend_confirm_prefix", "Are you sure you want to remove friendship with")} ${friendName}?`)) return;
     setLoadingId(friendId);
     try {
       const res = await removeFriend(friendId);
       if (res.success) {
-        showNotification("success", `${t("friend_unfriend_success_prefix", "تم إلغاء الصداقة مع")} ${friendName}`);
+        showNotification("success", `${t("friend_unfriend_success_prefix", "Friendship removed with")} ${friendName}`);
         setFriends(prev => prev.filter(f => f.user.id !== friendId));
 
         // Sync search result if visible
@@ -302,10 +301,10 @@ export default function FriendsClient({
           prev.map(r => r.id === friendId ? { ...r, status: "NONE", requestId: null } : r)
         );
       } else {
-        showNotification("error", res.error || "فشل إلغاء الصداقة");
+        showNotification("error", res.error || t("friends_unfriend_failed", "Failed to remove friend."));
       }
     } catch (err) {
-      showNotification("error", "حدث خطأ غير متوقع");
+      showNotification("error", t("unexpected_error", "An unexpected error occurred."));
     } finally {
       setLoadingId(null);
     }
@@ -357,21 +356,21 @@ export default function FriendsClient({
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {selectedRequest.user.image ? (
-                      <img src={selectedRequest.user.image} alt={selectedRequest.user.name || "صورة"} className="w-14 h-14 rounded-2xl object-cover border-2 border-white/40" />
+                      <img src={selectedRequest.user.image} alt={selectedRequest.user.name || t("image_fallback","Profile photo")} className="w-14 h-14 rounded-2xl object-cover border-2 border-white/40" />
                     ) : (
                       <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center font-black text-lg uppercase border-2 border-white/40">
                         {(selectedRequest.user.name || "U").substring(0, 2)}
                       </div>
                     )}
                     <div>
-                      <h2 className="text-xl font-black">{selectedRequest.user.name || t("user_default","مستخدم")}</h2>
-                      <p className="text-xs text-white/80 font-bold">{t("friends_profile_label","ملف شخصي")}</p>
+                      <h2 className="text-xl font-black">{selectedRequest.user.name || t("user_default","Unknown user")}</h2>
+                      <p className="text-xs text-white/80 font-bold">{t("friends_profile_label","Profile")}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setSelectedRequest(null)}
                     className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                    aria-label={t("close","إغلاق")}
+                    aria-label={t("close","Close")}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -381,35 +380,33 @@ export default function FriendsClient({
               <div className="p-5 md:p-6 space-y-5">
                 <div className="grid gap-4 text-right">
                   <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                    <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_email_label","البريد الإلكتروني")}</p>
-                    <p className="text-base font-black text-slate-800 dark:text-slate-200 break-all" dir="ltr">
-                      {selectedRequest.user.email}
-                    </p>
+                      <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_email_label","Email")}</p>
+                      <p className="text-base font-black text-slate-800 dark:text-slate-200">{selectedRequest.user.email}</p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     {selectedRequest.user.studyYear ? (
                       <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                        <p className="text-[10px] font-black text-slate-400 mb-2">السنة الدراسية</p>
+                        <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_study_year_label","Study year")}</p>
                         <p className="text-base font-black text-medical-600 dark:text-medical-400">
                           {selectedRequest.user.studyYear}
                         </p>
                       </div>
                     ) : (
                       <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                        <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_study_year_label","السنة الدراسية")}</p>
-                        <p className="text-base font-black text-slate-500">{t("not_defined","غير محددة")}</p>
+                        <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_study_year_label","Study year")}</p>
+                        <p className="text-base font-black text-slate-500">{t("not_defined","Not defined")}</p>
                       </div>
                     )}
 
                     <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                      <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_status_label","الحالة")}</p>
-                      <p className="text-base font-black text-emerald-600 dark:text-emerald-400">{t("friends_request_incoming","طلب صداقة وارد")}</p>
+                      <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_status_label","Status")}</p>
+                      <p className="text-base font-black text-emerald-600 dark:text-emerald-400">{t("friends_request_incoming","Incoming friend request")}</p>
                     </div>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                    <p className="text-[10px] font-black text-slate-400 mb-3">{t("friends_personal_links","روابط الحسابات الشخصية")}</p>
+                    <p className="text-[10px] font-black text-slate-400 mb-3">{t("friends_personal_links","Personal account links")}</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedRequest.user.telegram ? (
                         <a
@@ -418,7 +415,7 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-black hover:bg-sky-500 hover:text-white transition-all"
                         >
-                          {t("telegram","تيليجرام")}
+                          {t("telegram","Telegram")}
                         </a>
                       ) : null}
 
@@ -429,7 +426,7 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-black hover:bg-pink-500 hover:text-white transition-all"
                         >
-                          {t("instagram","إنستغرام")}
+                          {t("instagram","Instagram")}
                         </a>
                       ) : null}
 
@@ -440,12 +437,12 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-black hover:bg-blue-600 hover:text-white transition-all"
                         >
-                          {t("facebook","فيسبوك")}
+                          {t("facebook","Facebook")}
                         </a>
                       ) : null}
 
                       {!selectedRequest.user.telegram && !selectedRequest.user.instagram && !selectedRequest.user.facebook && (
-                        <span className="text-xs font-black text-slate-400">{t("friends_no_personal_links","لا توجد روابط شخصية مرفقة")}</span>
+                        <span className="text-xs font-black text-slate-400">{t("friends_no_personal_links","No personal links attached")}</span>
                       )}
                     </div>
                   </div>
@@ -462,7 +459,7 @@ export default function FriendsClient({
                     className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-2xl py-3 px-4 font-black text-sm transition-all"
                   >
                     <X className="w-4 h-4" />
-                    {t("reject","رفض")}
+                    {t("reject","Reject")}
                   </button>
                   <button
                     onClick={(e) => {
@@ -474,7 +471,7 @@ export default function FriendsClient({
                     className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-3 px-4 font-black text-sm transition-all"
                   >
                     <Check className="w-4 h-4" />
-                    {t("accept","قبول")}
+                    {t("accept","Accept")}
                   </button>
                 </div>
               </div>
@@ -492,9 +489,9 @@ export default function FriendsClient({
               <Users className="w-8 h-8 animate-pulse" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">{t("friends_center_title","مركز الأصدقاء")}</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">{t("friends_center_title","Friends Center")}</h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mt-1">
-                {t("friends_center_description","تواصل مع زملائك الأطباء النخبة في المنصة، تصفح حساباتهم وابقَ على اتصال دائم معهم.")}
+                {t("friends_center_description","Connect with your colleagues, explore profiles, and stay in touch with your medical network.")}
               </p>
             </div>
           </div>
@@ -508,7 +505,7 @@ export default function FriendsClient({
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Search className="w-5 h-5 text-medical-500" />
-                <span>{t("friends_search_quick","البحث المباشر السريع")}</span>
+                <span>{t("friends_search_quick","Quick search")}</span>
               </h2>
               {searchLoading && <Loader2 className="w-5 h-5 text-medical-500 animate-spin" />}
             </div>
@@ -519,20 +516,14 @@ export default function FriendsClient({
                   type="text"
                   value={searchEmail}
                   onChange={e => setSearchEmail(e.target.value)}
-                  placeholder={t("friends_search_placeholder","ابتدئ بكتابة بريد الزميل الإلكتروني...")}
+                  placeholder={t("friends_search_placeholder","Start typing your colleague's email...")}
                   className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-medical-500 outline-none transition-all text-sm font-bold font-mono"
                   dir="ltr"
                 />
                 <Mail className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
               </div>
-              <p className="text-[10px] text-slate-400 font-bold mr-1">
-                {t("friends_search_help","* تبدأ المزامنة والفلترة الفورية تلقائياً بعد كتابة حرفين أو أكثر.")}
-              </p>
-            </div>
-
-            {/* Live Autocomplete Search Results */}
-            <div className="mt-6">
-              <AnimatePresence mode="wait">
+              <div className="text-[10px] text-slate-400 font-bold mr-1">
+                {t("friends_search_help","* Live matching and filtering starts automatically after typing two or more characters.")}
                 {searchError && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -553,7 +544,7 @@ export default function FriendsClient({
                     className="space-y-3"
                   >
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">
-                      الأعضاء المطابقين ({searchResults.length}):
+                      {t("friends_search_matches","Matching members")} ({searchResults.length}):
                     </h3>
                     
                     {searchResults.map((result) => (
@@ -571,7 +562,7 @@ export default function FriendsClient({
                             {result.image ? (
                               <img
                                 src={result.image}
-                                alt={result.name || "صورة"}
+                                alt={result.name || t("image_fallback","Profile photo")}
                                 className="w-11 h-11 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm"
                               />
                             ) : (
@@ -580,20 +571,20 @@ export default function FriendsClient({
                               </div>
                             )}
                             {result.lastActiveAt && (new Date().getTime() - new Date(result.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","متصل الآن")}></span>
+                              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","Online now")}></span>
                             )}
                           </div>
 
                           <div className="text-right min-w-0">
                               <h4 className="font-black text-slate-800 dark:text-white text-xs truncate">
-                              {result.name || t("user_fallback","مستخدم بدون اسم")}
+                              {result.name || t("user_fallback","Unnamed user")}
                             </h4>
                             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold font-mono truncate mt-0.5" dir="ltr">
                               {result.email}
                             </p>
                             {result.studyYear && (
                               <p className="mt-1 text-[10px] font-black text-medical-600 dark:text-medical-400">
-                                السنة: {result.studyYear}
+                                {t("friends_year_label","Year")}: {result.studyYear}
                               </p>
                             )}
                           </div>
@@ -601,9 +592,9 @@ export default function FriendsClient({
 
                         {/* Interactive Friendship Actions */}
                         <div className="shrink-0">
-                            {result.status === "SELF" && (
+                          {result.status === "SELF" && (
                             <span className="block py-1.5 px-3 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black">
-                              {t("account_self","حسابك")}
+                              {t("account_self","Your account")}
                             </span>
                           )}
 
@@ -614,21 +605,21 @@ export default function FriendsClient({
                               className="py-1.5 px-3 bg-medical-500 hover:bg-medical-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center gap-1 shadow-md shadow-medical-500/10"
                             >
                               <UserPlus className="w-3.5 h-3.5" />
-                              <span>{t("add","إضافة")}</span>
+                              <span>{t("add","Add")}</span>
                             </button>
                           )}
 
                           {result.status === "PENDING_SENT" && (
                             <div className="flex flex-col items-end gap-1">
                               <span className="block py-1 px-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-[9px] font-black border border-amber-500/20">
-                                {t("pending","معلق")}
+                                {t("pending","Pending")}
                               </span>
                               <button
                                 onClick={() => handleRejectCancelRequest(result.requestId || "temp-" + result.id, result.id, false)}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
-                                {t("cancel","إلغاء")}
+                                {t("cancel","Cancel")}
                               </button>
                             </div>
                           )}
@@ -639,7 +630,7 @@ export default function FriendsClient({
                                 onClick={() => handleAcceptRequest(result.requestId, result)}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
-                                title={t("friends_accept_title","قبول طلب الصداقة")}
+                                title={t("friends_accept_title","Accept friend request")}
                               >
                                 <Check className="w-3 h-3" />
                               </button>
@@ -647,7 +638,7 @@ export default function FriendsClient({
                                 onClick={() => handleRejectCancelRequest(result.requestId, result.id, true)}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
-                                title={t("friends_reject_title","رفض طلب الصداقة")}
+                                title={t("friends_reject_title","Reject friend request")}
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -658,14 +649,14 @@ export default function FriendsClient({
                             <div className="flex flex-col items-end gap-1">
                               <span className="block py-1 px-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[9px] font-black border border-emerald-500/20 flex items-center gap-1">
                                 <UserCheck className="w-3.5 h-3.5" />
-                                <span>{t("friend_label","صديق")}</span>
+                                <span>{t("friend_label","Friend")}</span>
                               </span>
                               <button
                                 onClick={() => handleUnfriend(result.id, result.name)}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
-                                {t("delete","حذف")}
+                                {t("delete","Delete")}
                               </button>
                             </div>
                           )}
@@ -674,7 +665,7 @@ export default function FriendsClient({
                     ))}
                   </motion.div>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
@@ -692,7 +683,7 @@ export default function FriendsClient({
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <span>{t("friends_my_friends","أصدقائي")} ({friends.length})</span>
+                <span>{t("friends_my_friends","My friends")} ({friends.length})</span>
                 {activeTab === "my-friends" && (
                   <motion.div
                     layoutId="friendsActiveBorder"
@@ -709,7 +700,7 @@ export default function FriendsClient({
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <span>{t("friends_requests","طلبـات الصداقة")}</span>
+                <span>{t("friends_requests","Friend requests")}</span>
                 {incoming.length > 0 && (
                   <span className="w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center text-[10px] font-black animate-bounce">
                     {incoming.length}
@@ -739,9 +730,9 @@ export default function FriendsClient({
                       <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-400 mb-4 border border-slate-200/50 dark:border-slate-800">
                         <ArrowLeftRight className="w-8 h-8" />
                       </div>
-                      <h3 className="text-base font-black text-slate-800 dark:text-slate-200">{t("friends_no_friends_title","لا يوجد أصدقاء حالياً")}</h3>
+                      <h3 className="text-base font-black text-slate-800 dark:text-slate-200">{t("friends_no_friends_title","No friends yet")}</h3>
                       <p className="text-slate-400 dark:text-slate-500 text-xs font-bold mt-2 max-w-sm">
-                        {t("friends_no_friends_description","لم تقم بإضافة أي صديق حتى الآن. ابحث بالبريد الإلكتروني للزميل في الخانة الجانبية وأرسل له طلباً!")}
+                        {t("friends_no_friends_description","You haven't added any friends yet. Search by colleague email in the sidebar and send a request!")}
                       </p>
                     </div>
                   ) : (
@@ -756,7 +747,7 @@ export default function FriendsClient({
                               {f.user.image ? (
                                 <img
                                   src={f.user.image}
-                                  alt={f.user.name || "صورة"}
+                                  alt={f.user.name || t("image_fallback","Profile photo")}
                                   className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
                                 />
                               ) : (
@@ -765,19 +756,19 @@ export default function FriendsClient({
                                 </div>
                               )}
                               {f.user.lastActiveAt && (new Date().getTime() - new Date(f.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","Online now")}></span>
                               )}
                             </div>
                             <div className="text-right min-w-0">
                               <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm truncate">
-                                {f.user.name || "طالب بدون اسم"}
+                                {f.user.name || t("user_fallback","Unnamed user")}
                               </h4>
                               <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold font-mono truncate mt-0.5" dir="ltr">
                                 {f.user.email}
                               </p>
                               {f.user.studyYear && (
                                 <p className="mt-1 text-[10px] font-black text-medical-600 dark:text-medical-400">
-                                  السنة: {f.user.studyYear}
+                                  {t("friends_year_label","Year")}: {f.user.studyYear}
                                 </p>
                               )}
                             </div>
@@ -792,7 +783,7 @@ export default function FriendsClient({
                                   target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-sky-500/10 hover:bg-sky-500 text-sky-500 hover:text-white flex items-center justify-center transition-all"
-                                  title="تليجرام"
+                                  title={t("telegram","Telegram")}
                                 >
                                   <Send className="w-4 h-4" />
                                 </a>
@@ -803,7 +794,7 @@ export default function FriendsClient({
                                   target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-pink-500/10 hover:bg-pink-500 text-pink-500 hover:text-white flex items-center justify-center transition-all"
-                                  title="انستغرام"
+                                  title={t("instagram","Instagram")}
                                 >
                                   <Instagram className="w-4 h-4" />
                                 </a>
@@ -814,14 +805,14 @@ export default function FriendsClient({
                                   target="_self"
                                   rel="noopener noreferrer"
                                   className="w-8 h-8 rounded-lg bg-blue-600/10 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all"
-                                  title="فيسبوك"
+                                  title={t("facebook","Facebook")}
                                 >
                                   <Facebook className="w-4 h-4" />
                                 </a>
                               )}
                               {!f.user.telegram && !f.user.instagram && !f.user.facebook && (
                                 <span className="text-[10px] text-slate-400 font-bold self-center">
-                                  لم يربط حسابات التواصل
+                                  {t("friends_no_social_accounts","No social accounts connected")}
                                 </span>
                               )}
                             </div>
@@ -830,7 +821,7 @@ export default function FriendsClient({
                                 onClick={() => handleUnfriend(f.user.id, f.user.name)}
                                 disabled={loadingId === f.user.id}
                                 className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
-                                title={t("friends_remove_friend_title","حذف الصديق")}
+                                title={t("friends_remove_friend_title","Remove friend")}
                               >
                               <UserMinus className="w-4 h-4" />
                             </button>
@@ -853,12 +844,12 @@ export default function FriendsClient({
                   {/* Incoming Requests Section */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-1.5">
-                      <span>{t("friends_incoming_requests","الطلبات الواردة")} ({incoming.length})</span>
+                      <span>{t("friends_incoming_requests","Incoming requests")} ({incoming.length})</span>
                     </h3>
 
                     {incoming.length === 0 ? (
                       <p className="text-xs text-slate-400 font-bold py-6 text-center">
-                        {t("friends_no_incoming_requests","لا توجد طلبات صداقة واردة حالياً")}
+                        {t("friends_no_incoming_requests","No incoming friend requests at the moment")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -873,7 +864,7 @@ export default function FriendsClient({
                                 {req.user.image ? (
                                   <img
                                     src={req.user.image}
-                                    alt={req.user.name || "صورة"}
+                                    alt={req.user.name || t("image_fallback","Profile photo")}
                                     className="w-10 h-10 rounded-xl object-cover"
                                   />
                                 ) : (
@@ -882,12 +873,12 @@ export default function FriendsClient({
                                   </div>
                                 )}
                                 {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","Online now")}></span>
                                 )}
                               </div>
                               <div className="text-right min-w-0">
                                 <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
-                                  {req.user.name || "زميل"}
+                                  {req.user.name || t("user_default","Unknown user")}
                                 </span>
                                 <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
                                   {req.user.email}
@@ -902,7 +893,7 @@ export default function FriendsClient({
                                 className="flex items-center justify-center p-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black transition-all gap-1 shadow-md shadow-emerald-500/10"
                               >
                                 <Check className="w-3.5 h-3.5" />
-                                <span>{t("accept","قبول")}</span>
+                                <span>{t("accept","Accept")}</span>
                               </button>
                               <button
                                 onClick={() => handleRejectCancelRequest(req.friendshipId, req.user.id, true)}
@@ -910,7 +901,7 @@ export default function FriendsClient({
                                 className="flex items-center justify-center p-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black transition-all gap-1"
                               >
                                 <X className="w-3.5 h-3.5" />
-                                <span>{t("reject","رفض")}</span>
+                                <span>{t("reject","Reject")}</span>
                               </button>
                             </div>
                           </div>
@@ -922,12 +913,12 @@ export default function FriendsClient({
                   {/* Outgoing Requests Section */}
                   <div className="space-y-4 pt-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-1.5">
-                      <span>{t("friends_outgoing_requests","الطلبات المرسلة")} ({outgoing.length})</span>
+                      <span>{t("friends_outgoing_requests","Outgoing requests")} ({outgoing.length})</span>
                     </h3>
 
                     {outgoing.length === 0 && rejectedOutgoing.length === 0 ? (
                       <p className="text-xs text-slate-400 font-bold py-6 text-center">
-                        {t("friends_no_outgoing_requests","لا توجد طلبات معلقة مرسلة")}
+                        {t("friends_no_outgoing_requests","No pending outgoing requests")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -940,7 +931,7 @@ export default function FriendsClient({
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="relative shrink-0">
                                   {user.image ? (
-                                    <img src={user.image} alt={user.name || "صورة"} className="w-10 h-10 rounded-xl object-cover" />
+                                    <img src={user.image} alt={user.name || t("image_fallback","Profile photo")} className="w-10 h-10 rounded-xl object-cover" />
                                   ) : (
                                     <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
                                       {(user.name || "U").substring(0, 2)}
@@ -949,7 +940,7 @@ export default function FriendsClient({
                                 </div>
                                 <div className="text-right min-w-0">
                                       <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
-                                        {user.name || t("user_default","زميل")}
+                                        {user.name || t("user_default","Colleague")}
                                       </span>
                                   <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
                                     {user.email}
@@ -961,13 +952,13 @@ export default function FriendsClient({
                                 onClick={() => markOutgoingDecisionRead(user.id)}
                                 className="text-[10px] font-black text-slate-600 dark:text-slate-300 underline"
                               >
-                                {t("mark_read","قرأت")}
+                                {t("mark_read","Mark as read")}
                               </button>
                             </div>
 
                             <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 flex items-center justify-between gap-3">
                                 <span className="text-[10px] font-black text-amber-700 dark:text-amber-300">
-                                {decision.message || t("friend_request_rejected","تم رفض طلب الصداقة")}
+                                {decision.message || t("friend_request_rejected","Friend request rejected")}
                               </span>
                             </div>
                           </div>
@@ -986,21 +977,21 @@ export default function FriendsClient({
                                     {req.user.image ? (
                                       <img
                                         src={req.user.image}
-                                        alt={req.user.name || "صورة"}
+                                        alt={req.user.name || t("image_fallback","Profile photo")}
                                         className="w-10 h-10 rounded-xl object-cover"
                                       />
                                     ) : (
                                       <div className="w-10 h-10 bg-gradient-to-tr from-medical-500/10 to-indigo-600/10 text-medical-600 dark:text-medical-400 rounded-xl flex items-center justify-center font-black text-xs uppercase">
-                                        {(req.user.name || "U").substring(0, 2)}
+                                        {(req.user.name || t("user_default","User")).substring(0, 2)}
                                       </div>
                                     )}
                                     {req.user.lastActiveAt && (new Date().getTime() - new Date(req.user.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","Online now")}></span>
                                     )}
                                   </div>
                                   <div className="text-right min-w-0">
                                     <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
-                                      {req.user.name || "زميل"}
+                                      {req.user.name || t("user_default","Unknown user")}
                                     </span>
                                     <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
                                       {req.user.email}
@@ -1014,7 +1005,7 @@ export default function FriendsClient({
                                   className="p-2 px-3 hover:bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black transition-all flex items-center gap-1 shrink-0"
                                 >
                                   <UserX className="w-3.5 h-3.5" />
-                                  <span>{t("cancel_request","إلغاء الطلب")}</span>
+                                  <span>{t("cancel_request","Cancel request")}</span>
                                 </button>
                               </div>
                             </div>

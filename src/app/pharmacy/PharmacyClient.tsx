@@ -69,7 +69,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             transition={{ delay: 0.2 }}
             className="text-white/80 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10"
           >
-            {t("pharmacy_page_description", "Découvrez les sections et les médicaments disponibles — cliquez sur une section pour voir les images")}
+            {t("pharmacy_page_description", "Discover available sections and medications — tap a section to view its drugs")}
           </motion.p>
 
           {/* Search */}
@@ -83,7 +83,7 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={t("pharmacy_search_placeholder", "Rechercher une section...")}
+              placeholder={t("pharmacy_search_placeholder", "Search for a section...")}
               className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 outline-none focus:border-white/40 focus:bg-white/15 transition-all font-medium"
             />
           </motion.div>
@@ -100,10 +100,10 @@ export default function PharmacyClient({ sections }: { sections: PharmacySection
           >
             <FlaskConical className="w-20 h-20 mx-auto text-slate-300 dark:text-slate-600 mb-6" />
             <h2 className="text-2xl font-black text-slate-400 dark:text-slate-500">
-              {search ? t("pharmacy_no_results_title", "Aucun résultat correspondant") : t("pharmacy_no_sections_title", "Aucune section pour le moment")}
+              {search ? t("pharmacy_no_results_title", "No matching results found") : t("pharmacy_no_sections_title", "No sections available yet")}
             </h2>
             <p className="text-slate-400 dark:text-slate-600 mt-2">
-              {search ? t("pharmacy_no_results_description", "Essayez une autre recherche") : t("pharmacy_no_sections_description", "Le contenu sera ajouté bientôt")}
+              {search ? t("pharmacy_no_results_description", "Try another search") : t("pharmacy_no_sections_description", "Content will be added soon")}
             </p>
           </motion.div>
         ) : (

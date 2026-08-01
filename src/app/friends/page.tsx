@@ -4,8 +4,8 @@ import { getFriendsData } from "@/app/actions/friends";
 import FriendsClient from "./FriendsClient";
 
 export const metadata = {
-  title: "الأصدقاء | AuraMed Elite",
-  description: "ابحث عن الأصدقاء وأرسل طلبات صداقة وتواصل مع زملائك الأطباء النخبة في المنصة"
+  title: "Friends | AuraMed Elite",
+  description: "Search for friends, send friend requests, and connect with your elite medical colleagues on the platform."
 };
 
 export default async function FriendsPage() {

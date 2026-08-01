@@ -32,7 +32,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   const [downloadCount, setDownloadCount] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // مفتاح فريد لكل مستخدم بناءً على بريده الإلكتروني
+  // Unique local storage key per user based on their email
   const downloadKey = userEmail ? `timetableDownloadCount_${userEmail}` : "timetableDownloadCount_guest";
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   };
 
   const clearWeek = () => {
-    if (confirm(t("timetable_clear_confirm", "هل أنت متأكد من مسح جدول الأسبوع بالكامل؟"))) {
+    if (confirm(t("timetable_clear_confirm", "Are you sure you want to clear the entire week schedule?"))) {
       const reset: Record<string, any[]> = {};
       days.forEach(d => reset[d.ar] = []);
       setSchedule(reset);
@@ -131,12 +131,12 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
         const newCount = downloadCount + 1;
         setDownloadCount(newCount);
         localStorage.setItem(downloadKey, newCount.toString());
-          setMessage({ type: 'success', text: t("timetable_export_success_with_remaining", "تم تحميل الجدول كصورة بنجاح! 📸 (المتبقي: {{remaining}})",).replace("{{remaining}}", `${allowedDownloads - newCount}`) });
+          setMessage({ type: 'success', text: t("timetable_export_success_with_remaining", "Schedule image downloaded successfully! 📸 (Remaining: {{remaining}})",).replace("{{remaining}}", `${allowedDownloads - newCount}`) });
       } else {
-        setMessage({ type: 'success', text: t("timetable_export_success", "تم تحميل الجدول كصورة بنجاح! 📸") });
+        setMessage({ type: 'success', text: t("timetable_export_success", "Schedule image downloaded successfully! 📸") });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: "حدث خطأ أثناء التصدير" });
+      setMessage({ type: 'error', text: t("timetable_export_error", "An error occurred while exporting") });
     } finally {
       setExportLoading(false);
       setTimeout(() => setMessage(null), 3000);
@@ -149,12 +149,12 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
     try {
       const res = await saveTimetable(schedule);
       if (res && res.success) {
-        setMessage({ type: 'success', text: t("timetable_save_success", "تم حفظ بياناتك بنجاح! ✅") });
+        setMessage({ type: 'success', text: t("timetable_save_success", "Your schedule was saved successfully! ✅") });
       } else {
-        setMessage({ type: 'error', text: res?.error || t("timetable_save_error", "حدث خطأ أثناء الحفظ") });
+        setMessage({ type: 'error', text: res?.error || t("timetable_save_error", "An error occurred while saving") });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: t("timetable_server_error", "تعذر الاتصال بالسيرفر") });
+      setMessage({ type: 'error', text: t("timetable_server_error", "Unable to connect to the server") });
     } finally {
       setLoading(false);
       setTimeout(() => setMessage(null), 3000);
@@ -172,9 +172,9 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
            <div className="w-24 h-24 bg-blue-600/10 rounded-[2.5rem] flex items-center justify-center border border-blue-500/20 mb-8 animate-pulse">
               <Laptop className="w-12 h-12 text-blue-500" />
            </div>
-           <h2 className="text-3xl font-black mb-4 leading-tight">{t("timetable_mobile_headline", "استمتع بـ ")}<span className="text-blue-500">{t("timetable_mobile_headline_highlight","أفخم تجربة")}</span></h2>
+           <h2 className="text-3xl font-black mb-4 leading-tight">{t("timetable_mobile_headline", "Enjoy a ")}<span className="text-blue-500">{t("timetable_mobile_headline_highlight","better planning experience")}</span></h2>
            <p className="text-slate-400 text-sm font-medium leading-relaxed mb-10">
-             {t("timetable_mobile_description", "للحصول على أفضل تجربة تنظيم وتخطيط، نوصيك بفتح جدول الدراسة من خلال جهاز الكمبيوتر الخاص بك. المخطط التفاعلي صُمم لِيمنحك تحكماً كاملاً على الشاشات الكبيرة.")}
+             {t("timetable_mobile_description", "For the best planning experience, open your study schedule on a desktop device. The interactive planner is designed for wider screens.")}
            </p>
         </div>
 
@@ -188,7 +188,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                animate={{ opacity: 1, x: 0 }}
                className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-[10px] font-black uppercase tracking-widest mb-6 backdrop-blur-md"
              >
-               <Calendar className="w-3.5 h-3.5" /> {t("timetable_personal_label", "منظم الوقت الشخصي")}
+               <Calendar className="w-3.5 h-3.5" /> {t("timetable_personal_label", "Personal planner")}
              </motion.div>
              
              <motion.h1 
@@ -196,17 +196,17 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                animate={{ opacity: 1, y: 0 }}
                className="text-5xl md:text-6xl font-black tracking-tighter leading-[1.1] mb-6"
              >
-               {t("timetable_title", "نظم ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">{t("timetable_title_highlight", "جدولك")}</span>{t("timetable_title_suffix"," الدراسي بذكاء")}
+               {t("timetable_title", "Organize ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">{t("timetable_title_highlight", "your schedule")}</span>{t("timetable_title_suffix"," with intelligence")}
              </motion.h1>
              
              <p className="text-slate-400 text-lg max-w-2xl font-medium leading-relaxed opacity-80">
-               {t("timetable_description", "أداة تفاعلية تتيح لك تخطيط يومك، تحديد مهامك الدراسية، وحفظها للوصول إليها في أي وقت ومن أي مكان.")}
+               {t("timetable_description", "An interactive tool to plan your day, organize your study tasks, and save them for easy access anytime.")}
              </p>
           </div>
 
           <div className="shrink-0 flex flex-col items-end gap-6">
              <div className="text-right border-r-2 border-blue-500/30 pr-6 py-1">
-                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">إنجاز الأسبوع</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase mb-1">{t("timetable_week_progress_label","Week progress")}</p>
                 <div className="flex items-center gap-3">
                    <span className="text-2xl font-black text-white">{Math.round(progressWidth)}%</span>
                    <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -227,12 +227,12 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
             <div className="flex items-center gap-4 text-amber-500 text-right">
                <AlertCircle className="w-6 h-6" />
                <div>
-                  <p className="text-lg font-black italic">ملاحظة هامة للزوار</p>
-                  <p className="text-sm font-medium opacity-80">يمكنك تجربة تنظيم جدولك، ولكن لحفظ بياناتك يرجى تسجيل الدخول.</p>
+                  <p className="text-lg font-black italic">{t("timetable_guest_note_title","Important note for visitors")}</p>
+                  <p className="text-sm font-medium opacity-80">{t("timetable_guest_note_body","You can try organizing your schedule, but please log in to save your work.")}</p>
                </div>
             </div>
             <a href="/login" className="flex items-center gap-2 px-8 py-3 bg-amber-500 text-[#1a1f2e] rounded-xl font-black hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20">
-              <LogIn className="w-5 h-5" /> تسجيل الدخول الآن
+              <LogIn className="w-5 h-5" /> {t("timetable_login_now","Log in now")}
             </a>
           </div>
         )}
@@ -250,7 +250,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                         : 'bg-slate-900/20 text-slate-500 border-slate-800/40'
                     }`}>
                         <div className="flex flex-col items-center gap-1.5">
-                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{lang === 'fr' ? day.frFull : day.ar}</h3>
+                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{lang === 'fr' ? day.frFull : day.enFull}</h3>
                           <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100/60' : 'text-slate-600'}`}>{lang === 'fr' ? day.frShort : day.enShort}</p>
                         </div>
                     </div>
@@ -273,15 +273,15 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                                 <textarea 
                                   value={task.subject}
                                   onChange={(e) => updateTask(day.ar, task.id, 'subject', e.target.value)}
-                                  placeholder={t("timetable_task_placeholder", "المهمة...")}
+                                  placeholder={t("timetable_task_placeholder", "Task...")}
                                   rows={2}
                                   className={`w-full bg-transparent border-none text-center text-lg font-black outline-none resize-none leading-snug ${task.completed ? 'text-emerald-500/60 line-through' : 'text-white'}`}
                                 />
                                 <div className="flex items-center gap-5 pt-3 opacity-0 group-hover:opacity-100 transition-all">
-                                  <button title="تبديل الحالة" aria-label="تبديل الحالة" onClick={() => toggleTask(day.ar, task.id)} className="transition-transform hover:scale-125">
+                                  <button title={t("timetable_toggle_task_title","Toggle status")} aria-label={t("timetable_toggle_task_title","Toggle status")} onClick={() => toggleTask(day.ar, task.id)} className="transition-transform hover:scale-125">
                                       {task.completed ? <CheckCircle2 className="w-6 h-6 text-emerald-500 shadow-emerald-500/20" /> : <Circle className="w-6 h-6 text-slate-700 hover:text-blue-500" />}
                                   </button>
-                                  <button title="حذف المهمة" aria-label="حذف المهمة" onClick={() => removeTask(day.ar, task.id)} className="text-slate-700 hover:text-rose-500 transition-colors">
+                                  <button title={t("timetable_remove_task_title","Delete task")} aria-label={t("timetable_remove_task_title","Delete task")} onClick={() => removeTask(day.ar, task.id)} className="text-slate-700 hover:text-rose-500 transition-colors">
                                       <Trash2 className="w-5 h-5" />
                                   </button>
                                 </div>
@@ -289,7 +289,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                           </motion.div>
                         ))}
                         <button 
-                          title={t("timetable_add_task", "إضافة مهمة جديدة")} aria-label={t("timetable_add_task", "إضافة مهمة جديدة")}
+                          title={t("timetable_add_task", "Add new task")} aria-label={t("timetable_add_task", "Add new task")}
                           onClick={() => addTask(day.ar)}
                           className="w-full py-8 rounded-[2rem] border-2 border-dashed border-slate-900 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all flex items-center justify-center group"
                         >
@@ -308,14 +308,14 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
              <div className="flex flex-wrap items-center justify-center gap-4">
                 <button onClick={handleExport} disabled={exportLoading} className="px-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-[2rem] font-black flex items-center gap-3 transition-all border border-slate-800 disabled:opacity-50 shadow-xl">
                    {exportLoading ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> : <Download className="w-6 h-6 text-blue-500" />}
-                   {t("timetable_export_button", "تحميل الجدول كصورة")}
+                   {t("timetable_export_button", "Download schedule as image")}
                 </button>
                 <button onClick={handleSave} disabled={loading} className="px-12 py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] font-black flex items-center gap-3 transition-all shadow-2xl shadow-blue-600/30 disabled:opacity-50">
                    {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-6 h-6" />}
-                   {t("timetable_save_button", "حفظ كافة التغييرات")}
+                   {t("timetable_save_button", "Save all changes")}
                 </button>
                 <button onClick={clearWeek} className="px-10 py-5 bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-[2rem] font-black flex items-center gap-3 transition-all border border-rose-500/20">
-                   <Trash className="w-6 h-6" /> {t("timetable_clear_button", "مسح الأسبوع")}
+                   <Trash className="w-6 h-6" /> {t("timetable_clear_button", "Clear week")}
                 </button>
              </div>
            )}
@@ -348,28 +348,27 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                   <Award className="w-10 h-10 text-white" />
                 </div>
                 
-                <h3 className="text-2xl font-black text-white mb-2">{t("timetable_payment_heading","استنفدت محاولاتك المجانية")}</h3>
+                <h3 className="text-2xl font-black text-white mb-2">{t("timetable_payment_heading","Your free attempts are over")}</h3>
                 <p className="text-slate-400 mb-8 leading-relaxed">
-                  {t("timetable_payment_body","لقد وصلت إلى الحد الأقصى لتحميل الجدول كصورة (مرتان). للاستمرار في التحميل غير المحدود ودعم المنصة، يرجى الاشتراك بمبلغ رمزي.")}
+                  {t("timetable_payment_body","You have reached the limit for schedule image downloads (2 times). To continue unlimited downloads and support the platform, please subscribe.")}
                 </p>
                 
                 <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700">
-                  <div className="text-sm text-slate-400 mb-1">رسوم الاشتراك</div>
-                  <div className="text-3xl font-black text-white">500 <span className="text-xl text-slate-500">د.ج</span></div>
+                  <div className="text-sm text-slate-400 mb-1">{t("timetable_subscription_fee_label","Subscription fee")}</div>
+                  <div className="text-3xl font-black text-white">{t("timetable_subscription_fee_amount","500 DZD")}</div>
                 </div>
-                
                 <div className="flex gap-4">
                   <button 
                     onClick={() => setShowPaymentModal(false)}
                     className="flex-1 py-4 rounded-xl font-bold text-slate-300 hover:bg-slate-800 transition-colors border border-slate-700"
                   >
-                    إلغاء
+                    {t("timetable_payment_cancel","Cancel")}
                   </button>
                   <Link 
                     href="/profile?tab=subscription"
                     className="flex-[2] py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
                   >
-                    الذهاب للدفع
+                    {t("timetable_payment_checkout","Go to checkout")}
                   </Link>
                 </div>
               </div>
@@ -395,21 +394,21 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
             </div>
           </div>
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-black text-slate-900 mb-2">{t("timetable_certificate_title", "مخطط الدراسة الأسبوعي")}</h2>
+            <h2 className="text-3xl font-black text-slate-900 mb-2">{t("timetable_certificate_title", "Weekly study plan")}</h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-7 gap-3 mb-10 items-start">
             {days.map((day, idx) => (
               <div key={idx} className="bg-slate-50/50 rounded-3xl overflow-hidden border border-slate-100 flex flex-col">
                 <div className="p-4 text-center bg-blue-600 text-white">
-                  <h3 className="text-base font-black">{lang === 'fr' ? day.frFull : day.ar}</h3>
+                  <h3 className="text-base font-black">{lang === 'fr' ? day.frFull : day.enFull}</h3>
                   <p className="text-[8px] font-black opacity-60 uppercase tracking-widest">{lang === 'fr' ? day.frShort : day.enShort}</p>
                 </div>
                 <div className="p-3 space-y-2 h-auto">
                   {schedule[day.ar]?.map((task: any) => (
                     <div key={task.id} className="p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
                       <p className="text-[8px] font-black text-blue-600 mb-1 flex items-center gap-1">
-                        <Clock className="w-2 h-2" /> {task.time || t("timetable_time_undefined", "غير محدد")}
+                        <Clock className="w-2 h-2" /> {task.time || t("timetable_time_undefined", "Unspecified")}
                       </p>
                       <p className="text-xs font-bold text-slate-800 leading-tight">
                         {task.subject}
@@ -424,7 +423,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
              <div className="relative z-10 flex justify-between items-center">
                 <div className="flex items-center gap-6">
                    <Star className="w-8 h-8 text-blue-400 fill-blue-400/20" />
-                   <p className="text-2xl font-black italic">"النجاح هو نتيجة الانضباط اليومي"</p>
+                   <p className="text-2xl font-black italic">{t("timetable_certificate_quote","Success is the result of daily discipline")}</p>
                 </div>
                 <p className="text-[10px] text-blue-400 font-black tracking-tighter">AuraMed Systems</p>
              </div>

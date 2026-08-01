@@ -1,11 +1,14 @@
 "use client";
 
+"use client";
+
 import { useEffect } from "react";
 import { UserX, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 /**
- * Error Boundary لصفحة الملف الشخصي /profile
+ * Error boundary for the profile page (/profile)
  */
 export default function ProfileError({
   error,
@@ -14,6 +17,8 @@ export default function ProfileError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useLocale();
+
   useEffect(() => {
     console.error("Profile Error:", error);
   }, [error]);
@@ -29,10 +34,10 @@ export default function ProfileError({
 
         <div className="space-y-2">
           <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-            خطأ في تحميل الملف الشخصي
+            {t("profile_error_boundary_title")}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            تعذّر تحميل بيانات حسابك. تأكد من اتصالك بالإنترنت وحاول مرة أخرى.
+            {t("profile_error_boundary_description")}
           </p>
         </div>
 
@@ -42,14 +47,14 @@ export default function ProfileError({
             className="flex items-center justify-center gap-2 bg-medical-600 hover:bg-medical-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-medical-600/20 hover:scale-105 active:scale-95"
           >
             <RefreshCw className="w-4 h-4" />
-            إعادة المحاولة
+            {t("profile_error_boundary_retry")}
           </button>
           <Link
             href="/"
             className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-4 rounded-2xl transition-all hover:scale-105 active:scale-95"
           >
             <Home className="w-4 h-4" />
-            الصفحة الرئيسية
+            {t("profile_error_boundary_home")}
           </Link>
         </div>
       </div>

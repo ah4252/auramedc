@@ -8,14 +8,7 @@ import {
   ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useState } from "react";
-
-// Helper function to safely parse description JSON
-function parseDescription(desc: string | null) {
-  if (!desc) return { brief: "", content: "", videoUrl: "", iconName: "Stethoscope", links: [], images: [] };
-  try {
-    if (desc.trim().startsWith("{")) {
-      const parsed = JSON.parse(desc);
-      return {
+import { useLocale } from "@/context/LocaleProvider.client";
         brief: parsed.brief || "",
         content: parsed.content || "",
         videoUrl: parsed.videoUrl || "",
@@ -50,6 +43,7 @@ function getYoutubeEmbedUrl(url: string) {
 }
 
 export default function SpecialtyDetailClient({ specialty }: { specialty: any }) {
+  const { t } = useLocale();
   const parsed = parseDescription(specialty.description);
   const Icon = getIconComponent(parsed.iconName);
   const embedUrl = getYoutubeEmbedUrl(parsed.videoUrl);
@@ -81,7 +75,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
           className="inline-flex items-center gap-2 text-slate-500 hover:text-medical-600 font-bold mb-10 transition-colors bg-white dark:bg-dark-card px-5 py-2.5 rounded-full border border-slate-100 dark:border-slate-800 shadow-sm"
         >
           <ArrowRight className="w-5 h-5" />
-          <span>العودة إلى التخصصات</span>
+          <span>{t("subjects_detail_back_to_specialties", "Back to specialties")}</span>
         </Link>
 
         {/* Hero Section */}
@@ -98,13 +92,13 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
             
             <div className="flex-1 space-y-4 text-center md:text-right">
               <span className="bg-medical-50 dark:bg-medical-900/30 text-medical-600 dark:text-medical-400 text-xs font-black px-4 py-1.5 rounded-full border border-medical-200/20">
-                تخصص طبي معتمد
+                {t("subjects_detail_verified_label", "Verified medical specialty")}
               </span>
               <h1 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white leading-tight">
                 {specialty.name}
               </h1>
               <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                {parsed.brief || "شرح وتفاصيل ومحاضرات هذا التخصص الطبي الهام لطلاب الطب."}
+                {parsed.brief || t("subjects_fallback_brief", "A complete educational path containing all references, explanations, and academic videos designed especially for students of this specialty.")}
               </p>
             </div>
           </div>
@@ -122,10 +116,10 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
             <div className="bg-white dark:bg-dark-card rounded-[2.5rem] border border-slate-200 dark:border-slate-800/80 p-6 sm:p-10 shadow-lg space-y-6">
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                 <div className="w-1.5 h-6 bg-medical-600 rounded-full" />
-                عن التخصص
+                {t("subjects_detail_about_title", "About the specialty")}
               </h2>
               <div className="text-slate-600 dark:text-slate-300 leading-relaxed text-base sm:text-lg whitespace-pre-wrap font-medium">
-                {parsed.content || "لم يتم إضافة تفاصيل إضافية لهذا التخصص بعد."}
+                {parsed.content || t("subjects_detail_no_content", "No additional specialty details have been added yet.")}
               </div>
             </div>
           </motion.div>
@@ -136,7 +130,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
               <div className="bg-white dark:bg-dark-card rounded-[2.5rem] border border-slate-200 dark:border-slate-800/80 p-6 sm:p-10 shadow-lg space-y-6">
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                   <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-                  معرض الصور والوسائط
+                  {t("subjects_detail_media_gallery", "Media gallery")}
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {parsed.images.map((imgUrl: string, idx: number) => (
@@ -170,7 +164,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                 <div className="bg-white dark:bg-dark-card rounded-[2.5rem] border border-slate-200 dark:border-slate-800/80 p-6 sm:p-8 shadow-lg space-y-6">
                   <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-medical-600 rounded-full" />
-                    فيديو تعريفي بالتخصص
+                    {t("subjects_detail_video_title", "Introduction video for this specialty")}
                   </h2>
                   <div className="aspect-video w-full rounded-[2rem] overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-950 shadow-inner">
                     <iframe 
@@ -193,7 +187,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                 <div className="bg-white dark:bg-dark-card rounded-[2.5rem] border border-slate-200 dark:border-slate-800/80 p-6 sm:p-8 shadow-lg space-y-6">
                   <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
                     <div className="w-1.5 h-5 bg-indigo-500 rounded-full" />
-                    روابط ومراجع هامة
+                    {t("subjects_detail_links_title", "Important links and references")}
                   </h3>
                   <div className="space-y-3">
                     {parsed.links.map((link: any, idx: number) => (
@@ -222,16 +216,16 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                 <div className="relative z-10 space-y-6">
                   <h3 className="text-xl font-black flex items-center gap-2.5">
                     <HelpCircle className="w-6 h-6 text-medical-300 animate-bounce" />
-                    هل تحتاج لمساعدة؟
+                    {t("subjects_detail_need_help", "Need help?")}
                   </h3>
                   <p className="text-xs sm:text-sm text-white/80 font-medium leading-relaxed">
-                    إذا كان لديك أي استفسار حول هذا التخصص، أو تريد تزويدنا بمراجع ومحاضرات، يرجى التواصل مع الدعم الفني للمنصة.
+                    {t("subjects_detail_help_description", "If you have any questions about this specialty or want to provide references and lectures, please contact platform support.")}
                   </p>
                   <Link 
                     href="/"
                     className="block w-full py-4 bg-white hover:bg-slate-50 text-medical-700 text-center font-black rounded-2xl transition-all shadow-md text-sm"
                   >
-                    العودة للرئيسية
+                    {t("subjects_detail_back_home", "Back to home")}
                   </Link>
                 </div>
               </div>
@@ -266,7 +260,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                   {/* Close button */}
                   <button 
                     onClick={() => setActiveImageUrl(null)}
-                    title="إغلاق"
+                    title={t("subjects_detail_close_button", "Close")}
                     type="button"
                     className="absolute top-6 left-6 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors z-55 cursor-pointer"
                   >
@@ -277,7 +271,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                   {hasMultipleImages && (
                     <button
                       onClick={showPrevImage}
-                      title="الصورة السابقة"
+                      title={t("subjects_detail_previous_image", "Previous image")}
                       type="button"
                       className="absolute right-6 p-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 z-55 cursor-pointer hover:scale-110"
                     >
@@ -314,7 +308,7 @@ export default function SpecialtyDetailClient({ specialty }: { specialty: any })
                   {hasMultipleImages && (
                     <button
                       onClick={showNextImage}
-                      title="الصورة التالية"
+                      title={t("subjects_detail_next_image", "Next image")}
                       type="button"
                       className="absolute left-6 p-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 z-55 cursor-pointer hover:scale-110"
                     >

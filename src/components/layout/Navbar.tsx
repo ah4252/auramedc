@@ -269,6 +269,28 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                       </div>
                       {lang === "fr" && <span className="text-[12px] font-black">✓</span>}
                     </button>
+
+                    {/* English item */}
+                    <button
+                      onClick={() => {
+                        try { document.cookie = `site_lang=en; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "en"); } catch (e) {}
+                        setLang("en");
+                        setShowLangMenu(false);
+                        setTimeout(() => router.refresh(), 80);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "en" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "en" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>
+                          EN
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-black">English</div>
+                          <div className="text-[11px] opacity-60">EN</div>
+                        </div>
+                      </div>
+                      {lang === "en" && <span className="text-[12px] font-black">✓</span>}
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>

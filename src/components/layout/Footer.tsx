@@ -99,7 +99,7 @@ export default function Footer() {
 
           {/* Social Contacts */}
           <div className="md:col-span-3 space-y-6">
-             <h4 className="text-white font-black text-xl mb-6">تواصل مباشر</h4>
+             <h4 className="text-white font-black text-xl mb-6">{t("footer_contact_title", "تواصل مباشر")}</h4>
              <div className="space-y-4">
                 {settings.socialWhatsapp && (
                   <a href={`https://wa.me/${settings.socialWhatsapp.replace(/[^0-9]/g, '')}`} target="_self" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-slate-800/30 hover:bg-slate-800/80 rounded-2xl border border-slate-700/30 transition-colors group">

@@ -14,11 +14,11 @@ export default function MobileNav() {
   if (isAuthRoute) return null;
 
   const navItems = [
-    { name: lang === "fr" ? "Accueil" : "الرئيسية", icon: Home, path: "/" },
-    { name: lang === "fr" ? "Cours" : "الدروس", icon: PlayCircle, path: "/courses" },
-    { name: lang === "fr" ? "Pharmacie" : "الصيدلة", icon: FlaskConical, path: "/pharmacy" },
-    { name: lang === "fr" ? t("gpa", "calculateur") : t("gpa", "الحاسبة"), icon: Calculator, path: "/gpa-calculator" },
-    { name: lang === "fr" ? "Mon compte" : "حسابي", icon: User, path: "/profile" },
+    { name: t("home", "الرئيسية"), icon: Home, path: "/" },
+    { name: t("courses", "الدروس"), icon: PlayCircle, path: "/courses" },
+    { name: t("pharmacy", "الصيدلة"), icon: FlaskConical, path: "/pharmacy" },
+    { name: t("gpa", "الحاسبة"), icon: Calculator, path: "/gpa-calculator" },
+    { name: t("profile", "حسابي"), icon: User, path: "/profile" },
   ];
 
   return (
