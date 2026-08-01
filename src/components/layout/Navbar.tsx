@@ -47,6 +47,14 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    if (clicks >= 5) {
+      setShowModal(true);
+      setClicks(0);
+      if (clickTimeout.current) clearTimeout(clickTimeout.current);
+    }
+  }, [clicks]);
+
   const handleLogoutUser = async () => {
     await logoutUser();
     router.refresh();
