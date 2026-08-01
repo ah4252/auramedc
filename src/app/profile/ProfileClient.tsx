@@ -591,7 +591,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
                           <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_fee_label")}</p>
-                            <p className="text-3xl font-black text-yellow-400 text-center py-2">{t("profile_subscription_fee_amount")}</p>
+                            <p className="text-3xl font-black text-yellow-400 text-center py-2">
+                              {subscriptionType === "TIMETABLE" ? t("profile_subscription_fee_timetable") : 
+                               subscriptionType === "GPA" ? t("profile_subscription_fee_gpa") : 
+                               t("profile_subscription_fee_support")}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -634,9 +638,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                   <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_subscription_select_label")}</label>
                                   <div className="grid grid-cols-1 gap-3">
                                     {[
-                                      { id: "TIMETABLE", label: t("profile_subscription_option_timetable_label"), desc: t("profile_subscription_option_timetable_desc"), price: t("profile_subscription_fee_amount") },
-                                      { id: "GPA", label: t("profile_subscription_option_gpa_label"), desc: t("profile_subscription_option_gpa_desc"), price: t("profile_subscription_fee_amount") },
-                                      { id: "SUPPORT", label: t("profile_subscription_option_support_label"), desc: t("profile_subscription_option_support_desc"), price: t("profile_subscription_fee_amount") }
+                                      { id: "TIMETABLE", label: t("profile_subscription_option_timetable_label"), desc: t("profile_subscription_option_timetable_desc"), price: t("profile_subscription_fee_timetable") },
+                                      { id: "GPA", label: t("profile_subscription_option_gpa_label"), desc: t("profile_subscription_option_gpa_desc"), price: t("profile_subscription_fee_gpa") },
+                                      { id: "SUPPORT", label: t("profile_subscription_option_support_label"), desc: t("profile_subscription_option_support_desc"), price: t("profile_subscription_fee_support") }
                                     ].map((opt) => (
                                       <button
                                         key={opt.id}
