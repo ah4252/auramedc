@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, Trash2, Image as ImageIcon } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Trash2, Image as ImageIcon, Download } from "lucide-react";
 import { updateSubscriptionStatus, deleteSubscriptionRequests } from "@/app/actions/payment";
 
 export default function SubscriptionsClient({ initialRequests }: { initialRequests: any[] }) {
@@ -161,13 +161,23 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center gap-2">
                       {req.receiptUrl && (
-                        <button 
-                          onClick={() => setShowImageModal(req.receiptUrl)}
-                          className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"
-                          title="عرض الإيصال"
-                        >
-                          <ImageIcon className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button 
+                            onClick={() => setShowImageModal(req.receiptUrl)}
+                            className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"
+                            title="عرض الإيصال"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                          </button>
+                          <a
+                            href={req.receiptUrl}
+                            download="receipt.png"
+                            className="p-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg transition-colors"
+                            title="تنزيل الإيصال"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        </>
                       )}
                       {req.status === "PENDING" && (
                         <>
@@ -219,7 +229,15 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
       {showImageModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowImageModal(null)}>
           <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-between items-center mb-3">
+              <a
+                href={showImageModal}
+                download="receipt.png"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-medical-600 to-sky-500 hover:from-medical-500 hover:to-sky-400 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-medical-500/20 active:scale-95"
+              >
+                <Download className="w-4 h-4" />
+                <span>تنزيل الوصل</span>
+              </a>
               <button 
                 onClick={() => setShowImageModal(null)}
                 className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
@@ -230,7 +248,7 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
             <img 
               src={showImageModal} 
               alt="Receipt" 
-              className="w-full h-auto object-contain rounded-xl max-h-[85vh]"
+              className="w-full h-auto object-contain rounded-xl max-h-[80vh]"
             />
           </div>
         </div>
