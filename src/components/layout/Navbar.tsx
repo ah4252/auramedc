@@ -191,24 +191,29 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
             )}
 
             {/* Language switcher — دائماً ظاهر */}
-            <div className="flex items-center">
-              <select
-                value={lang}
-                onChange={(e) => {
-                  const newLang = e.target.value;
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
                   try {
-                    document.cookie = `site_lang=${newLang}; path=/; max-age=${60 * 60 * 24 * 365}`;
-                    window.localStorage.setItem("site_lang", newLang);
-                  } catch (err) {}
-                  setLang(newLang as any);
+                    document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`;
+                    window.localStorage.setItem("site_lang", "ar");
+                  } catch (e) {}
+                  setLang("ar");
                   setTimeout(() => router.refresh(), 80);
                 }}
-                className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 h-8 rounded-lg text-xs font-black outline-none border border-transparent hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer text-center px-1"
-                style={{ WebkitAppearance: 'none', appearance: 'none', MozAppearance: 'none' }}
-              >
-                <option value="ar">ع</option>
-                <option value="fr">FR</option>
-              </select>
+                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "ar" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+              >ع</button>
+              <button
+                onClick={() => {
+                  try {
+                    document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`;
+                    window.localStorage.setItem("site_lang", "fr");
+                  } catch (e) {}
+                  setLang("fr");
+                  setTimeout(() => router.refresh(), 80);
+                }}
+                className={`w-8 h-8 rounded-lg text-xs font-black flex items-center justify-center transition-all ${lang === "fr" ? "bg-medical-600 text-white shadow shadow-medical-600/30" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+              >FR</button>
             </div>
 
             {/* Mobile hamburger */}

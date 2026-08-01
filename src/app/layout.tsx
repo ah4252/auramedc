@@ -3,6 +3,7 @@ import { Cairo } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MobileNav from "@/components/layout/MobileNav";
 import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 import { getSettings } from "@/app/actions/settings";
 import { prisma } from "@/lib/db";
@@ -124,13 +125,13 @@ export default async function RootLayout({
             {showTopNav && (
               <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
             )}
-            <main className="flex-1">
+            <main className="flex-1 pb-20 md:pb-0">
               <SectionMaintenanceGuard settings={settings}>
                 {children}
               </SectionMaintenanceGuard>
             </main>
             <Footer />
-            {showTopNav && <></>}
+            {showTopNav && <MobileNav />}
           </MaintenanceGuard>
         </LocaleProvider>
       </body>
