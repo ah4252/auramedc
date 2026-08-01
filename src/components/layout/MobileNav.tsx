@@ -30,7 +30,7 @@ export default function MobileNav() {
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           return (
-            <Link key={item.path} href={item.path} className="relative flex flex-col items-center justify-center w-full h-full">
+            <Link key={item.path} href={item.path} className="relative flex-1 flex flex-col items-center justify-center min-w-0 h-full">
               {isActive && (
                 <motion.div 
                   layoutId="activeNav"
@@ -39,11 +39,11 @@ export default function MobileNav() {
                 />
               )}
               <item.icon 
-                className={`w-6 h-6 mb-1 transition-colors ${
+                className={`w-6 h-6 mb-0.5 transition-colors ${
                   isActive ? "text-medical-600 dark:text-medical-400" : "text-slate-400"
                 }`} 
               />
-              <span className={`text-[10px] font-bold ${
+              <span className={`text-[10px] font-bold truncate whitespace-nowrap ${
                 isActive ? "text-medical-600 dark:text-medical-400" : "text-slate-400"
               }`}>
                 {item.name}
