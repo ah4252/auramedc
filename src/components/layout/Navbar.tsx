@@ -38,14 +38,6 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
   };
 
   useEffect(() => {
-    if (clicks >= 5) {
-      setShowModal(true);
-      setClicks(0);
-      if (clickTimeout.current) clearTimeout(clickTimeout.current);
-    }
-  }, [clicks]);
-
-  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
         setShowLangMenu(false);
@@ -54,28 +46,6 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const formData = new FormData();
-    formData.append("password", password);
-
-    const { loginAdmin } = await import("@/app/actions/auth");
-    const res = await loginAdmin(formData);
-
-    if (res?.error) {
-      setError(res.error);
-    } else {
-      setShowModal(false);
-      setPassword("");
-      router.refresh();
-      router.push("/admin");
-    }
-    setLoading(false);
-  };
 
   const handleLogoutUser = async () => {
     await logoutUser();
@@ -212,7 +182,6 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 title={t("change_language", "تغيير اللغة")}
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-xs">{lang === "ar" ? "ع" : "FR"}</span>
                 <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"}`} />
               </button>
 
@@ -367,46 +336,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               </div>
 
               <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                {/* Language switcher for mobile */}
-                <div className="flex flex-col gap-2 mb-1">
-                  <button
-                    onClick={() => {
-                      try { document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "ar"); } catch (e) {}
-                      setLang("ar");
-                      setTimeout(() => router.refresh(), 80);
-                      setShowMobileMenu(false);
-                    }}
-                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${lang === "ar" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "ar" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>ع</div>
-                      <div className="text-right">
-                        <div className="text-sm font-black">العربية</div>
-                        <div className="text-[11px] opacity-60">AR</div>
-                      </div>
-                    </div>
-                    {lang === "ar" && <span className="text-[12px] font-black">✓</span>}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      try { document.cookie = `site_lang=fr; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "fr"); } catch (e) {}
-                      setLang("fr");
-                      setTimeout(() => router.refresh(), 80);
-                      setShowMobileMenu(false);
-                    }}
-                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-colors ${lang === "fr" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "fr" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>FR</div>
-                      <div className="text-right">
-                        <div className="text-sm font-black">Français</div>
-                        <div className="text-[11px] opacity-60">FR</div>
-                      </div>
-                    </div>
-                    {lang === "fr" && <span className="text-[12px] font-black">✓</span>}
-                  </button>
-                </div>
+                {/* Mobile language switcher removed */}
 
                 {isUser ? (
                   <button

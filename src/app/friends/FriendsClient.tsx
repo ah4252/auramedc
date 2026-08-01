@@ -12,6 +12,7 @@ import {
   rejectFriendRequest, removeFriend, searchUsersLive,
   getOutgoingDecisions, markDecisionRead
 } from "@/app/actions/friends";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 interface Friend {
   friendshipId: string;
@@ -53,6 +54,7 @@ export default function FriendsClient({
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Friend | null>(null);
   const [outgoingDecisions, setOutgoingDecisions] = useState<Record<string, { id: string; status: "accepted" | "rejected"; expiresAt: number; readAt: number | null; message: string }>>({});
+  const { t } = useLocale();
 
   const loadServerOutgoingDecisions = async () => {
     try {
@@ -148,14 +150,14 @@ export default function FriendsClient({
         if (res.success) {
           setSearchResults(res.users || []);
           if (res.users && res.users.length === 0) {
-            setSearchError("لم يتم العثور على أي مستخدم بهذا البريد الإلكتروني");
+            setSearchError(t("friends_search_no_results","لم يتم العثور على أي مستخدم بهذا البريد الإلكتروني"));
           }
         } else {
-          setSearchError(res.error || "فشل البحث المباشر");
+          setSearchError(res.error || t("friends_search_failed","فشل البحث المباشر"));
           setSearchResults([]);
         }
       } catch (err) {
-        setSearchError("حدث خطأ أثناء البحث المباشر");
+        setSearchError(t("friends_search_error","حدث خطأ أثناء البحث المباشر"));
         setSearchResults([]);
       } finally {
         setSearchLoading(false);
@@ -171,14 +173,14 @@ export default function FriendsClient({
     try {
       const res = await sendFriendRequest(userId);
       if (res.success) {
-        showNotification("success", "تم إرسال طلب الصداقة بنجاح!");
+        showNotification("success", t("friend_request_sent", "تم إرسال طلب الصداقة بنجاح!"));
 
         if (typeof window !== "undefined" && "Notification" in window) {
           const browserNotification = window.Notification;
           if (browserNotification && browserNotification.permission === "granted") {
             try {
               new browserNotification("AuraMed Elite", {
-                body: "تم إرسال طلب الصداقة بنجاح!",
+                body: t("friend_request_sent_browser", "تم إرسال طلب الصداقة بنجاح!"),
                 icon: "/icons/icon-192.webp",
               });
             } catch {
@@ -216,7 +218,7 @@ export default function FriendsClient({
     try {
       const res = await acceptFriendRequest(requestId);
       if (res.success) {
-        showNotification("success", `أنت الآن صديق مع ${friendUser.name || "العضو"}!`);
+        showNotification("success", `${t("friend_now_connected_prefix", "أنت الآن صديق مع")} ${friendUser.name || t("user_default", "العضو")}!`);
         // Server will create the decision; refresh server-side decisions
         await loadServerOutgoingDecisions();
         
@@ -259,7 +261,7 @@ export default function FriendsClient({
       }
 
       if (res.success) {
-        showNotification("success", isIncoming ? "تم رفض طلب الصداقة" : "تم إلغاء طلب الصداقة بنجاح");
+        showNotification("success", isIncoming ? t("friend_request_rejected", "تم رفض طلب الصداقة") : t("friend_request_cancelled", "تم إلغاء طلب الصداقة بنجاح"));
         if (isIncoming && targetUserId) {
           // Server created the rejection decision; refresh server-side decisions
           await loadServerOutgoingDecisions();
@@ -276,10 +278,10 @@ export default function FriendsClient({
           prev.map(r => r.id === targetUserId ? { ...r, status: "NONE", requestId: null } : r)
         );
       } else {
-        showNotification("error", res.error || "فشل إلغاء الطلب");
+        showNotification("error", res.error || t("friends_cancel_failed","فشل إلغاء الطلب"));
       }
     } catch (err) {
-      showNotification("error", "حدث خطأ غير متوقع");
+      showNotification("error", t("unexpected_error","حدث خطأ غير متوقع"));
     } finally {
       setLoadingId(null);
     }
@@ -287,12 +289,12 @@ export default function FriendsClient({
 
   // Unfriend Action
   const handleUnfriend = async (friendId: string, friendName: string) => {
-    if (!confirm(`هل أنت متأكد من إلغاء الصداقة مع ${friendName}؟`)) return;
+    if (!confirm(`${t("friend_unfriend_confirm_prefix", "هل أنت متأكد من إلغاء الصداقة مع")} ${friendName}?`)) return;
     setLoadingId(friendId);
     try {
       const res = await removeFriend(friendId);
       if (res.success) {
-        showNotification("success", `تم إلغاء الصداقة مع ${friendName}`);
+        showNotification("success", `${t("friend_unfriend_success_prefix", "تم إلغاء الصداقة مع")} ${friendName}`);
         setFriends(prev => prev.filter(f => f.user.id !== friendId));
 
         // Sync search result if visible
@@ -362,14 +364,14 @@ export default function FriendsClient({
                       </div>
                     )}
                     <div>
-                      <h2 className="text-xl font-black">{selectedRequest.user.name || "مستخدم"}</h2>
-                      <p className="text-xs text-white/80 font-bold">ملف شخصي</p>
+                      <h2 className="text-xl font-black">{selectedRequest.user.name || t("user_default","مستخدم")}</h2>
+                      <p className="text-xs text-white/80 font-bold">{t("friends_profile_label","ملف شخصي")}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setSelectedRequest(null)}
                     className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                    aria-label="إغلاق"
+                    aria-label={t("close","إغلاق")}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -379,7 +381,7 @@ export default function FriendsClient({
               <div className="p-5 md:p-6 space-y-5">
                 <div className="grid gap-4 text-right">
                   <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                    <p className="text-[10px] font-black text-slate-400 mb-2">البريد الإلكتروني</p>
+                    <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_email_label","البريد الإلكتروني")}</p>
                     <p className="text-base font-black text-slate-800 dark:text-slate-200 break-all" dir="ltr">
                       {selectedRequest.user.email}
                     </p>
@@ -395,19 +397,19 @@ export default function FriendsClient({
                       </div>
                     ) : (
                       <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                        <p className="text-[10px] font-black text-slate-400 mb-2">السنة الدراسية</p>
-                        <p className="text-base font-black text-slate-500">غير محددة</p>
+                        <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_study_year_label","السنة الدراسية")}</p>
+                        <p className="text-base font-black text-slate-500">{t("not_defined","غير محددة")}</p>
                       </div>
                     )}
 
                     <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                      <p className="text-[10px] font-black text-slate-400 mb-2">الحالة</p>
-                      <p className="text-base font-black text-emerald-600 dark:text-emerald-400">طلب صداقة وارد</p>
+                      <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_status_label","الحالة")}</p>
+                      <p className="text-base font-black text-emerald-600 dark:text-emerald-400">{t("friends_request_incoming","طلب صداقة وارد")}</p>
                     </div>
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
-                    <p className="text-[10px] font-black text-slate-400 mb-3">روابط الحسابات الشخصية</p>
+                    <p className="text-[10px] font-black text-slate-400 mb-3">{t("friends_personal_links","روابط الحسابات الشخصية")}</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedRequest.user.telegram ? (
                         <a
@@ -416,7 +418,7 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-black hover:bg-sky-500 hover:text-white transition-all"
                         >
-                          تيليجرام
+                          {t("telegram","تيليجرام")}
                         </a>
                       ) : null}
 
@@ -427,7 +429,7 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-black hover:bg-pink-500 hover:text-white transition-all"
                         >
-                          إنستغرام
+                          {t("instagram","إنستغرام")}
                         </a>
                       ) : null}
 
@@ -438,19 +440,19 @@ export default function FriendsClient({
                           rel="noopener noreferrer"
                           className="inline-flex items-center px-3 py-2 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-black hover:bg-blue-600 hover:text-white transition-all"
                         >
-                          فيسبوك
+                          {t("facebook","فيسبوك")}
                         </a>
                       ) : null}
 
                       {!selectedRequest.user.telegram && !selectedRequest.user.instagram && !selectedRequest.user.facebook && (
-                        <span className="text-xs font-black text-slate-400">لا توجد روابط شخصية مرفقة</span>
+                        <span className="text-xs font-black text-slate-400">{t("friends_no_personal_links","لا توجد روابط شخصية مرفقة")}</span>
                       )}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-3 pt-2">
-                  <button
+                    <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedRequest(null);
@@ -460,7 +462,7 @@ export default function FriendsClient({
                     className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-2xl py-3 px-4 font-black text-sm transition-all"
                   >
                     <X className="w-4 h-4" />
-                    رفض
+                    {t("reject","رفض")}
                   </button>
                   <button
                     onClick={(e) => {
@@ -472,7 +474,7 @@ export default function FriendsClient({
                     className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-3 px-4 font-black text-sm transition-all"
                   >
                     <Check className="w-4 h-4" />
-                    قبول
+                    {t("accept","قبول")}
                   </button>
                 </div>
               </div>
@@ -485,14 +487,14 @@ export default function FriendsClient({
       <div className="mb-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 p-8 md:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-48 h-48 bg-medical-500/5 rounded-full blur-3xl" />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-          <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-tr from-medical-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-medical-500/20">
               <Users className="w-8 h-8 animate-pulse" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">مركز الأصدقاء</h1>
+              <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">{t("friends_center_title","مركز الأصدقاء")}</h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mt-1">
-                تواصل مع زملائك الأطباء النخبة في المنصة، تصفح حساباتهم وابقَ على اتصال دائم معهم.
+                {t("friends_center_description","تواصل مع زملائك الأطباء النخبة في المنصة، تصفح حساباتهم وابقَ على اتصال دائم معهم.")}
               </p>
             </div>
           </div>
@@ -506,7 +508,7 @@ export default function FriendsClient({
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Search className="w-5 h-5 text-medical-500" />
-                <span>البحث المباشر السريع</span>
+                <span>{t("friends_search_quick","البحث المباشر السريع")}</span>
               </h2>
               {searchLoading && <Loader2 className="w-5 h-5 text-medical-500 animate-spin" />}
             </div>
@@ -517,14 +519,14 @@ export default function FriendsClient({
                   type="text"
                   value={searchEmail}
                   onChange={e => setSearchEmail(e.target.value)}
-                  placeholder="ابتدئ بكتابة بريد الزميل الإلكتروني..."
+                  placeholder={t("friends_search_placeholder","ابتدئ بكتابة بريد الزميل الإلكتروني...")}
                   className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-medical-500 outline-none transition-all text-sm font-bold font-mono"
                   dir="ltr"
                 />
                 <Mail className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
               </div>
               <p className="text-[10px] text-slate-400 font-bold mr-1">
-                * تبدأ المزامنة والفلترة الفورية تلقائياً بعد كتابة حرفين أو أكثر.
+                {t("friends_search_help","* تبدأ المزامنة والفلترة الفورية تلقائياً بعد كتابة حرفين أو أكثر.")}
               </p>
             </div>
 
@@ -578,13 +580,13 @@ export default function FriendsClient({
                               </div>
                             )}
                             {result.lastActiveAt && (new Date().getTime() - new Date(result.lastActiveAt).getTime() < 5 * 60 * 1000) && (
-                              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title="متصل الآن"></span>
+                              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-50 dark:border-slate-900 rounded-full z-10" title={t("online_now","متصل الآن")}></span>
                             )}
                           </div>
 
                           <div className="text-right min-w-0">
-                            <h4 className="font-black text-slate-800 dark:text-white text-xs truncate">
-                              {result.name || "مستخدم بدون اسم"}
+                              <h4 className="font-black text-slate-800 dark:text-white text-xs truncate">
+                              {result.name || t("user_fallback","مستخدم بدون اسم")}
                             </h4>
                             <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold font-mono truncate mt-0.5" dir="ltr">
                               {result.email}
@@ -599,9 +601,9 @@ export default function FriendsClient({
 
                         {/* Interactive Friendship Actions */}
                         <div className="shrink-0">
-                          {result.status === "SELF" && (
+                            {result.status === "SELF" && (
                             <span className="block py-1.5 px-3 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black">
-                              حسابك
+                              {t("account_self","حسابك")}
                             </span>
                           )}
 
@@ -612,21 +614,21 @@ export default function FriendsClient({
                               className="py-1.5 px-3 bg-medical-500 hover:bg-medical-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center gap-1 shadow-md shadow-medical-500/10"
                             >
                               <UserPlus className="w-3.5 h-3.5" />
-                              <span>إضافة</span>
+                              <span>{t("add","إضافة")}</span>
                             </button>
                           )}
 
                           {result.status === "PENDING_SENT" && (
                             <div className="flex flex-col items-end gap-1">
                               <span className="block py-1 px-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl text-[9px] font-black border border-amber-500/20">
-                                معلق
+                                {t("pending","معلق")}
                               </span>
                               <button
                                 onClick={() => handleRejectCancelRequest(result.requestId || "temp-" + result.id, result.id, false)}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
-                                إلغاء
+                                {t("cancel","إلغاء")}
                               </button>
                             </div>
                           )}
@@ -637,7 +639,7 @@ export default function FriendsClient({
                                 onClick={() => handleAcceptRequest(result.requestId, result)}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
-                                title="قبول طلب الصداقة"
+                                title={t("friends_accept_title","قبول طلب الصداقة")}
                               >
                                 <Check className="w-3 h-3" />
                               </button>
@@ -645,7 +647,7 @@ export default function FriendsClient({
                                 onClick={() => handleRejectCancelRequest(result.requestId, result.id, true)}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
-                                title="رفض طلب الصداقة"
+                                title={t("friends_reject_title","رفض طلب الصداقة")}
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -656,14 +658,14 @@ export default function FriendsClient({
                             <div className="flex flex-col items-end gap-1">
                               <span className="block py-1 px-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[9px] font-black border border-emerald-500/20 flex items-center gap-1">
                                 <UserCheck className="w-3.5 h-3.5" />
-                                <span>صديق</span>
+                                <span>{t("friend_label","صديق")}</span>
                               </span>
                               <button
                                 onClick={() => handleUnfriend(result.id, result.name)}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
-                                حذف
+                                {t("delete","حذف")}
                               </button>
                             </div>
                           )}
@@ -690,7 +692,7 @@ export default function FriendsClient({
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <span>أصدقائي ({friends.length})</span>
+                <span>{t("friends_my_friends","أصدقائي")} ({friends.length})</span>
                 {activeTab === "my-friends" && (
                   <motion.div
                     layoutId="friendsActiveBorder"
@@ -707,7 +709,7 @@ export default function FriendsClient({
                     : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                <span>طلبـات الصداقة</span>
+                <span>{t("friends_requests","طلبـات الصداقة")}</span>
                 {incoming.length > 0 && (
                   <span className="w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center text-[10px] font-black animate-bounce">
                     {incoming.length}
@@ -737,9 +739,9 @@ export default function FriendsClient({
                       <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center text-slate-400 mb-4 border border-slate-200/50 dark:border-slate-800">
                         <ArrowLeftRight className="w-8 h-8" />
                       </div>
-                      <h3 className="text-base font-black text-slate-800 dark:text-slate-200">لا يوجد أصدقاء حالياً</h3>
+                      <h3 className="text-base font-black text-slate-800 dark:text-slate-200">{t("friends_no_friends_title","لا يوجد أصدقاء حالياً")}</h3>
                       <p className="text-slate-400 dark:text-slate-500 text-xs font-bold mt-2 max-w-sm">
-                        لم تقم بإضافة أي صديق حتى الآن. ابحث بالبريد الإلكتروني للزميل في الخانة الجانبية وأرسل له طلباً!
+                        {t("friends_no_friends_description","لم تقم بإضافة أي صديق حتى الآن. ابحث بالبريد الإلكتروني للزميل في الخانة الجانبية وأرسل له طلباً!")}
                       </p>
                     </div>
                   ) : (
@@ -824,12 +826,12 @@ export default function FriendsClient({
                               )}
                             </div>
 
-                            <button
-                              onClick={() => handleUnfriend(f.user.id, f.user.name)}
-                              disabled={loadingId === f.user.id}
-                              className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
-                              title="حذف الصديق"
-                            >
+                              <button
+                                onClick={() => handleUnfriend(f.user.id, f.user.name)}
+                                disabled={loadingId === f.user.id}
+                                className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
+                                title={t("friends_remove_friend_title","حذف الصديق")}
+                              >
                               <UserMinus className="w-4 h-4" />
                             </button>
                           </div>
@@ -851,12 +853,12 @@ export default function FriendsClient({
                   {/* Incoming Requests Section */}
                   <div className="space-y-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-1.5">
-                      <span>الطلبات الواردة ({incoming.length})</span>
+                      <span>{t("friends_incoming_requests","الطلبات الواردة")} ({incoming.length})</span>
                     </h3>
 
                     {incoming.length === 0 ? (
                       <p className="text-xs text-slate-400 font-bold py-6 text-center">
-                        لا توجد طلبات صداقة واردة حالياً
+                        {t("friends_no_incoming_requests","لا توجد طلبات صداقة واردة حالياً")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -900,7 +902,7 @@ export default function FriendsClient({
                                 className="flex items-center justify-center p-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black transition-all gap-1 shadow-md shadow-emerald-500/10"
                               >
                                 <Check className="w-3.5 h-3.5" />
-                                <span>قبول</span>
+                                <span>{t("accept","قبول")}</span>
                               </button>
                               <button
                                 onClick={() => handleRejectCancelRequest(req.friendshipId, req.user.id, true)}
@@ -908,7 +910,7 @@ export default function FriendsClient({
                                 className="flex items-center justify-center p-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black transition-all gap-1"
                               >
                                 <X className="w-3.5 h-3.5" />
-                                <span>رفض</span>
+                                <span>{t("reject","رفض")}</span>
                               </button>
                             </div>
                           </div>
@@ -920,12 +922,12 @@ export default function FriendsClient({
                   {/* Outgoing Requests Section */}
                   <div className="space-y-4 pt-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-1.5">
-                      <span>الطلبات المرسلة ({outgoing.length})</span>
+                      <span>{t("friends_outgoing_requests","الطلبات المرسلة")} ({outgoing.length})</span>
                     </h3>
 
                     {outgoing.length === 0 && rejectedOutgoing.length === 0 ? (
                       <p className="text-xs text-slate-400 font-bold py-6 text-center">
-                        لا توجد طلبات معلقة مرسلة
+                        {t("friends_no_outgoing_requests","لا توجد طلبات معلقة مرسلة")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -946,9 +948,9 @@ export default function FriendsClient({
                                   )}
                                 </div>
                                 <div className="text-right min-w-0">
-                                  <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
-                                    {user.name || "زميل"}
-                                  </span>
+                                      <span className="block font-black text-slate-800 dark:text-slate-100 text-xs truncate">
+                                        {user.name || t("user_default","زميل")}
+                                      </span>
                                   <span className="block text-slate-400 dark:text-slate-500 text-[9px] font-bold font-mono truncate" dir="ltr">
                                     {user.email}
                                   </span>
@@ -959,13 +961,13 @@ export default function FriendsClient({
                                 onClick={() => markOutgoingDecisionRead(user.id)}
                                 className="text-[10px] font-black text-slate-600 dark:text-slate-300 underline"
                               >
-                                قرأت
+                                {t("mark_read","قرأت")}
                               </button>
                             </div>
 
                             <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 flex items-center justify-between gap-3">
-                              <span className="text-[10px] font-black text-amber-700 dark:text-amber-300">
-                                {decision.message || "تم رفض طلب الصداقة"}
+                                <span className="text-[10px] font-black text-amber-700 dark:text-amber-300">
+                                {decision.message || t("friend_request_rejected","تم رفض طلب الصداقة")}
                               </span>
                             </div>
                           </div>
@@ -1012,7 +1014,7 @@ export default function FriendsClient({
                                   className="p-2 px-3 hover:bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black transition-all flex items-center gap-1 shrink-0"
                                 >
                                   <UserX className="w-3.5 h-3.5" />
-                                  <span>إلغاء الطلب</span>
+                                  <span>{t("cancel_request","إلغاء الطلب")}</span>
                                 </button>
                               </div>
                             </div>

@@ -26,10 +26,15 @@ export const metadata: Metadata = {
 };
 
 export async function generateViewport() {
-  const settings = await getSettings();
-  return {
-    themeColor: settings.primaryColor || "#0ea5e9",
-  };
+  try {
+    const settings = await getSettings();
+    return {
+      themeColor: settings.primaryColor || "#0ea5e9",
+    };
+  } catch (error) {
+    console.error("generateViewport: failed to get settings:", error);
+    return { themeColor: "#0ea5e9" };
+  }
 }
 
 import SectionMaintenanceGuard from "@/components/layout/SectionMaintenanceGuard";

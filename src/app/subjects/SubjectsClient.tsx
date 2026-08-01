@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { BookOpen, Stethoscope, ArrowLeft, Dna, Activity, Brain, Bone, Eye, Heart, Search, X } from "lucide-react";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 // Helper function to safely parse description JSON
 function parseDescription(desc: string | null) {
@@ -46,6 +47,21 @@ const getCategoryGradient = (idx: number) => {
 
 export default function SubjectsClient({ categories }: { categories: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useLocale();
+
+  function SubjectHeader() {
+    const { t } = useLocale();
+    return (
+      <>
+        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 dark:text-white">
+          {t("subjects_headline_part1", "دليلك نحو")} <span className="text-transparent bg-clip-text bg-gradient-to-l from-medical-600 to-blue-500">{t("subjects_headline_highlight", "التخصص")}</span>
+        </h1>
+        <p className="text-xl md:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+          {t("subjects_description", "استكشف عالم الطب بجميع تخصصاته. صممنا هذه الأقسام بعناية لتوفير مسار تعليمي منظم لكل مرحلة من مراحل دراستك.")}
+        </p>
+      </>
+    );
+  }
 
   const filteredCategories = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -78,12 +94,7 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
           <div className="inline-flex items-center justify-center p-4 bg-white dark:bg-dark-card shadow-xl shadow-medical-600/10 rounded-2xl mb-8 border border-slate-100 dark:border-slate-800 rotate-3 hover:rotate-0 transition-transform duration-500">
             <Activity className="w-10 h-10 text-medical-600 dark:text-medical-400" />
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-slate-900 dark:text-white">
-            دليلك نحو <span className="text-transparent bg-clip-text bg-gradient-to-l from-medical-600 to-blue-500">التخصص</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
-            استكشف عالم الطب بجميع تخصصاته. صممنا هذه الأقسام بعناية لتوفير مسار تعليمي منظم لكل مرحلة من مراحل دراستك.
-          </p>
+          <SubjectHeader />
         </motion.div>
 
         {/* ── Search Bar ── */}
@@ -108,10 +119,10 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن تخصص..."
+                placeholder={t("subjects_search_placeholder", "ابحث عن تخصص...")}
                 className="flex-1 h-14 bg-transparent text-slate-800 dark:text-white placeholder-slate-400 text-base font-medium outline-none pr-2"
                 id="specialty-search"
-                aria-label="البحث عن تخصص"
+                aria-label={t("subjects_search_aria", "البحث عن تخصص")}
                 autoComplete="off"
               />
 
@@ -124,7 +135,7 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
                     exit={{ opacity: 0, scale: 0.7 }}
                     transition={{ duration: 0.15 }}
                     type="button"
-                    title="مسح البحث"
+                    title={t("subjects_clear_search", "مسح البحث")}
                     onClick={() => setSearchQuery("")}
                     className="flex items-center justify-center w-9 h-9 ml-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-medical-50 hover:text-medical-600 dark:hover:bg-medical-900/30 transition-colors shrink-0"
                   >
@@ -145,8 +156,8 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
                 className="text-center mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium"
               >
                 {filteredCategories.length > 0
-                  ? <>وُجد <span className="text-medical-600 dark:text-medical-400 font-black">{filteredCategories.length}</span> {filteredCategories.length === 1 ? "تخصص" : "تخصصات"} لـ «<span className="text-slate-700 dark:text-slate-300 font-bold">{searchQuery}</span>»</>
-                  : <>لا توجد نتائج لـ «<span className="text-slate-700 dark:text-slate-300 font-bold">{searchQuery}</span>»</>
+                  ? <>{t("subjects_results_found_prefix", "وُجد")} <span className="text-medical-600 dark:text-medical-400 font-black">{filteredCategories.length}</span> {filteredCategories.length === 1 ? t("subjects_singular", "تخصص") : t("subjects_plural", "تخصصات")} {t("subjects_results_found_suffix", "لـ")} «<span className="text-slate-700 dark:text-slate-300 font-bold">{searchQuery}</span>»</>
+                  : <>{t("subjects_no_results_for", "لا توجد نتائج لـ")} «<span className="text-slate-700 dark:text-slate-300 font-bold">{searchQuery}</span>»</>
                 }
               </motion.p>
             )}
@@ -199,7 +210,7 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
                         {cat.name}
                       </h3>
                       <p className="text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
-                        {parsed.brief || "مسار تعليمي متكامل يحتوي على كافة المراجع، الشروحات والفيديوهات الأكاديمية المصممة خصيصاً لطلاب هذا التخصص."}
+                        {parsed.brief || t("subjects_fallback_brief","مسار تعليمي متكامل يحتوي على كافة المراجع، الشروحات والفيديوهات الأكاديمية المصممة خصيصاً لطلاب هذا التخصص.")}
                       </p>
                     </div>
 
@@ -221,16 +232,11 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
               <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-12 h-12 text-slate-400" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-300">لا توجد نتائج</h3>
-              <p className="text-slate-500 max-w-sm mx-auto mb-6">
-                لم نجد أي تخصص يطابق «<span className="font-bold text-slate-700 dark:text-slate-300">{searchQuery}</span>»
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-medical-600 text-white font-bold rounded-xl hover:bg-medical-700 transition-colors shadow-lg shadow-medical-600/25"
-              >
+              <h3 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-300">{t("subjects_no_results_title", "لا توجد نتائج")}</h3>
+              <p className="text-slate-500 max-w-sm mx-auto mb-6">{t("subjects_no_results_msg", "لم نجد أي تخصص يطابق")} «<span className="font-bold text-slate-700 dark:text-slate-300">{searchQuery}</span>»</p>
+              <button onClick={() => setSearchQuery("")} className="inline-flex items-center gap-2 px-6 py-3 bg-medical-600 text-white font-bold rounded-xl hover:bg-medical-700 transition-colors shadow-lg shadow-medical-600/25">
                 <X className="w-4 h-4" />
-                مسح البحث
+                {t("subjects_clear_search", "مسح البحث")}
               </button>
             </motion.div>
           )}
@@ -245,8 +251,8 @@ export default function SubjectsClient({ categories }: { categories: any[] }) {
               <div className="w-24 h-24 bg-medical-50 dark:bg-medical-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Activity className="w-12 h-12 text-medical-600" />
               </div>
-              <h3 className="text-3xl font-bold mb-4">قسم التخصصات الطبية</h3>
-              <p className="text-xl text-slate-500 max-w-lg mx-auto">سيتم إضافة التخصصات الطبية الدقيقة في هذا القسم قريباً.</p>
+              <h3 className="text-3xl font-bold mb-4">{t("subjects_empty_title", "قسم التخصصات الطبية")}</h3>
+              <p className="text-xl text-slate-500 max-w-lg mx-auto">{t("subjects_empty_description", "سيتم إضافة التخصصات الطبية الدقيقة في هذا القسم قريباً.")}</p>
             </motion.div>
           )}
         </motion.div>

@@ -4,17 +4,30 @@ import { cookies } from "next/headers";
 import NewsClient from "./NewsClient";
 import NewsLoginRequired from "./NewsLoginRequired";
 import { prisma } from "@/lib/db";
+import { tServer } from "@/lib/i18n";
 
-export const metadata = {
-  title: "أخبار المنصة | AuraMed Elite",
-  description: "آخر التحديثات والإعلانات في منصة أوراميد التعليمية"
-};
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
+
+  return {
+    title: tServer("news_meta_title", siteLang ?? "ar", siteLang === "fr" ? "Actualités | AuraMed Elite" : "أخبار المنصة | AuraMed Elite"),
+    description: tServer(
+      "news_meta_description",
+      siteLang ?? "ar",
+      siteLang === "fr"
+        ? "Les dernières mises à jour et annonces de la plateforme AuraMed pour améliorer votre expérience d'apprentissage."
+        : "آخر التحديثات والإعلانات في منصة أوراميد التعليمية"
+    )
+  };
+}
 
 export default async function NewsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_token")?.value;
   const adminToken = cookieStore.get("admin_token")?.value;
   const isAdmin = !!adminToken;
+  const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
 
   if (!userId && !isAdmin) {
     return <NewsLoginRequired />;
@@ -58,13 +71,19 @@ export default async function NewsPage() {
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-medical-500/10 border border-medical-500/20 text-medical-400 mb-6 font-bold text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>نبقيك على اطلاع دائم</span>
+            <span>{tServer("news_hero_badge", siteLang ?? "ar", siteLang === "fr" ? "Nous vous tenons informés" : "نبقيك على اطلاع دائم")}</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black mb-6">
-            أخبار <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-medical-600">المنصة</span>
+            {tServer("news_title_prefix", siteLang ?? "ar", siteLang === "fr" ? "Actualités" : "أخبار")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-medical-600">{tServer("news_title_highlight", siteLang ?? "ar", siteLang === "fr" ? "la plateforme" : "المنصة")}</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-bold leading-relaxed">
-            تابع أحدث الإعلانات، التحديثات الهامة، والميزات الجديدة التي نضيفها باستمرار لتحسين تجربتك التعليمية.
+            {tServer(
+              "news_description",
+              siteLang ?? "ar",
+              siteLang === "fr"
+                ? "Suivez les dernières annonces, mises à jour importantes et nouvelles fonctionnalités que nous ajoutons continuellement pour améliorer votre expérience d'apprentissage."
+                : "تابع أحدث الإعلانات، التحديثات الهامة، والميزات الجديدة التي نضيفها باستمرار لتحسين تجربتك التعليمية."
+            )}
           </p>
         </div>
       </div>
