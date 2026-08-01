@@ -53,6 +53,29 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
     router.push("/");
   };
 
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const formData = new FormData();
+    formData.append("password", password);
+
+    const { loginAdmin } = await import("@/app/actions/auth");
+    const res = await loginAdmin(formData);
+
+    if (res?.error) {
+      setError(res.error);
+    } else {
+      setShowModal(false);
+      setPassword("");
+      router.refresh();
+      router.push("/admin");
+    }
+
+    setLoading(false);
+  };
+
   if (!shouldShowNav) return null;
 
   return (
