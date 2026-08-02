@@ -102,8 +102,18 @@ export default async function RootLayout({
   const dir = siteLang === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={siteLang} dir={dir} className="dark" suppressHydrationWarning>
+    <html lang={siteLang} dir={dir} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              const storedTheme = localStorage.getItem('theme');
+              const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              const isDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
+              document.documentElement.classList.toggle('dark', isDark);
+            } catch (e) {}
+          })();
+        `}} />
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
             --medical-600: ${settings.primaryColor || "#0ea5e9"};

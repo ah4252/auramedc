@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, User, Menu, Stethoscope, Lock, X, ShieldCheck, Sparkles, Globe, ChevronDown } from "lucide-react";
+import { BookOpen, User, Menu, Stethoscope, Lock, X, ShieldCheck, Sparkles, Globe, ChevronDown, Sun, Moon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { logoutAdmin, logoutUser } from "@/app/actions/auth";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,6 +18,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const router = useRouter();
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -46,6 +47,23 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    try {
+      const storedTheme = window.localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initialTheme = storedTheme === "dark" || (!storedTheme && prefersDark) ? "dark" : "light";
+      setTheme(initialTheme);
+      document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+      window.localStorage.setItem("theme", theme);
+    } catch (e) {}
+  }, [theme]);
 
   useEffect(() => {
     if (clicks >= 5) {
@@ -208,6 +226,16 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                 <span>{t("login", "تسجيل الدخول")}</span>
               </Link>
             )}
+
+            <button
+              type="button"
+              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              className="flex items-center justify-center h-10 w-10 rounded-2xl border border-white/20 bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 shadow-md shadow-slate-900/10 backdrop-blur-xl transition-all hover:scale-105"
+              aria-label={theme === "dark" ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
+              title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
             {/* Language dropdown — محفوظة المساحة وتصميم جذاب */}
             <div className="relative" ref={langMenuRef as any}>

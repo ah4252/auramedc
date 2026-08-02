@@ -23,7 +23,7 @@ export default function MobileNav() {
 
   return (
     <div
-      className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-[calc(100%-2rem)] max-w-xl px-3 py-2 bg-white/40 dark:bg-dark-card/40 backdrop-blur-[10px] border border-white/20 dark:border-dark-card/30 rounded-3xl shadow-2xl"
+      className="md:hidden fixed left-1/2 -translate-x-1/2 bottom-4 z-50 w-[calc(100%-2rem)] max-w-xl px-3 py-2 rounded-3xl border border-white/20 dark:border-white/10 backdrop-blur-[20px] bg-white/20 dark:bg-slate-950/30 text-slate-100 dark:text-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.28)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}
     >
       <div className="flex items-center justify-around h-12">
