@@ -2,11 +2,12 @@
 
 import { loginUser, resetForgotPassword } from "@/app/actions/auth";
 import { createRecoveryRequest } from "@/app/actions/recovery";
-import { useState } from "react";
-import { LogIn, Mail, Lock, ArrowRight, HeartPulse, X, Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { LogIn, Mail, Lock, ArrowRight, HeartPulse, X, Eye, EyeOff, KeyRound, CheckCircle, Globe, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -15,13 +16,27 @@ export default function LoginPage() {
     const safeRedirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
     return safeRedirect === "/login" ? "/" : safeRedirect;
   })();
-  const loginMessage = searchParams.get("message") || "يرجى تسجيل الدخول للمتابعة";
+  const { t, lang, setLang } = useLocale();
+  const loginMessage = searchParams.get("message") || t("login_message", "يرجى تسجيل الدخول للمتابعة");
 
   const [loading, setLoading] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
+  const isRtl = lang === "ar";
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setShowLangMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const beginAuthenticatedTransition = () => {
     setIsAuthenticating(true);
@@ -78,11 +93,11 @@ export default function LoginPage() {
     e.preventDefault();
     if (!resetNewPw.trim() || !resetConfirmPw.trim()) return;
     if (resetNewPw !== resetConfirmPw) {
-      setResetError("كلمتا المرور غير متطابقتين");
+      setResetError(t("reset_error_password_mismatch", "كلمتا المرور غير متطابقتين"));
       return;
     }
     if (resetNewPw.length < 6) {
-      setResetError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل");
+      setResetError(t("reset_error_password_short", "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل"));
       return;
     }
     setResetLoading(true);
@@ -158,8 +173,8 @@ export default function LoginPage() {
               </div>
 
               <div className="text-center">
-                <p className="text-[10px] font-black tracking-[0.35em] text-slate-400">AURAMED</p>
-                <h2 className="mt-3 text-3xl font-black text-white">AuraMed Elite</h2>
+                <p className="text-[10px] font-black tracking-[0.35em] text-slate-400">{t("auth_brand_badge", "AURAMED")}</p>
+                <h2 className="mt-3 text-3xl font-black text-white">{t("auth_brand_name", "AuraMed Elite")}</h2>
               </div>
 
               <div className="flex items-center gap-2">
@@ -168,7 +183,7 @@ export default function LoginPage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:240ms]" />
               </div>
 
-              <p className="text-sm font-bold text-slate-300">جاري تجهيز المنصة لك...</p>
+              <p className="text-sm font-bold text-slate-300">{t("loading_platform_message", "جاري تجهيز المنصة لك...")}</p>
             </motion.div>
           </motion.div>
         )}
@@ -185,14 +200,64 @@ export default function LoginPage() {
           {/* Top border gradient */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-medical-500/50 to-transparent"></div>
 
+          <div className="absolute top-6 right-6 z-20" ref={langMenuRef}>
+            <button
+              type="button"
+              onClick={() => setShowLangMenu((prev) => !prev)}
+              title={t("change_language", "تغيير اللغة")}
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-black text-slate-100 shadow-lg shadow-slate-900/10 backdrop-blur-xl hover:bg-white/15 transition-all"
+            >
+              <Globe className="w-4 h-4 text-sky-300" />
+              <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"}`} />
+            </button>
+            <AnimatePresence>
+              {showLangMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className={`mt-2 w-48 rounded-[1.5rem] border border-white/10 bg-slate-950/95 shadow-2xl shadow-slate-900/40 overflow-hidden backdrop-blur-3xl ${isRtl ? "left-0" : "right-0"}`}
+                  style={{ transformOrigin: isRtl ? "left top" : "right top" }}
+                >
+                  {[
+                    { id: "ar", label: "العربية", code: "ع" },
+                    { id: "fr", label: "Français", code: "FR" },
+                    { id: "en", label: "English", code: "EN" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        try { document.cookie = `site_lang=${item.id}; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", item.id); } catch (e) {}
+                        setLang(item.id as any);
+                        setShowLangMenu(false);
+                        setTimeout(() => router.refresh(), 80);
+                      }}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-all ${lang === item.id ? "bg-medical-600/95 text-white" : "text-slate-200 hover:bg-white/10"}`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-2xl bg-slate-800 flex items-center justify-center text-xs font-black">{item.code}</span>
+                        <span>{item.label}</span>
+                      </span>
+                      {lang === item.id && <span className="text-xs font-black">✓</span>}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <div className="flex flex-col items-center mb-10 text-center">
             <Link href="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-medical-500/10 border border-medical-500/20 text-medical-400 mb-6 group hover:bg-medical-500/20 transition-all duration-300">
               <HeartPulse className="w-10 h-10 group-hover:scale-110 transition-transform" />
             </Link>
+            <p className="text-[10px] font-black tracking-[0.35em] text-slate-400">{t("auth_brand_badge", "AURAMED")}</p>
+            <h2 className="mt-3 text-3xl font-black text-white">{t("auth_brand_name", "AuraMed Elite")}</h2>
             <h1 className="text-3xl font-black mb-3 tracking-tight">
-              تسجيل <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-sky-400">الدخول</span>
+              {t("login_page_title", "تسجيل")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-sky-400">{t("login_page_action", "الدخول")}</span>
             </h1>
-            <p className="text-slate-400 font-bold">أهلاً بك مجدداً في منصتك التعليمية المتكاملة</p>
+            <p className="text-slate-400 font-bold">{t("login_page_subtitle", "أهلاً بك مجدداً في منصتك التعليمية المتكاملة")}</p>
           </div>
 
           <AnimatePresence>
@@ -213,13 +278,13 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-black text-slate-300 mr-2">البريد الإلكتروني</label>
+              <label className="text-sm font-black text-slate-300 mr-2">{t("email_label", "البريد الإلكتروني")}</label>
               <div className="relative group">
                 <input 
                   name="email"
                   type="email"
                   required
-                  placeholder="name@gmail.com"
+                  placeholder={t("email_placeholder", "name@gmail.com")}
                   className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
                   dir="ltr"
                 />
@@ -231,13 +296,13 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center mr-2">
-                <label className="text-sm font-black text-slate-300">كلمة المرور</label>
+                <label className="text-sm font-black text-slate-300">{t("password_label", "كلمة المرور")}</label>
                 <button 
                   type="button"
                   onClick={() => setShowForgot(true)}
                   className="text-xs text-medical-400 hover:text-medical-300 font-black transition-colors underline-offset-2 hover:underline"
                 >
-                  نسيت كلمة المرور؟
+                  {t("forgot_password", "نسيت كلمة المرور؟")}
                 </button>
               </div>
               <div className="relative group">
@@ -245,7 +310,7 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  placeholder="••••••••"
+                  placeholder={t("password_input_placeholder", "••••••••")}
                   className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
                   dir="ltr"
                 />
@@ -274,7 +339,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <LogIn className="w-5 h-5" />
-                    <span>تسجيل الدخول</span>
+                    <span>{t("login_button", "تسجيل الدخول")}</span>
                   </>
                 )}
               </div>
@@ -283,9 +348,9 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-8 border-t border-slate-700/50 text-center">
             <p className="text-slate-400 text-sm font-bold">
-              ليس لديك حساب؟{" "}
+              {t("login_no_account", "ليس لديك حساب؟")} {" "}
               <Link href="/register" className="text-medical-400 font-black hover:text-medical-300 hover:underline transition-colors ml-1">
-                أنشئ حساباً جديداً
+                {t("login_create_account_link", "أنشئ حساباً جديداً")}
               </Link>
             </p>
           </div>
@@ -322,15 +387,15 @@ export default function LoginPage() {
                       <KeyRound className="w-6 h-6 text-amber-400" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-white">طلب استعادة الحساب</h2>
-                      <p className="text-slate-400 text-xs font-bold mt-1">المطور سيراجع ويوافق على طلبك يدوياً</p>
+                      <h2 className="text-xl font-black text-white">{t("password_recovery_request_title", "طلب استعادة الحساب")}</h2>
+                      <p className="text-slate-400 text-xs font-bold mt-1">{t("password_recovery_request_note", "المطور سيراجع ويوافق على طلبك يدوياً")}</p>
                     </div>
                   </div>
                   <button 
                     onClick={closeForgot}
                     className="p-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-all"
-                    title="إغلاق"
-                    aria-label="إغلاق"
+                    title={t("close", "إغلاق")}
+                    aria-label={t("close", "إغلاق")}
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -347,17 +412,17 @@ export default function LoginPage() {
                       <div className="w-20 h-20 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20 shadow-lg shadow-green-500/5 animate-bounce">
                         <CheckCircle className="w-10 h-10" />
                       </div>
-                      <h3 className="text-xl font-black text-white mb-3">تم إرسال الطلب بنجاح!</h3>
+                      <h3 className="text-xl font-black text-white mb-3">{t("password_recovery_success_title", "تم إرسال الطلب بنجاح!")}</h3>
                       <p className="text-slate-400 text-sm font-bold leading-relaxed mb-6">
-                        طلبك قيد المعالجة الآن وينتظر الموافقة من المطور. 
+                        {t("password_recovery_success_desc", "طلبك قيد المعالجة الآن وينتظر الموافقة من المطور.")} 
                         <br />
-                        يرجى مراجعة صفحة تسجيل الدخول لاحقاً.
+                        {t("password_recovery_success_note", "يرجى مراجعة صفحة تسجيل الدخول لاحقاً.")}
                       </p>
                       <button
                         onClick={closeForgot}
                         className="w-full py-4 bg-gradient-to-r from-medical-600 to-sky-500 text-white rounded-2xl font-black transition-transform hover:-translate-y-0.5 shadow-lg shadow-medical-600/20"
                       >
-                        حسناً، فهمت
+                        {t("password_recovery_success_button", "حسناً، فهمت")}
                       </button>
                     </motion.div>
                   )}
@@ -384,13 +449,13 @@ export default function LoginPage() {
                 {!forgotSuccess && (
                   <form onSubmit={handleForgotPassword} className="space-y-5">
                     <div className="space-y-1">
-                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide">البريد الإلكتروني</label>
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide">{t("forgot_password_email_label", "البريد الإلكتروني")}</label>
                       <div className="relative group">
                         <input
                           type="email"
                           value={forgotEmail}
                           onChange={e => { setForgotEmail(e.target.value); setForgotError(""); }}
-                          placeholder="name@gmail.com"
+                          placeholder={t("forgot_password_email_placeholder", "name@gmail.com")}
                           required
                           className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all font-bold text-left"
                           dir="ltr"
@@ -402,13 +467,13 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide">آخر كلمة سر تتذكرها</label>
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide">{t("forgot_password_last_password_label", "آخر كلمة سر تتذكرها")}</label>
                       <div className="relative group">
                         <input
                           type="text"
                           value={forgotLastPassword}
                           onChange={e => { setForgotLastPassword(e.target.value); setForgotError(""); }}
-                          placeholder="أدخل آخر كلمة سر تتذكرها..."
+                          placeholder={t("forgot_password_last_password_placeholder", "أدخل آخر كلمة سر تتذكرها...")}
                           required
                           className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all font-bold text-right"
                           dir="rtl"
@@ -429,7 +494,7 @@ export default function LoginPage() {
                       ) : (
                         <>
                           <KeyRound className="w-5 h-5" />
-                          <span>إرسال الطلب للمطور</span>
+                          <span>{t("forgot_password_submit", "إرسال الطلب للمطور")}</span>
                         </>
                       )}
                     </button>
@@ -469,8 +534,8 @@ export default function LoginPage() {
                       <Lock className="w-6 h-6 text-emerald-400" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-white font-cairo">إعداد كلمة مرور جديدة</h2>
-                      <p className="text-slate-400 text-xs font-bold mt-1 font-cairo">يجب تغيير كلمة المرور المؤقتة لتأمين حسابك</p>
+                      <h2 className="text-xl font-black text-white font-cairo">{t("reset_password_title", "إعداد كلمة مرور جديدة")}</h2>
+                      <p className="text-slate-400 text-xs font-bold mt-1 font-cairo">{t("reset_password_note", "يجب تغيير كلمة المرور المؤقتة لتأمين حسابك")}</p>
                     </div>
                   </div>
                 </div>
@@ -486,11 +551,11 @@ export default function LoginPage() {
                       <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 animate-bounce">
                         <CheckCircle className="w-10 h-10" />
                       </div>
-                      <h3 className="text-xl font-black text-white mb-3 font-cairo">تم تحديث كلمة المرور!</h3>
+                      <h3 className="text-xl font-black text-white mb-3 font-cairo">{t("password_reset_success_title", "تم تحديث كلمة المرور!")}</h3>
                       <p className="text-slate-400 text-sm font-bold leading-relaxed font-cairo">
-                        تم تأمين حسابك بنجاح. 
+                        {t("password_reset_success_desc", "تم تأمين حسابك بنجاح.")}
                         <br />
-                        جاري تحويلك للصفحة الرئيسية...
+                        {t("password_reset_success_note", "جاري تحويلك للصفحة الرئيسية...")}
                       </p>
                     </motion.div>
                   )}
@@ -517,26 +582,26 @@ export default function LoginPage() {
                 {!resetSuccess && (
                   <form onSubmit={handleForcedPasswordReset} className="space-y-5">
                     <div className="space-y-1">
-                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">البريد الإلكتروني</label>
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">{t("reset_password_email_label", "البريد الإلكتروني")}</label>
                       <input
                         type="text"
                         disabled
                         value={resetEmail}
-                        title="البريد الإلكتروني"
-                        placeholder="البريد الإلكتروني"
+                        title={t("reset_password_email_label", "البريد الإلكتروني")}
+                        placeholder={t("reset_password_email_placeholder", "البريد الإلكتروني")}
                         className="w-full px-4 py-4 rounded-2xl border border-slate-800 bg-slate-900/50 text-slate-500 font-bold text-left outline-none"
                         dir="ltr"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">كلمة المرور الجديدة</label>
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">{t("reset_password_new_label", "كلمة المرور الجديدة")}</label>
                       <div className="relative group">
                         <input
                           type={showNewPwModal ? "text" : "password"}
                           value={resetNewPw}
                           onChange={e => { setResetNewPw(e.target.value); setResetError(""); }}
-                          placeholder="••••••••"
+                          placeholder={t("password_input_placeholder", "••••••••")}
                           required
                           minLength={6}
                           className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-bold text-left"
@@ -556,13 +621,13 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">تأكيد كلمة المرور الجديدة</label>
+                      <label className="block text-xs font-black text-slate-400 mr-2 uppercase tracking-wide font-cairo">{t("reset_password_confirm_label", "تأكيد كلمة المرور الجديدة")}</label>
                       <div className="relative group">
                         <input
                           type={showConfirmPwModal ? "text" : "password"}
                           value={resetConfirmPw}
                           onChange={e => { setResetConfirmPw(e.target.value); setResetError(""); }}
-                          placeholder="••••••••"
+                          placeholder={t("confirm_password_input_placeholder", "••••••••")}
                           required
                           minLength={6}
                           className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-bold text-left"
@@ -591,7 +656,7 @@ export default function LoginPage() {
                       ) : (
                         <>
                           <CheckCircle className="w-5 h-5" />
-                          <span className="font-cairo">تحديث وتفعيل الدخول</span>
+                          <span className="font-cairo">{t("reset_password_submit", "تحديث وتفعيل الدخول")}</span>
                         </>
                       )}
                     </button>

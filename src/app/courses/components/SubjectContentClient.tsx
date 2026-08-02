@@ -45,7 +45,7 @@ export default function SubjectContentClient({ subject }: { subject: any }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left Side: Subject Info & Resources Summary */}
         <div className="lg:col-span-4 space-y-8 order-2 lg:order-1">
-           <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-sm sticky top-24">
+           <div className="bg-white/70 dark:bg-slate-950/70 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl sticky top-24 backdrop-blur-xl">
               <div className="w-16 h-16 bg-medical-500/10 text-medical-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
                  <BookOpen className="w-8 h-8" />
               </div>

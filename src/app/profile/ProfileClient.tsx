@@ -547,6 +547,28 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       </div>
                     </div>
 
+                    <div className="rounded-[2.5rem] border border-slate-200/40 dark:border-slate-700/40 bg-slate-50 dark:bg-slate-900/30 p-8 mb-8">
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mb-4">{t("profile_subscription_guide_title")}</h3>
+                      <div className="space-y-4 text-slate-600 dark:text-slate-300">
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_1_title")}</h4>
+                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_1_desc")}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_2_title")}</h4>
+                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_2_desc")}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_3_title")}</h4>
+                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_3_desc")}</p>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200/30 dark:border-slate-700/30 bg-white/80 dark:bg-slate-950/80 p-4">
+                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_payment_policy_title")}</h4>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t("profile_subscription_payment_policy_desc")}</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {/* BaridiMob Info */}
                       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 text-white relative overflow-hidden border border-slate-700 shadow-xl">

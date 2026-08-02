@@ -481,11 +481,12 @@ export default function FriendsClient({
       </AnimatePresence>
 
       {/* Header Container */}
-      <div className="mb-12 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 p-8 md:p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-medical-500/5 rounded-full blur-3xl" />
+      <div className="mb-12 relative overflow-hidden rounded-[2.5rem] border border-white/10 dark:border-white/10 bg-white/10 dark:bg-slate-950/40 shadow-2xl shadow-slate-900/30 backdrop-blur-3xl backdrop-saturate-150 p-8 md:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.18),_transparent_20%),radial-gradient(circle_at_bottom_left,_rgba(34,197,94,0.14),_transparent_18%)] pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/20 via-white/10 to-transparent dark:from-slate-100/10 dark:via-slate-950/10 dark:to-transparent pointer-events-none" />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
               <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-tr from-medical-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-medical-500/20">
+            <div className="w-16 h-16 bg-gradient-to-tr from-medical-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-medical-500/20">
               <Users className="w-8 h-8 animate-pulse" />
             </div>
             <div>
@@ -501,8 +502,9 @@ export default function FriendsClient({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Side: Live Search (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 dark:border-white/10 bg-white/10 dark:bg-slate-950/35 shadow-2xl shadow-slate-900/30 backdrop-blur-3xl backdrop-saturate-150 p-6 md:p-8">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_20%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_20%)] pointer-events-none" />
+            <div className="flex items-center justify-between mb-6 relative z-10">
               <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Search className="w-5 h-5 text-medical-500" />
                 <span>{t("friends_search_quick","Quick search")}</span>
@@ -510,14 +512,14 @@ export default function FriendsClient({
               {searchLoading && <Loader2 className="w-5 h-5 text-medical-500 animate-spin" />}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 relative z-10">
               <div className="relative">
                 <input
                   type="text"
                   value={searchEmail}
                   onChange={e => setSearchEmail(e.target.value)}
                   placeholder={t("friends_search_placeholder","Start typing your colleague's email...")}
-                  className="w-full p-4 pl-12 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-medical-500 outline-none transition-all text-sm font-bold font-mono"
+                  className="w-full p-4 pl-12 rounded-3xl border border-white/15 dark:border-white/15 bg-white/10 dark:bg-slate-950/30 text-slate-900 dark:text-white focus:ring-2 focus:ring-medical-500/20 outline-none transition-all text-sm font-bold font-mono backdrop-blur-xl"
                   dir="ltr"
                 />
                 <Mail className="absolute left-4 top-4 w-5 h-5 text-slate-400" />
@@ -529,7 +531,7 @@ export default function FriendsClient({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-4 bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-500/20 text-xs font-black flex items-center gap-2"
+                    className="p-4 bg-red-500/10 text-red-600 dark:text-red-400 rounded-3xl border border-red-500/20 text-xs font-black flex items-center gap-2 backdrop-blur-xl"
                   >
                     <ShieldAlert className="w-4 h-4 shrink-0" />
                     <span>{searchError}</span>
@@ -543,7 +545,7 @@ export default function FriendsClient({
                     exit={{ opacity: 0 }}
                     className="space-y-3"
                   >
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 relative z-10">
                       {t("friends_search_matches","Matching members")} ({searchResults.length}):
                     </h3>
                     
@@ -552,7 +554,7 @@ export default function FriendsClient({
                         key={result.id}
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800 flex items-center justify-between gap-4 relative overflow-hidden"
+                        className="p-4 bg-white/10 dark:bg-slate-950/30 rounded-[2rem] border border-white/10 dark:border-white/10 backdrop-blur-xl flex items-center justify-between gap-4 relative overflow-hidden shadow-lg shadow-slate-900/10"
                       >
                         <div className="absolute top-0 right-0 w-16 h-16 bg-medical-500/5 rounded-full blur-xl -z-10" />
                         

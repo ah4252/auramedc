@@ -140,8 +140,10 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
               )}
             </div>
 
-            <div className="bg-white dark:bg-dark-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="relative overflow-hidden rounded-[2.5rem] p-6 sm:p-8 border border-white/10 dark:border-white/10 bg-white/10 dark:bg-slate-950/40 shadow-2xl shadow-slate-900/30 backdrop-blur-3xl backdrop-saturate-150">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_18%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.16),_transparent_20%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.15),rgba(255,255,255,0.02))] mix-blend-screen pointer-events-none" />
+              <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">
                   {lesson.title}
                 </h1>
@@ -149,27 +151,27 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
               </div>
               
               <div className="flex flex-wrap items-center gap-3 mb-6">
-                <span className="bg-medical-50 dark:bg-medical-900/20 text-medical-600 dark:text-medical-400 text-[10px] sm:text-sm px-2.5 py-1 rounded-lg font-bold">
+                <span className="bg-white/15 dark:bg-slate-900/35 text-medical-600 dark:text-medical-300 text-[10px] sm:text-sm px-3 py-1.5 rounded-2xl font-bold border border-white/10 dark:border-white/10 backdrop-blur-xl shadow-sm shadow-white/10">
                   المنصة الأكاديمية
                 </span>
-                <span className="text-slate-500 text-[10px] sm:text-sm flex items-center gap-1 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-sm flex items-center gap-1 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                   متاح للعرض
                 </span>
               </div>
 
-              <div className="text-slate-600 dark:text-slate-400 leading-relaxed mb-8 text-base sm:text-lg break-words whitespace-pre-wrap">
+              <div className="text-slate-600 dark:text-slate-300 leading-relaxed mb-8 text-base sm:text-lg break-words whitespace-pre-wrap">
                 {lesson.description || "لا يوجد وصف مضاف لهذه المحاضرة."}
               </div>
 
-              <div className="flex items-center gap-4 pt-6 border-t border-slate-100 dark:border-slate-800/60">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg relative shrink-0 bg-white dark:bg-slate-800/80 p-0 border border-slate-200 dark:border-slate-700 overflow-hidden">
-                  <img src="/logo.png" alt="AuraMed Logo" className="w-[85%] h-[85%] object-contain drop-shadow-md" />
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 absolute -top-1.5 -right-1.5 text-amber-500 animate-pulse" />
+              <div className="flex items-center gap-4 pt-6 border-t border-white/10 dark:border-white/10">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center bg-white/15 dark:bg-slate-900/35 border border-white/10 dark:border-white/10 shadow-xl shadow-slate-900/20 overflow-hidden">
+                  <img src="/logo.png" alt="AuraMed Logo" className="w-[82%] h-[82%] object-contain drop-shadow-lg" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 absolute -top-1.5 -right-1.5 text-amber-400 animate-pulse" />
                 </div>
                 <div>
                   <h4 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white italic">إدارة Aura<span className="not-italic font-light">Med</span></h4>
-                  <p className="text-xs sm:text-sm text-slate-500 font-bold">بكل رقي من المطور</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-bold">بكل رقي من المطور</p>
                 </div>
               </div>
             </div>

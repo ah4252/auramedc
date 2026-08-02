@@ -79,7 +79,7 @@ export default function LessonsClient({ subject }: { subject: any }) {
                   >
                     <Link 
                       href={`/courses/v/${lesson.slug}`}
-                      className="group block bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-4 sm:p-6 hover:shadow-2xl hover:border-medical-500 transition-all duration-500"
+                      className="group block bg-white/70 dark:bg-slate-950/70 border border-white/10 dark:border-white/10 rounded-[2.5rem] p-4 sm:p-6 hover:shadow-2xl hover:border-white/20 transition-all duration-500 shadow-2xl backdrop-blur-xl"
                     >
                       <div className="flex flex-col sm:flex-row gap-6">
                         <div className="relative w-full sm:w-48 h-32 rounded-2xl overflow-hidden shrink-0 shadow-lg">
@@ -145,7 +145,7 @@ export default function LessonsClient({ subject }: { subject: any }) {
 
         {/* Sidebar Subject Info */}
         <div className="lg:col-span-4 order-1 lg:order-2 sticky top-24">
-           <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-10 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
+           <div className="bg-white/70 dark:bg-slate-950/70 rounded-[2.5rem] p-10 border border-white/10 shadow-2xl relative overflow-hidden group backdrop-blur-xl">
               <div className="absolute top-0 right-0 w-32 h-32 bg-medical-500/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-medical-500/10 transition-colors" />
               
               <div className="relative z-10 flex flex-col items-center text-center">

@@ -83,7 +83,10 @@ export default function Footer() {
                 <li><Link href="/" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_home", "الرئيسية")}</Link></li>
                 <li><Link href="/courses" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_courses", "السنوات الدراسية")}</Link></li>
                 <li><Link href="/subjects" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_subjects", "التخصصات الطبية")}</Link></li>
+                <li><Link href="/pharmacy" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_pharmacy", "الصيدلة")}</Link></li>
                 <li><Link href="/timetable" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_timetable", "جدول الدراسة")}</Link></li>
+                <li><Link href="/news" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_news", "الأخبار")}</Link></li>
+                <li><Link href="/friends" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_friends", "الأصدقاء")}</Link></li>
                 <li><Link href="/gpa-calculator" className="text-medical-500 hover:text-medical-400 font-black">{t("footer_gpa_calculator", "حاسبة المعدل")}</Link></li>
               </ul>
             </div>
@@ -91,6 +94,7 @@ export default function Footer() {
               <h4 className="text-white font-black text-xl mb-6">{t("footer_information_title", "معلومات")}</h4>
               <ul className="space-y-4 text-lg">
                 <li><Link href="/about" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_about", "عن المنصة")}</Link></li>
+                <li><Link href="/subscription" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_subscription_help", "معلومات الاشتراك والمساعدة في التسجيل")}</Link></li>
                 <li><Link href="/terms" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_terms", "الشروط والأحكام")}</Link></li>
                 <li><Link href="/privacy" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_privacy", "سياسة الخصوصية")}</Link></li>
               </ul>

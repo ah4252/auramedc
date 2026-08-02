@@ -88,7 +88,12 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
 
   return (
     <>
-      <nav className={`${pathname?.startsWith("/admin") ? "" : "sticky top-0"} z-40 w-full glass-panel border-b`}>
+      <nav className={`${pathname?.startsWith("/admin") ? "" : "sticky top-0"} relative z-40 w-full glass-panel border-b border-white/15 dark:border-white/15`}> 
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -left-16 top-2 w-52 h-52 rounded-full bg-sky-400/10 blur-3xl" />
+          <div className="absolute -right-20 bottom-4 w-64 h-64 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/15 via-transparent to-transparent" />
+        </div>
         <div className="container mx-auto px-4 h-16 flex flex-wrap items-center justify-between gap-3 min-w-0">
 
           {/* Premium Logo */}
@@ -209,7 +214,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               <button
                 onClick={() => setShowLangMenu((v) => !v)}
                 aria-expanded={showLangMenu}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-black transition-all ${"bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl text-sm font-black transition-all border border-white/20 bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 shadow-md shadow-slate-900/10 backdrop-blur-xl ${showLangMenu ? 'ring-2 ring-medical-500/25' : ''}`}
                 title={t("change_language", "تغيير اللغة")}
               >
                 <Globe className="w-4 h-4" />
@@ -223,7 +228,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                    className={`absolute mt-2 w-48 bg-white dark:bg-dark-card rounded-xl shadow-xl z-50 overflow-hidden border border-slate-100 dark:border-slate-800 ${isRtl ? 'left-0' : 'right-0'}`}
+                    className={`absolute mt-2 w-48 bg-white/10 dark:bg-slate-950/30 border border-white/10 dark:border-white/10 rounded-[2rem] shadow-2xl shadow-slate-900/30 z-50 overflow-hidden backdrop-blur-3xl backdrop-saturate-150 ${isRtl ? 'left-0' : 'right-0'}`}
                     style={{ transformOrigin: isRtl ? 'left top' : 'right top' }}
                   >
                     {/* Arabic item - styled as highlighted when selected */}
@@ -234,7 +239,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                         setShowLangMenu(false);
                         setTimeout(() => router.refresh(), 80);
                       }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "ar" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-all rounded-3xl ${lang === "ar" ? "bg-medical-600/95 text-white shadow-[0_20px_80px_rgba(34,197,94,0.14)]" : "bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 hover:bg-white/20 dark:hover:bg-slate-900/40 border border-white/10 dark:border-white/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "ar" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>
@@ -256,7 +261,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                         setShowLangMenu(false);
                         setTimeout(() => router.refresh(), 80);
                       }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "fr" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-all rounded-3xl ${lang === "fr" ? "bg-medical-600/95 text-white shadow-[0_20px_80px_rgba(59,130,246,0.14)]" : "bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 hover:bg-white/20 dark:hover:bg-slate-900/40 border border-white/10 dark:border-white/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "fr" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>
@@ -278,7 +283,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                         setShowLangMenu(false);
                         setTimeout(() => router.refresh(), 80);
                       }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${lang === "en" ? "bg-medical-600 text-white" : "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-all rounded-3xl ${lang === "en" ? "bg-medical-600/95 text-white shadow-[0_20px_80px_rgba(59,130,246,0.14)]" : "bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 hover:bg-white/20 dark:hover:bg-slate-900/40 border border-white/10 dark:border-white/10"}`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm ${lang === "en" ? "bg-white text-medical-600" : "bg-slate-800 text-slate-200 dark:bg-slate-700"}`}>

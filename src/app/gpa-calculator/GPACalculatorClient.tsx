@@ -373,27 +373,30 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
 
               {/* Result Card */}
               <div className="space-y-6">
-                <div className="bg-white dark:bg-dark-card rounded-[2.5rem] p-8 shadow-sm border border-slate-200 dark:border-slate-800 sticky top-24">
-                  <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
-                    <Award className="w-6 h-6 text-medical-600" />
+                <div className="bg-white/10 dark:bg-slate-950/40 rounded-[2.5rem] p-8 border border-white/10 dark:border-white/10 shadow-2xl shadow-slate-900/30 backdrop-blur-3xl backdrop-saturate-150 sticky top-24 overflow-hidden">
+                  <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/25 via-white/5 to-transparent dark:from-slate-100/10 dark:via-slate-950/10 dark:to-transparent pointer-events-none" />
+                  <h3 className="relative text-xl font-black mb-8 flex items-center gap-3 text-slate-900 dark:text-white">
+                    <span className="inline-flex items-center justify-center w-11 h-11 rounded-3xl bg-white/15 dark:bg-slate-900/30 border border-white/10 dark:border-white/10 text-medical-500 shadow-lg shadow-medical-500/10">
+                      <Award className="w-5 h-5" />
+                    </span>
                     {t("gpa_result_title")}
                   </h3>
 
                   <div className="relative flex flex-col items-center py-10">
                     {/* GPA Ring Decor */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                       <div className="w-48 h-48 rounded-full border-[12px] border-slate-100 dark:border-slate-800"></div>
+                      <div className="w-56 h-56 rounded-full border-[10px] border-white/10 bg-white/0 dark:border-white/5 blur-sm" />
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
                        <motion.div 
                          initial={{ rotate: -90 }}
                          animate={{ rotate: (gpaValue / 20) * 360 - 90 }}
-                         className="w-48 h-48 rounded-full border-[12px] border-medical-500 border-t-transparent border-l-transparent transition-all duration-700"
+                         className="w-48 h-48 rounded-full border-[12px] border-medical-500/50 border-t-transparent border-l-transparent transition-all duration-700"
                        ></motion.div>
                     </div>
                     
-                    <span className="text-5xl font-black text-slate-900 dark:text-white z-10">{gpa}</span>
-                    <span className="text-sm font-bold text-slate-500 mt-2 z-10 uppercase tracking-widest">{t("gpa_overall_label")}</span>
+                    <span className="relative text-5xl font-black text-slate-900 dark:text-white z-10">{gpa}</span>
+                    <span className="relative text-sm font-bold text-slate-500 dark:text-slate-300 mt-2 z-10 uppercase tracking-widest">{t("gpa_overall_label")}</span>
                   </div>
 
                   {hasActiveSubscription && didRedirect && (
@@ -438,14 +441,14 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                   )}
 
                   {userId && subjects.length > 0 && (
-                    <div className="space-y-3 mt-6">
+                    <div className="space-y-4 mt-6">
                       <button 
                         onClick={handleSave}
                         disabled={saveLoading}
-                        className={`w-full py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`w-full py-3 rounded-[2rem] font-bold transition-all flex items-center justify-center gap-2 ${
                           saveSuccess 
-                          ? "bg-green-100 text-green-700 border border-green-200" 
-                          : "bg-medical-600 hover:bg-medical-700 text-white shadow-lg shadow-medical-600/30 disabled:opacity-50"
+                          ? "bg-emerald-500/15 text-emerald-900 border border-emerald-500/20 shadow-[0_18px_70px_rgba(16,185,129,0.14)]" 
+                          : "bg-white/15 dark:bg-slate-900/35 text-slate-900 dark:text-white border border-white/10 dark:border-white/10 backdrop-blur-xl hover:bg-white/20 dark:hover:bg-slate-900/55 shadow-lg shadow-slate-900/10 disabled:opacity-50"
                         }`}
                       >
                         {saveLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : saveSuccess ? t("gpa_save_success") : t("gpa_save_button")}
@@ -454,7 +457,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                       <button 
                         onClick={handleExport}
                         disabled={exportLoading}
-                        className="w-full py-3 rounded-2xl font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-3 rounded-[2rem] font-bold bg-white/15 dark:bg-slate-900/35 text-slate-900 dark:text-white border border-white/10 dark:border-white/10 hover:bg-white/25 dark:hover:bg-slate-900/55 transition-all backdrop-blur-xl flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {exportLoading ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
@@ -466,7 +469,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                     </div>
                   )}
 
-                  <div className="mt-10 p-6 rounded-3xl bg-medical-50 dark:bg-medical-900/20 text-medical-700 dark:text-medical-400 text-center">
+                  <div className="mt-10 p-6 rounded-[2.5rem] bg-white/10 dark:bg-slate-950/30 border border-white/10 dark:border-white/10 backdrop-blur-xl text-slate-900 dark:text-white text-center shadow-lg shadow-slate-900/10">
                     <p className="text-sm font-bold">
                       {gpaValue >= 16 ? t("gpa_rating_excellent") :
                        gpaValue >= 14 ? t("gpa_rating_very_good") :

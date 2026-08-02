@@ -250,8 +250,8 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                         : 'bg-slate-900/20 text-slate-500 border-slate-800/40'
                     }`}>
                         <div className="flex flex-col items-center gap-1.5">
-                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{lang === 'fr' ? day.frFull : day.enFull}</h3>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100/60' : 'text-slate-600'}`}>{lang === 'fr' ? day.frShort : day.enShort}</p>
+                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white' : 'text-slate-300'}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frFull : day.enFull}</h3>
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100/60' : 'text-slate-600'}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frShort : day.enShort}</p>
                         </div>
                     </div>
                     <div className="flex-1 p-5 space-y-5">
@@ -401,8 +401,8 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
             {days.map((day, idx) => (
               <div key={idx} className="bg-slate-50/50 rounded-3xl overflow-hidden border border-slate-100 flex flex-col">
                 <div className="p-4 text-center bg-blue-600 text-white">
-                  <h3 className="text-base font-black">{lang === 'fr' ? day.frFull : day.enFull}</h3>
-                  <p className="text-[8px] font-black opacity-60 uppercase tracking-widest">{lang === 'fr' ? day.frShort : day.enShort}</p>
+                  <h3 className="text-base font-black">{lang === 'ar' ? day.ar : lang === 'fr' ? day.frFull : day.enFull}</h3>
+                  <p className="text-[8px] font-black opacity-60 uppercase tracking-widest">{lang === 'ar' ? day.ar : lang === 'fr' ? day.frShort : day.enShort}</p>
                 </div>
                 <div className="p-3 space-y-2 h-auto">
                   {schedule[day.ar]?.map((task: any) => (

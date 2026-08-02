@@ -16,18 +16,20 @@ export default function SubjectsClient({ category }: { category: any }) {
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12" dir="rtl">
-      {/* Back Button */}
-      <div className="mb-10">
-        <Link 
-          href="/courses"
-          className="group inline-flex items-center gap-2 text-slate-500 hover:text-medical-600 transition-colors font-bold"
-        >
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          العودة للسنوات الدراسية
-        </Link>
-      </div>
+      <div className="relative overflow-hidden rounded-[3rem] border border-white/10 bg-white/10 dark:bg-slate-950/40 shadow-2xl shadow-slate-900/20 backdrop-blur-xl p-8 mb-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.1),_transparent_25%)] pointer-events-none" />
+        <div className="relative">
+          <div className="mb-10">
+            <Link 
+              href="/courses"
+              className="group inline-flex items-center gap-2 text-slate-500 hover:text-medical-600 transition-colors font-bold"
+            >
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              العودة للسنوات الدراسية
+            </Link>
+          </div>
 
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
         <div className="max-w-2xl">
            <div className="flex items-center gap-3 mb-4">
               <span className="px-3 py-1 bg-medical-500/10 text-medical-600 dark:text-medical-400 rounded-lg text-xs font-black uppercase">
@@ -53,7 +55,7 @@ export default function SubjectsClient({ category }: { category: any }) {
              value={search}
              onChange={(e) => setSearch(e.target.value)}
              placeholder="ابحث عن مادة محددة..."
-             className="w-full pr-12 pl-12 py-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-800 rounded-[1.5rem] focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 shadow-sm group-hover:shadow-md"
+             className="w-full pr-12 pl-12 py-4 bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-white/10 rounded-[1.5rem] focus:border-medical-500 focus:ring-4 focus:ring-medical-500/15 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 shadow-lg backdrop-blur-xl"
            />
            {search && (
              <button 
@@ -67,7 +69,9 @@ export default function SubjectsClient({ category }: { category: any }) {
            <div className="absolute -bottom-6 right-2 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-0 group-focus-within:opacity-100 transition-opacity">
               البحث الذكي في مواد {category.name}
            </div>
+          </div>
         </div>
+      </div>
       </div>
 
       <AnimatePresence mode="popLayout">
@@ -155,8 +159,8 @@ function SubjectCard({ subject, idx, search }: { subject: any, idx: number, sear
             {subject.description || "استكشف الدروس والمحاضرات والمصادر التعليمية الخاصة بهذه المادة."}
           </p>
           
-          <div className="flex items-center justify-center md:justify-start gap-4 pt-4 border-t border-slate-50 dark:border-slate-800/50">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+          <div className="flex items-center justify-center md:justify-start gap-4 pt-4 border-t border-white/10 dark:border-white/10">
+            <div className="flex items-center gap-1.5 text-xs font-black text-slate-400">
               <PlayCircle className="w-4 h-4 text-medical-500" />
               {subject.lessons?.length || 0} درس
             </div>

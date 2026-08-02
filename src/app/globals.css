@@ -51,7 +51,7 @@ html, body {
 }
 
 .glass-panel {
-  @apply bg-white/70 dark:bg-dark-card/70 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-xl;
+  @apply bg-white/10 dark:bg-slate-950/35 border border-white/10 dark:border-white/10 backdrop-blur-3xl backdrop-brightness-110 backdrop-saturate-150 shadow-2xl shadow-slate-900/20;
 }
 
 /* Admin Design System */

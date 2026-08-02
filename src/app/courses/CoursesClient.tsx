@@ -41,14 +41,16 @@ export default function CoursesClient({ categories, lessons }: { categories: any
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6 text-right">
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-l from-medical-700 to-medical-500 dark:from-medical-400 dark:to-medical-300 tracking-tight">السنوات الدراسية</h1>
-          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">تصفح المحاضرات والدروس المخصصة لسنتك الدراسية</p>
-        </motion.div>
+      <div className="relative overflow-hidden rounded-[3rem] border border-white/10 bg-white/10 dark:bg-slate-950/40 shadow-2xl shadow-slate-900/20 backdrop-blur-xl backdrop-saturate-150 p-6 sm:p-10 mb-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_35%),radial-gradient(circle_at_bottom_left,_rgba(34,197,94,0.16),_transparent_30%)] pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-6 text-right">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <h1 className="text-3xl sm:text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-l from-medical-700 to-medical-500 dark:from-medical-400 dark:to-medical-300 tracking-tight">السنوات الدراسية</h1>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-300 font-medium">تصفح المحاضرات والدروس المخصصة لسنتك الدراسية</p>
+          </motion.div>
         
         {/* Search - Mobile Friendly */}
         <motion.div 
@@ -63,9 +65,9 @@ export default function CoursesClient({ categories, lessons }: { categories: any
               placeholder="ابحث عن درس محدد..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-12 pl-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-card focus:ring-4 focus:ring-medical-500/10 focus:border-medical-500 outline-none transition-all shadow-sm text-sm font-bold"
+              className="w-full pr-12 pl-4 py-3.5 rounded-2xl border border-white/20 bg-white/70 dark:bg-slate-900/70 focus:ring-4 focus:ring-medical-500/15 focus:border-medical-500 outline-none transition-all shadow-lg shadow-slate-900/10 backdrop-blur-xl text-sm font-bold"
             />
-            <SearchIcon className="w-5 h-5 absolute right-4 top-4 text-slate-400" />
+            <SearchIcon className="w-5 h-5 absolute right-4 top-4 text-slate-500" />
           </div>
         </motion.div>
       </div>
@@ -79,10 +81,10 @@ export default function CoursesClient({ categories, lessons }: { categories: any
       >
         <button 
           onClick={() => setActiveYear("الكل")}
-          className={`whitespace-nowrap px-6 py-3 rounded-xl text-sm font-black transition-all shadow-sm border ${
+          className={`whitespace-nowrap px-6 py-3 rounded-xl text-sm font-black transition-all shadow-lg border backdrop-blur-xl ${
             activeYear === "الكل" 
-              ? 'bg-medical-600 text-white border-transparent' 
-              : 'bg-white dark:bg-dark-card border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
+              ? 'bg-medical-600 text-white border-transparent shadow-medical-300/30' 
+              : 'bg-white/75 dark:bg-slate-900/60 border-white/20 text-slate-700 dark:text-slate-200'
           }`}
         >
           الكل
@@ -91,11 +93,11 @@ export default function CoursesClient({ categories, lessons }: { categories: any
           <button 
             key={cat.id} 
             onClick={() => setActiveYear(cat.name)}
-            className={`whitespace-nowrap px-6 py-3 rounded-xl text-sm font-black transition-all shadow-sm border ${
+            className={`whitespace-nowrap px-6 py-3 rounded-xl text-sm font-black transition-all shadow-lg border backdrop-blur-xl ${
               activeYear === cat.name 
-                ? 'bg-medical-600 text-white border-transparent' 
-                : 'bg-white dark:bg-dark-card border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
-          }`}
+                ? 'bg-medical-600 text-white border-transparent shadow-medical-300/30' 
+                : 'bg-white/75 dark:bg-slate-900/60 border-white/20 text-slate-700 dark:text-slate-200'
+            }`}
           >
             {cat.name}
           </button>
@@ -123,7 +125,7 @@ export default function CoursesClient({ categories, lessons }: { categories: any
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3, delay: idx * 0.05 }}
                 >
-                  <Link href={`/courses/v/${lesson.slug}`} className="group flex flex-col h-full bg-white dark:bg-dark-card rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all duration-500">
+                  <Link href={`/courses/v/${lesson.slug}`} className="group flex flex-col h-full bg-white/70 dark:bg-slate-950/70 rounded-[2rem] overflow-hidden border border-white/10 dark:border-white/10 shadow-2xl shadow-slate-900/10 hover:shadow-2xl hover:border-white/20 hover:bg-white/80 dark:hover:bg-slate-900/90 transition-all duration-500 backdrop-blur-xl">
                      {hasValidVideo ? (
                       <div className="h-48 sm:h-56 relative overflow-hidden bg-[#05070a]">
                         <img 
@@ -201,7 +203,7 @@ export default function CoursesClient({ categories, lessons }: { categories: any
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-24 bg-white dark:bg-dark-card rounded-[3rem] border border-dashed border-slate-300 dark:border-slate-700 shadow-sm"
+          className="text-center py-24 bg-white/80 dark:bg-slate-950/70 rounded-[3rem] border border-white/10 shadow-2xl backdrop-blur-xl"
         >
           <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
             <BookOpen className="w-10 h-10 text-slate-400" />
