@@ -70,6 +70,7 @@ export default function CoursesClient({ categories, lessons }: { categories: any
             <SearchIcon className="w-5 h-5 absolute right-4 top-4 text-slate-500" />
           </div>
         </motion.div>
+        </div>
       </div>
 
       {/* Categories Filter - Scrollable on Mobile */}
