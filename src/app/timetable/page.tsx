@@ -3,6 +3,7 @@ import { getTimetable } from "@/app/actions/timetable";
 import { prisma } from "@/lib/db";
 import TimetableClient from "./TimetableClient";
 import Script from "next/script";
+import ThemeAwareWrapper from "@/components/ThemeAwareWrapper";
 
 export default async function TimetablePage() {
   const cookieStore = await cookies();
@@ -38,7 +39,7 @@ export default async function TimetablePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0f1d] pb-20 font-sans">
+    <ThemeAwareWrapper darkClass="min-h-screen bg-[#0a0f1d] pb-20 font-sans text-white" lightClass="min-h-screen bg-white pb-20 font-sans text-slate-900">
       {/* Interactive Timetable Tool */}
       <TimetableClient 
         initialData={JSON.parse(JSON.stringify(timetableData))} 
@@ -57,6 +58,6 @@ export default async function TimetablePage() {
       <section className="container mx-auto px-4 mt-16 text-center">
          <p className="text-slate-500 text-sm font-bold uppercase tracking-widest italic opacity-30">AuraMed Planner System v2.0</p>
       </section>
-    </main>
+    </ThemeAwareWrapper>
   );
 }

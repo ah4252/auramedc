@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { cookies } from "next/headers";
 import NewsClient from "./NewsClient";
 import NewsLoginRequired from "./NewsLoginRequired";
+import ThemeAwareWrapper from "@/components/ThemeAwareWrapper";
 import { prisma } from "@/lib/db";
 import { tServer } from "@/lib/i18n";
 
@@ -57,7 +58,7 @@ export default async function NewsPage() {
   const news = await getNews(true); // Fetch only published news
 
   return (
-    <div className="min-h-screen bg-[#0f172a] font-cairo text-white">
+    <ThemeAwareWrapper darkClass="min-h-screen bg-[#0f172a] font-cairo text-white" lightClass="min-h-screen bg-white font-cairo text-slate-900">
       {/* Header Section */}
       <div className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-medical-900/20" />
@@ -90,6 +91,6 @@ export default async function NewsPage() {
 
       {/* News Content */}
       <NewsClient news={news} userId={userId} isAdmin={isAdmin} />
-    </div>
+    </ThemeAwareWrapper>
   );
 }

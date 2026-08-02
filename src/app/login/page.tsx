@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -27,6 +28,39 @@ export default function LoginPage() {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const langMenuRef = useRef<HTMLDivElement | null>(null);
   const isRtl = lang === "ar";
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("theme");
+      if (stored) setTheme(stored === "dark" ? "dark" : "light");
+      else setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+
+      const handler = (e: any) => {
+        const t = e?.detail?.theme || window.localStorage.getItem("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
+        setTheme(t === "dark" ? "dark" : "light");
+      };
+
+      window.addEventListener("theme-change", handler as EventListener);
+      window.addEventListener("storage", handler as EventListener);
+      return () => {
+        window.removeEventListener("theme-change", handler as EventListener);
+        window.removeEventListener("storage", handler as EventListener);
+      };
+    } catch (e) {}
+  }, []);
+  // listen for theme changes to trigger re-render if needed
+  useEffect(() => {
+    try {
+      const handler = (e: Event) => {};
+      window.addEventListener('theme-change', handler as EventListener);
+      window.addEventListener('storage', handler as EventListener);
+      return () => {
+        window.removeEventListener('theme-change', handler as EventListener);
+        window.removeEventListener('storage', handler as EventListener);
+      };
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -142,7 +176,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1120] font-cairo flex items-center justify-center p-4 relative overflow-hidden text-white">
+    <div className={`min-h-screen font-cairo flex items-center justify-center p-4 relative overflow-hidden ${theme === 'dark' ? 'bg-[#0B1120] text-white' : 'bg-white text-slate-900'}`}>
       {/* Premium Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -right-1/4 w-[800px] h-[800px] bg-medical-600/10 rounded-full blur-[120px] animate-pulse"></div>
@@ -195,69 +229,76 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-[480px] relative z-10"
       >
-        <div className="bg-[#0f172a]/70 backdrop-blur-2xl rounded-[3rem] shadow-[0_0_80px_-20px_rgba(14,165,233,0.25)] border border-white/5 p-8 md:p-12 relative overflow-hidden">
+        <div className={`${theme === 'dark' ? 'bg-[#0f172a]/70 text-white border-white/5' : 'bg-white/90 text-slate-900 border-slate-300'} backdrop-blur-2xl rounded-[3rem] shadow-[0_0_80px_-20px_rgba(14,165,233,0.25)] border p-8 md:p-12 relative overflow-hidden`}>
           
           {/* Top border gradient */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-medical-500/50 to-transparent"></div>
 
-          <div className="absolute top-6 right-6 z-20" ref={langMenuRef}>
-            <button
-              type="button"
-              onClick={() => setShowLangMenu((prev) => !prev)}
-              title={t("change_language", "تغيير اللغة")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-black text-slate-100 shadow-lg shadow-slate-900/10 backdrop-blur-xl hover:bg-white/15 transition-all"
-            >
-              <Globe className="w-4 h-4 text-sky-300" />
-              <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"}`} />
-            </button>
-            <AnimatePresence>
-              {showLangMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className={`mt-2 w-48 rounded-[1.5rem] border border-white/10 bg-slate-950/95 shadow-2xl shadow-slate-900/40 overflow-hidden backdrop-blur-3xl ${isRtl ? "left-0" : "right-0"}`}
-                  style={{ transformOrigin: isRtl ? "left top" : "right top" }}
-                >
-                  {[
-                    { id: "ar", label: "العربية", code: "ع" },
-                    { id: "fr", label: "Français", code: "FR" },
-                    { id: "en", label: "English", code: "EN" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        try { document.cookie = `site_lang=${item.id}; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", item.id); } catch (e) {}
-                        setLang(item.id as any);
-                        setShowLangMenu(false);
-                        setTimeout(() => router.refresh(), 80);
-                      }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-all ${lang === item.id ? "bg-medical-600/95 text-white" : "text-slate-200 hover:bg-white/10"}`}
-                    >
-                      <span className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-2xl bg-slate-800 flex items-center justify-center text-xs font-black">{item.code}</span>
-                        <span>{item.label}</span>
-                      </span>
-                      {lang === item.id && <span className="text-xs font-black">✓</span>}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="absolute top-6 right-6 z-20">
+            <div ref={langMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowLangMenu((prev) => !prev)}
+                title={t("change_language", "تغيير اللغة")}
+                className={`${theme === 'dark' ? 'inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-sm font-black text-slate-100 shadow-lg shadow-slate-900/10 backdrop-blur-xl hover:bg-white/15' : 'inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-sm font-black text-slate-900 shadow-sm hover:bg-white/95' } transition-all`}
+              >
+                <Globe className={`w-4 h-4 ${theme === 'dark' ? 'text-sky-300' : 'text-slate-700'}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"} ${theme === 'dark' ? '' : 'text-slate-700'}`} />
+              </button>
+
+              <AnimatePresence>
+                {showLangMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className={`mt-2 w-48 rounded-[1.5rem] border border-white/10 bg-slate-950/95 shadow-2xl shadow-slate-900/40 overflow-hidden backdrop-blur-3xl ${isRtl ? "left-0" : "right-0"}`}
+                    style={{ transformOrigin: isRtl ? "left top" : "right top" }}
+                  >
+                    {[
+                      { id: "ar", label: "العربية", code: "ع" },
+                      { id: "fr", label: "Français", code: "FR" },
+                      { id: "en", label: "English", code: "EN" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          try { document.cookie = `site_lang=${item.id}; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", item.id); } catch (e) {}
+                          setLang(item.id as any);
+                          setShowLangMenu(false);
+                          setTimeout(() => router.refresh(), 80);
+                        }}
+                        className={`w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-all ${lang === item.id ? "bg-medical-600/95 text-white" : "text-slate-200 hover:bg-white/10"}`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-2xl bg-slate-800 flex items-center justify-center text-xs font-black">{item.code}</span>
+                          <span>{item.label}</span>
+                        </span>
+                        {lang === item.id && <span className="text-xs font-black">✓</span>}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <div className="absolute top-6 left-6 z-20">
+            <ThemeToggle />
           </div>
 
           <div className="flex flex-col items-center mb-10 text-center">
             <Link href="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-medical-500/10 border border-medical-500/20 text-medical-400 mb-6 group hover:bg-medical-500/20 transition-all duration-300">
               <HeartPulse className="w-10 h-10 group-hover:scale-110 transition-transform" />
             </Link>
-            <p className="text-[10px] font-black tracking-[0.35em] text-slate-400">{t("auth_brand_badge", "AURAMED")}</p>
-            <h2 className="mt-3 text-3xl font-black text-white">{t("auth_brand_name", "AuraMed Elite")}</h2>
+            <p className={`text-[10px] font-black tracking-[0.35em] ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{t("auth_brand_badge", "AURAMED")}</p>
+            <h2 className={`mt-3 text-3xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t("auth_brand_name", "AuraMed Elite")}</h2>
             <h1 className="text-3xl font-black mb-3 tracking-tight">
               {t("login_page_title", "تسجيل")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-sky-400">{t("login_page_action", "الدخول")}</span>
             </h1>
-            <p className="text-slate-400 font-bold">{t("login_page_subtitle", "أهلاً بك مجدداً في منصتك التعليمية المتكاملة")}</p>
+            <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-700'} font-bold`}>{t("login_page_subtitle", "أهلاً بك مجدداً في منصتك التعليمية المتكاملة")}</p>
           </div>
 
           <AnimatePresence>
@@ -278,14 +319,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-black text-slate-300 mr-2">{t("email_label", "البريد الإلكتروني")}</label>
+              <label className={`text-sm font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'} mr-2`}>{t("email_label", "البريد الإلكتروني")}</label>
               <div className="relative group">
                 <input 
                   name="email"
                   type="email"
                   required
                   placeholder={t("email_placeholder", "name@gmail.com")}
-                  className="w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
+                  className={`${theme === 'dark' ? 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500' : 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-700'} focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left`}
                   dir="ltr"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
@@ -295,8 +336,8 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center mr-2">
-                <label className="text-sm font-black text-slate-300">{t("password_label", "كلمة المرور")}</label>
+                <div className="flex justify-between items-center mr-2">
+                <label className={`text-sm font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'}`}>{t("password_label", "كلمة المرور")}</label>
                 <button 
                   type="button"
                   onClick={() => setShowForgot(true)}
@@ -311,7 +352,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   required
                   placeholder={t("password_input_placeholder", "••••••••")}
-                  className="w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500 focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left"
+                  className={`${theme === 'dark' ? 'w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500' : 'w-full pl-12 pr-14 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-700'} focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold text-left`}
                   dir="ltr"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
