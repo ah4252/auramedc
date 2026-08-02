@@ -10,6 +10,7 @@ import { bulkDeleteUsers } from "@/app/actions/bulkDelete";
 export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [studyYearFilter, setStudyYearFilter] = useState("ALL");
 
   // Bulk select state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -27,10 +28,17 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const matchesSearch = 
         (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) || "") ||
         (user.email?.toLowerCase().includes(searchQuery.toLowerCase()) || "");
+      const matchesStudyYear = studyYearFilter === "ALL" || (user.studyYear || "").toString() === studyYearFilter;
       const matchesRole = roleFilter === "ALL" || user.role === roleFilter;
-      return matchesSearch && matchesRole;
+      return matchesSearch && matchesRole && matchesStudyYear;
     });
-  }, [searchQuery, roleFilter, initialUsers]);
+  }, [searchQuery, roleFilter, studyYearFilter, initialUsers]);
+
+  const studyYears = useMemo(() => {
+    const setYears = new Set<string>();
+    initialUsers.forEach(u => { if (u.studyYear) setYears.add(u.studyYear); });
+    return Array.from(setYears).filter(Boolean).sort();
+  }, [initialUsers]);
 
   const filteredIds = filteredUsers.map(u => u.id);
   const allSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.has(id));
@@ -141,6 +149,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                   <th style="padding: 14px 18px; font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; width: 28%; border-bottom: 2px solid #0ea5e9;">البريد الإلكتروني</th>
                   <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 18%; border-bottom: 2px solid #0ea5e9;">كلمة المرور</th>
                   <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 12%; border-bottom: 2px solid #0ea5e9;">الصلاحية</th>
+                  <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 12%; border-bottom: 2px solid #0ea5e9;">السنة الدراسية</th>
                   <th style="padding: 14px 18px; text-align: center; font-size: 12px; color: #94a3b8; font-weight: 700; width: 15%; border-bottom: 2px solid #0ea5e9;">تاريخ التسجيل</th>
                 </tr>
               </thead>
@@ -165,6 +174,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                         ${user.role}
                       </span>
                     </td>
+                    <td style="padding: 14px 18px; text-align: center; font-size: 12px; color: #475569; font-weight: 600;">${user.studyYear || '---'}</td>
                     <td style="padding: 14px 18px; font-size: 12px; text-align: center; color: #64748b; font-weight: 600;">${new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
                   </tr>
                 `}).join('')}
@@ -384,6 +394,17 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                <option value="USER">طلاب (USER)</option>
                <option value="ADMIN">مديرين (ADMIN)</option>
              </select>
+             <select
+               title="تصفية حسب السنة الدراسية"
+               value={studyYearFilter}
+               onChange={(e) => setStudyYearFilter(e.target.value)}
+               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 outline-none cursor-pointer"
+             >
+               <option value="ALL">جميع السنوات</option>
+               {studyYears.map((y) => (
+                 <option key={y} value={y}>{y}</option>
+               ))}
+             </select>
              <button 
                onClick={handleExport}
                className="p-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 hover:text-medical-600 hover:bg-medical-50 transition-all"
@@ -408,6 +429,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                 <th className="px-8 py-6 font-black text-right">البريد والحالة</th>
                 <th className="px-8 py-6 font-black text-center">كلمة المرور</th>
                 <th className="px-8 py-6 font-black text-center">الصلاحية</th>
+                <th className="px-8 py-6 font-black text-center">السنة الدراسية</th>
                 <th className="px-8 py-6 font-black text-center">تاريخ الانضمام</th>
                 <th className="px-8 py-6 font-black text-center">التحكم</th>
               </tr>
@@ -479,6 +501,11 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                   </td>
                   <td className="px-8 py-6 text-center">
                     <div className="flex flex-col items-center gap-1">
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{user.studyYear || '---'}</div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 text-center">
+                    <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-black text-sm">
                         <Clock className="w-4 h-4 text-slate-300" />
                         <span dir="ltr">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</span>
@@ -506,7 +533,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
 
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-32 text-center">
+                  <td colSpan={8} className="p-32 text-center">
                     <div className="flex flex-col items-center gap-6 opacity-30">
                        <Users className="w-24 h-24 text-slate-300" />
                        <div>
