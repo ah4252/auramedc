@@ -231,18 +231,19 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               </Link>
             )}
 
+            {/* Theme toggle — hidden on mobile, shown on desktop */}
             <button
               type="button"
               onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
-              className="flex items-center justify-center h-10 w-10 rounded-2xl border border-white/20 bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 shadow-md shadow-slate-900/10 backdrop-blur-xl transition-all hover:scale-105"
+              className="hidden lg:flex items-center justify-center h-10 w-10 rounded-2xl border border-white/20 bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 shadow-md shadow-slate-900/10 backdrop-blur-xl transition-all hover:scale-105"
               aria-label={theme === "dark" ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
               title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* Language dropdown — محفوظة المساحة وتصميم جذاب */}
-            <div className="relative" ref={langMenuRef as any}>
+            {/* Language dropdown — hidden on mobile, shown on desktop */}
+            <div className="relative hidden lg:block" ref={langMenuRef as any}>
               <button
                 onClick={() => setShowLangMenu((v) => !v)}
                 aria-expanded={showLangMenu}
@@ -263,7 +264,7 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                     className={`absolute mt-2 w-48 bg-white/10 dark:bg-slate-950/30 border border-white/10 dark:border-white/10 rounded-[2rem] shadow-2xl shadow-slate-900/30 z-50 overflow-hidden backdrop-blur-3xl backdrop-saturate-150 ${isRtl ? 'left-0' : 'right-0'}`}
                     style={{ transformOrigin: isRtl ? 'left top' : 'right top' }}
                   >
-                    {/* Arabic item - styled as highlighted when selected */}
+                    {/* Arabic item */}
                     <button
                       onClick={() => {
                         try { document.cookie = `site_lang=ar; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", "ar"); } catch (e) {}
@@ -426,7 +427,68 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
               </div>
 
               <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                {/* Mobile language switcher removed */}
+                {/* Mobile: Theme toggle + Language switcher */}
+                <div className="flex items-center gap-3">
+                  {/* Theme toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all"
+                    aria-label={theme === "dark" ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
+                  >
+                    {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    <span>{theme === "dark" ? t("light_mode", "نهاري") : t("dark_mode", "ليلي")}</span>
+                  </button>
+
+                  {/* Language selector */}
+                  <div className="relative flex-1" ref={langMenuRef as any}>
+                    <button
+                      onClick={() => setShowLangMenu((v) => !v)}
+                      aria-expanded={showLangMenu}
+                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all ${showLangMenu ? 'ring-2 ring-medical-500/40' : ''}`}
+                    >
+                      <Globe className="w-4 h-4" />
+                      <span>{lang === "ar" ? "العربية" : lang === "fr" ? "Français" : "English"}</span>
+                      <ChevronDown className={`w-3 h-3 transition-transform ${showLangMenu ? "-rotate-180" : "rotate-0"}`} />
+                    </button>
+                    <AnimatePresence>
+                      {showLangMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 4 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                          className="absolute bottom-full mb-2 left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden"
+                        >
+                          {[
+                            { code: "ar", label: "العربية", short: "AR" },
+                            { code: "fr", label: "Français", short: "FR" },
+                            { code: "en", label: "English", short: "EN" },
+                          ].map(({ code, label, short }) => (
+                            <button
+                              key={code}
+                              onClick={() => {
+                                try { document.cookie = `site_lang=${code}; path=/; max-age=${60 * 60 * 24 * 365}`; window.localStorage.setItem("site_lang", code); } catch (e) {}
+                                setLang(code as "ar" | "fr" | "en");
+                                setShowLangMenu(false);
+                                setTimeout(() => router.refresh(), 80);
+                              }}
+                              className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-all text-sm font-bold ${
+                                lang === code
+                                  ? "bg-medical-600 text-white"
+                                  : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                              }`}
+                            >
+                              <span>{label}</span>
+                              <span className="text-xs opacity-70">{short}</span>
+                              {lang === code && <span className="text-xs font-black">✓</span>}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
 
                 {isUser ? (
                   <button
