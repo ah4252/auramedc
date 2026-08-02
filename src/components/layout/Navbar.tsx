@@ -108,10 +108,10 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
   return (
     <>
       <nav
-        className={`${isAdminRoute ? "" : "sticky"} relative z-40 w-full glass-panel border-b border-white/15 dark:border-white/15`}
-        style={isAdminRoute ? undefined : { top: 'env(safe-area-inset-top)' }}
+        className={`${isAdminRoute ? "" : "sticky top-0"} relative z-40 w-full glass-panel border-b border-white/15 dark:border-white/15`}
+        style={isAdminRoute ? undefined : { paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10">
           <div className="absolute -left-16 top-2 w-52 h-52 rounded-full bg-sky-400/10 blur-3xl" />
           <div className="absolute -right-20 bottom-4 w-64 h-64 rounded-full bg-emerald-400/10 blur-3xl" />
           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/15 via-transparent to-transparent" />
