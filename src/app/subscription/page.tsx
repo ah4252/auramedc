@@ -24,8 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function SubscriptionPage() {
-  const cookieStore = cookies();
+export default async function SubscriptionPage() {
+  const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
 
   return (
