@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { 
   Users, UserPlus, UserCheck, UserMinus, Search, Mail, Send, 
   Instagram, Facebook, Check, X, ShieldAlert, CheckCircle2, 
-  AlertTriangle, ArrowLeftRight, UserX, Loader2 
+  AlertTriangle, ArrowLeftRight, UserX, Loader2, Info, Lightbulb
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -54,6 +54,7 @@ export default function FriendsClient({
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<Friend | null>(null);
   const [outgoingDecisions, setOutgoingDecisions] = useState<Record<string, { id: string; status: "accepted" | "rejected"; expiresAt: number; readAt: number | null; message: string }>>({});
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const { t } = useLocale();
 
   const loadServerOutgoingDecisions = async () => {
@@ -485,7 +486,7 @@ export default function FriendsClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(56,189,248,0.18),_transparent_20%),radial-gradient(circle_at_bottom_left,_rgba(34,197,94,0.14),_transparent_18%)] pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/20 via-white/10 to-transparent dark:from-slate-100/10 dark:via-slate-950/10 dark:to-transparent pointer-events-none" />
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-              <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-tr from-medical-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-medical-500/20">
               <Users className="w-8 h-8 animate-pulse" />
             </div>
@@ -496,6 +497,13 @@ export default function FriendsClient({
               </p>
             </div>
           </div>
+          <button 
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center justify-center gap-2 px-5 py-4 bg-sky-500/10 hover:bg-sky-500 text-sky-600 dark:text-sky-400 hover:text-white rounded-2xl font-black transition-all border border-sky-500/20 shadow-md backdrop-blur-md"
+          >
+            <Info className="w-5 h-5 shrink-0" />
+            <span>{t("friends_guide_button", "دليل الاستخدام")}</span>
+          </button>
         </div>
       </div>
 
@@ -1021,6 +1029,76 @@ export default function FriendsClient({
           </div>
         </div>
       </div>
+
+      {/* Friends Guide Modal */}
+      <AnimatePresence>
+        {showHelpModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowHelpModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl backdrop-saturate-150 rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20 p-8 md:p-10"
+            >
+              <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-900/10 dark:border-white/10">
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                  <Lightbulb className="w-8 h-8 text-sky-500" />
+                  دليل نظام الأصدقاء
+                </h2>
+                <button onClick={() => setShowHelpModal(false)} className="p-3 bg-slate-900/5 dark:bg-white/5 rounded-2xl hover:bg-red-500/10 hover:text-red-500 transition-all" title={t("close","Close")}>
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6 text-slate-800 dark:text-slate-200 font-bold leading-relaxed text-right">
+                
+                <div className="bg-sky-500/10 p-5 rounded-2xl border border-sky-500/20">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-sky-700 dark:text-sky-400 mb-2">
+                    <Search className="w-5 h-5" /> كيف أبحث عن صديق؟
+                  </h3>
+                  <p className="text-sm">
+                    استخدم شريط البحث السريع في يسار الشاشة (أو في الأعلى). فقط ابدأ بكتابة البريد الإلكتروني الخاص بزميلك، وستظهر النتائج فوراً بمجرد كتابة حرفين على الأقل.
+                  </p>
+                </div>
+
+                <div className="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/20">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-emerald-700 dark:text-emerald-400 mb-2">
+                    <UserPlus className="w-5 h-5" /> كيف أرسل طلب صداقة؟
+                  </h3>
+                  <p className="text-sm">
+                    بعد العثور على زميلك في نتائج البحث، اضغط على زر <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">إضافة</span> بجانب اسمه. سيتم إرسال الطلب، وسيظهر له في قسم "الطلبات المعلقة".
+                  </p>
+                </div>
+
+                <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/20">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-indigo-700 dark:text-indigo-400 mb-2">
+                    <UserCheck className="w-5 h-5" /> كيف أقبل أو أرفض الطلبات؟
+                  </h3>
+                  <p className="text-sm">
+                    انتقل إلى تبويب <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">الطلبات المعلقة</span>. هناك سترى الطلبات التي أرسلتها (الصادرة) والطلبات التي تلقيتها (الواردة). يمكنك قبول أو رفض الطلبات الواردة، كما يمكنك إلغاء الطلبات التي أرسلتها.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-slate-900/10 dark:border-white/10">
+                <button 
+                  onClick={() => setShowHelpModal(false)}
+                  className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-black transition-all shadow-lg shadow-sky-500/20"
+                >
+                  فهمت ذلك
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
