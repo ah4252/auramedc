@@ -41,7 +41,7 @@ export default async function NewsPage() {
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true }
+        select: { id: true, studyYear: true }
       });
       if (user) {
         isValid = true;
@@ -55,7 +55,13 @@ export default async function NewsPage() {
     return <NewsLoginRequired />;
   }
 
-  const news = await getNews(true); // Fetch only published news
+  let userStudyYear = null;
+  if (userId) {
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { studyYear: true } });
+    if (u) userStudyYear = u.studyYear;
+  }
+  
+  const news = await getNews(true, userStudyYear); // Fetch only published news, filter by studyYear if applicable
 
   return (
     <ThemeAwareWrapper darkClass="min-h-screen bg-[#0f172a] font-cairo text-white" lightClass="min-h-screen bg-white font-cairo text-slate-900">

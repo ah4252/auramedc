@@ -28,13 +28,23 @@ export async function cleanupOldComments() {
   }
 }
 
-export async function getNews(onlyPublished = false) {
+export async function getNews(onlyPublished = false, userStudyYear?: string | null) {
   try {
     // Run cleanup on fetch
     await cleanupOldComments();
 
+    const whereClause: any = {};
+    if (onlyPublished) whereClause.isPublished = true;
+    if (userStudyYear) {
+      whereClause.OR = [
+        { studyYear: null },
+        { studyYear: "" },
+        { studyYear: userStudyYear }
+      ];
+    }
+
     const news = await prisma.news.findMany({
-      where: onlyPublished ? { isPublished: true } : undefined,
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
       orderBy: { createdAt: "desc" },
       include: {
         comments: {
@@ -97,7 +107,27 @@ export async function getNewsById(id: string) {
   }
 }
 
-export async function createNews(data: { title: string; content: string; image?: string; videoUrl?: string; fileUrl?: string; isPublished?: boolean }) {
+export async function getAvailableStudyYears() {
+  try {
+    const categories = await prisma.category.findMany({
+      where: {
+        type: "YEAR"
+      },
+      select: {
+        name: true
+      },
+      orderBy: {
+        createdAt: "asc"
+      }
+    });
+    return categories.map(c => c.name).filter(Boolean);
+  } catch (error) {
+    console.error("Error fetching study years:", error);
+    return [];
+  }
+}
+
+export async function createNews(data: { title: string; content: string; image?: string; videoUrl?: string; fileUrl?: string; isPublished?: boolean; studyYear?: string | null }) {
   try {
     const news = await prisma.news.create({
       data,
@@ -120,7 +150,7 @@ export async function createNews(data: { title: string; content: string; image?:
   }
 }
 
-export async function updateNews(id: string, data: { title?: string; content?: string; image?: string; videoUrl?: string; fileUrl?: string; isPublished?: boolean }) {
+export async function updateNews(id: string, data: { title?: string; content?: string; image?: string; videoUrl?: string; fileUrl?: string; isPublished?: boolean; studyYear?: string | null }) {
   try {
     const news = await prisma.news.update({
       where: { id },

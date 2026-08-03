@@ -1,6 +1,7 @@
 "use client";
 
 import { registerUser } from "@/app/actions/auth";
+import { getAvailableStudyYears } from "@/app/actions/news";
 import { useState, useRef, useEffect } from "react";
 import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays, Eye, EyeOff, Globe, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
@@ -16,12 +17,17 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
   const router = useRouter();
   const { t, lang, setLang } = useLocale();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const langMenuRef = useRef<HTMLDivElement | null>(null);
   const isRtl = lang === "ar";
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    getAvailableStudyYears().then(setAvailableYears);
+  }, []);
 
   useEffect(() => {
     try {
@@ -248,14 +254,17 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <label className={`text-sm font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'} mr-2`}>{t("study_year_label", "السنة الدراسية")}</label>
               <div className="relative group">
-                <input 
+                <select 
                   name="studyYear"
-                  type="text"
                   required
-                  placeholder={t("study_year_placeholder", "مثال: السنة الأولى طب")}
-                  className={`${theme === 'dark' ? 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white placeholder:text-slate-500' : 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-700'} focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold`}
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors">
+                  className={`${theme === 'dark' ? 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white' : 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900'} focus:border-medical-500 focus:ring-1 focus:ring-medical-500 outline-none transition-all font-bold appearance-none cursor-pointer`}
+                >
+                  <option value="" disabled hidden>{t("study_year_placeholder", "اختر السنة الدراسية")}</option>
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-800 rounded-lg group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-400 transition-colors pointer-events-none">
                   <CalendarDays className="w-4 h-4" />
                 </div>
               </div>

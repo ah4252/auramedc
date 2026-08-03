@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getNews, createNews, updateNews, deleteNews, cleanupOldComments } from "@/app/actions/news";
-import { Plus, Edit3, Trash2, X, Newspaper, Check, EyeOff, Eye, Image as ImageIcon, Video, Link2 } from "lucide-react";
+import { getNews, createNews, updateNews, deleteNews, cleanupOldComments, getAvailableStudyYears } from "@/app/actions/news";
+import { Plus, Edit3, Trash2, X, Newspaper, Check, EyeOff, Eye, Image as ImageIcon, Video, Link2, Info, AlertTriangle, Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminNewsPage() {
   const [news, setNews] = useState<any[]>([]);
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<any>(null);
   const [cleaning, setCleaning] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   
   // Form State
   const [title, setTitle] = useState("");
@@ -19,11 +21,18 @@ export default function AdminNewsPage() {
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
   const [fileUrls, setFileUrls] = useState<string[]>([]);
   const [isPublished, setIsPublished] = useState(true);
+  const [studyYear, setStudyYear] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchNews();
+    fetchYears();
   }, []);
+
+  const fetchYears = async () => {
+    const years = await getAvailableStudyYears();
+    setAvailableYears(years);
+  };
 
   const fetchNews = async () => {
     setLoading(true);
@@ -38,6 +47,7 @@ export default function AdminNewsPage() {
       setTitle(newsItem.title);
       setContent(newsItem.content);
       setImage(newsItem.image || "");
+      setStudyYear(newsItem.studyYear || "");
       
       try {
         const parsedVids = JSON.parse(newsItem.videoUrl || "[]");
@@ -62,6 +72,7 @@ export default function AdminNewsPage() {
       setVideoUrls([]);
       setFileUrls([]);
       setIsPublished(true);
+      setStudyYear("");
     }
     setIsModalOpen(true);
   };
@@ -75,6 +86,7 @@ export default function AdminNewsPage() {
     setVideoUrls([]);
     setFileUrls([]);
     setIsPublished(true);
+    setStudyYear("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +104,8 @@ export default function AdminNewsPage() {
       image, 
       videoUrl: finalVideoUrl, 
       fileUrl: finalFileUrl, 
-      isPublished 
+      isPublished,
+      studyYear: studyYear || null
     };
 
     if (editingNews) {
@@ -147,6 +160,14 @@ export default function AdminNewsPage() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button 
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center justify-center gap-2 px-5 py-4 bg-blue-500/10 hover:bg-blue-500 text-blue-600 dark:text-blue-400 hover:text-white dark:hover:text-slate-900 rounded-2xl font-black transition-all border border-blue-500/20 shadow-md"
+          >
+            <Info className="w-5 h-5 shrink-0" />
+            <span className="hidden sm:inline">دليل الاستخدام</span>
+          </button>
+
+          <button 
             onClick={handleCleanup}
             disabled={cleaning}
             className="flex items-center justify-center gap-2 px-5 py-4 bg-amber-500/10 hover:bg-amber-500 text-amber-600 dark:text-amber-400 hover:text-white dark:hover:text-slate-900 rounded-2xl font-black transition-all border border-amber-500/20 shadow-md disabled:opacity-50"
@@ -191,9 +212,16 @@ export default function AdminNewsPage() {
             
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${item.isPublished ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                  {item.isPublished ? 'منشور' : 'مسودة'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full ${item.isPublished ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                    {item.isPublished ? 'منشور' : 'مسودة'}
+                  </span>
+                  {item.studyYear && (
+                    <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-blue-500/10 text-blue-500">
+                      {item.studyYear}
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-slate-400 font-bold">
                   {new Date(item.createdAt).toLocaleDateString('ar-EG')}
                 </span>
@@ -282,6 +310,20 @@ export default function AdminNewsPage() {
                     className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl outline-none focus:border-medical-500 font-bold"
                     placeholder="اكتب عنواناً جذاباً للخبر..."
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-black text-slate-700 dark:text-slate-300 mb-2">السنة الدراسية (اختياري)</label>
+                  <select 
+                    value={studyYear} 
+                    onChange={(e) => setStudyYear(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 p-4 rounded-2xl outline-none focus:border-medical-500 font-bold appearance-none cursor-pointer"
+                  >
+                    <option value="">-- للجميع (بدون تحديد سنة) --</option>
+                    {availableYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
@@ -430,6 +472,78 @@ export default function AdminNewsPage() {
                   )}
                 </button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Help/Guide Modal */}
+      <AnimatePresence>
+        {showHelpModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowHelpModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-white dark:bg-[#0f172a] rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/10 p-8 md:p-10"
+            >
+              <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-3">
+                  <Lightbulb className="w-8 h-8 text-blue-500" />
+                  دليل ظهور الأخبار والتصفية
+                </h2>
+                <button onClick={() => setShowHelpModal(false)} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl hover:bg-red-500/10 hover:text-red-500 transition-all" title="إغلاق">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6 text-slate-600 dark:text-slate-300 font-bold leading-relaxed">
+                
+                <div className="bg-blue-50 dark:bg-blue-500/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-blue-700 dark:text-blue-400 mb-2">
+                    <Info className="w-5 h-5" /> كيف تعمل فلترة "السنة الدراسية"؟
+                  </h3>
+                  <p className="text-sm">
+                    عند اختيار سنة دراسية محددة للخبر (مثلاً "السنة الثالثة")، فإن هذا الخبر سيظهر <strong>فقط</strong> للطلاب الذين تم تسجيل حسابهم وتحديد سنتهم الدراسية <strong>بنفس الاسم تماماً</strong>.
+                  </p>
+                </div>
+
+                <div className="bg-amber-50 dark:bg-amber-500/10 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-amber-700 dark:text-amber-400 mb-2">
+                    <AlertTriangle className="w-5 h-5" /> لماذا قد لا يظهر الخبر لبعض الطلاب؟
+                  </h3>
+                  <ul className="list-disc list-inside space-y-2 text-sm">
+                    <li>عدم تطابق اسم السنة: إذا قمت بتخصيص الخبر لـ (السنة الثالثة) وكان الطالب قد كتب في ملفه الشخصي (السنة ثالثة طب)، فلن يظهر له الخبر بسبب اختلاف الاسم.</li>
+                    <li>لتجنب هذه المشكلة، تم تعديل صفحة التسجيل للطلاب الجدد بحيث يختارون من نفس السنوات الموجودة في هذه القائمة حصراً.</li>
+                    <li>بالنسبة للطلاب القدامى ذوي المسميات الخاطئة، يجب تعديل سنتهم الدراسية من قسم <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded-md">إدارة المستخدمين</span> لتتطابق مع السنوات الرسمية.</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-50 dark:bg-green-500/10 p-5 rounded-2xl border border-green-100 dark:border-green-900/30">
+                  <h3 className="flex items-center gap-2 text-lg font-black text-green-700 dark:text-green-400 mb-2">
+                    <Check className="w-5 h-5" /> كيف أنشر خبراً للجميع؟
+                  </h3>
+                  <p className="text-sm">
+                    قم ببساطة باختيار <span className="font-black text-slate-800 dark:text-white px-2 py-1 bg-white dark:bg-slate-800 rounded-lg shadow-sm mx-1">-- للجميع (بدون تحديد سنة) --</span> عند كتابة الخبر. الأخبار العامة تظهر لكافة الطلاب بغض النظر عن سنتهم الدراسية أو عدم وجودها.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <button 
+                  onClick={() => setShowHelpModal(false)}
+                  className="w-full py-4 bg-slate-800 hover:bg-slate-700 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-2xl font-black transition-all"
+                >
+                  فهمت ذلك
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
