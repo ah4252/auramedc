@@ -8,6 +8,13 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+export function isDatabaseEnabled() {
+  const databaseUrl = (process.env.DATABASE_URL || "").trim();
+  if (!databaseUrl) return false;
+  if (databaseUrl.includes("neon.tech")) return false;
+  return true;
+}
+
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({

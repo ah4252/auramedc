@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { prisma, isDatabaseEnabled } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
@@ -72,13 +72,16 @@ export async function getSettings() {
     }
 
     return { ...defaultSettings, ...settings };
-  } catch (error) {
-    console.error("Local Settings Error:", error);
+  } catch {
     return defaultSettings;
   }
 }
 
 export async function updateSettings(data: any) {
+  if (!isDatabaseEnabled()) {
+    return { error: "قاعدة البيانات غير متاحة حاليًا" };
+  }
+
   try {
     const updateData: any = {};
     if (data.siteName !== undefined) updateData.siteName = data.siteName;
@@ -114,13 +117,16 @@ export async function updateSettings(data: any) {
     revalidatePath("/", "layout");
     revalidatePath("/admin/settings");
     return { success: true, settings: updated };
-  } catch (error) {
-    console.error("Update Settings Error:", error);
+  } catch {
     return { error: "حدث خطأ أثناء تحديث الإعدادات في قاعدة البيانات" };
   }
 }
 
 export async function changeAdminPassword(newPassword: string) {
+  if (!isDatabaseEnabled()) {
+    return { error: "قاعدة البيانات غير متاحة حاليًا" };
+  }
+
   try {
     await prisma.siteSettings.upsert({
       where: { id: "global" },
@@ -136,6 +142,10 @@ export async function changeAdminPassword(newPassword: string) {
 // ===== Tools Password Protection =====
 
 export async function getToolsProtection() {
+  if (!isDatabaseEnabled()) {
+    return { enabled: false, password: "tools123" };
+  }
+
   try {
     const settings = await prisma.siteSettings.findUnique({
       where: { id: "global" },
@@ -151,6 +161,10 @@ export async function getToolsProtection() {
 }
 
 export async function updateToolsProtection(data: { enabled?: boolean; newPassword?: string }) {
+  if (!isDatabaseEnabled()) {
+    return { success: false, error: "قاعدة البيانات غير متاحة حاليًا" };
+  }
+
   try {
     const updateData: any = {};
     if (data.enabled !== undefined) updateData.toolsProtectionEnabled = data.enabled;
@@ -169,6 +183,10 @@ export async function updateToolsProtection(data: { enabled?: boolean; newPasswo
 }
 
 export async function verifyToolsPassword(password: string) {
+  if (!isDatabaseEnabled()) {
+    return { success: true };
+  }
+
   try {
     const settings = await prisma.siteSettings.findUnique({
       where: { id: "global" },
@@ -197,6 +215,10 @@ export async function verifyToolsPassword(password: string) {
 }
 
 export async function isToolsUnlocked() {
+  if (!isDatabaseEnabled()) {
+    return true;
+  }
+
   try {
     const settings = await prisma.siteSettings.findUnique({
       where: { id: "global" },

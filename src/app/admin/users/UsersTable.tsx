@@ -11,6 +11,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [studyYearFilter, setStudyYearFilter] = useState("ALL");
+  const [wilayaFilter, setWilayaFilter] = useState("ALL");
 
   // Bulk select state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -30,14 +31,21 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
         (user.email?.toLowerCase().includes(searchQuery.toLowerCase()) || "");
       const matchesStudyYear = studyYearFilter === "ALL" || (user.studyYear || "").toString() === studyYearFilter;
       const matchesRole = roleFilter === "ALL" || user.role === roleFilter;
-      return matchesSearch && matchesRole && matchesStudyYear;
+      const matchesWilaya = wilayaFilter === "ALL" || (user.wilaya || "").toString() === wilayaFilter;
+      return matchesSearch && matchesRole && matchesStudyYear && matchesWilaya;
     });
-  }, [searchQuery, roleFilter, studyYearFilter, initialUsers]);
+  }, [searchQuery, roleFilter, studyYearFilter, wilayaFilter, initialUsers]);
 
   const studyYears = useMemo(() => {
     const setYears = new Set<string>();
     initialUsers.forEach(u => { if (u.studyYear) setYears.add(u.studyYear); });
     return Array.from(setYears).filter(Boolean).sort();
+  }, [initialUsers]);
+
+  const wilayas = useMemo(() => {
+    const setWilayas = new Set<string>();
+    initialUsers.forEach(u => { if (u.wilaya) setWilayas.add(u.wilaya); });
+    return Array.from(setWilayas).filter(Boolean).sort();
   }, [initialUsers]);
 
   const filteredIds = filteredUsers.map(u => u.id);
@@ -384,7 +392,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
             />
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
-             <select 
+             <select
                title="تصفية حسب الصلاحية"
                value={roleFilter}
                onChange={(e) => setRoleFilter(e.target.value)}
@@ -403,6 +411,17 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                <option value="ALL">جميع السنوات</option>
                {studyYears.map((y) => (
                  <option key={y} value={y}>{y}</option>
+               ))}
+             </select>
+             <select
+               title="تصفية حسب الولاية"
+               value={wilayaFilter}
+               onChange={(e) => setWilayaFilter(e.target.value)}
+               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 outline-none cursor-pointer"
+             >
+               <option value="ALL">جميع الولايات</option>
+               {wilayas.map((w) => (
+                 <option key={w} value={w}>{w}</option>
                ))}
              </select>
              <button 
@@ -430,6 +449,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                 <th className="px-8 py-6 font-black text-center">كلمة المرور</th>
                 <th className="px-8 py-6 font-black text-center">الصلاحية</th>
                 <th className="px-8 py-6 font-black text-center">السنة الدراسية</th>
+                <th className="px-8 py-6 font-black text-center">الولاية</th>
                 <th className="px-8 py-6 font-black text-center">تاريخ الانضمام</th>
                 <th className="px-8 py-6 font-black text-center">التحكم</th>
               </tr>
@@ -502,6 +522,11 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                   <td className="px-8 py-6 text-center">
                     <div className="flex flex-col items-center gap-1">
                       <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{user.studyYear || '---'}</div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{user.wilaya || '---'}</div>
                     </div>
                   </td>
                   <td className="px-8 py-6 text-center">

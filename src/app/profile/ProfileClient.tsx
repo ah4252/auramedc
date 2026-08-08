@@ -6,7 +6,7 @@ import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth
 import { submitSubscriptionRequest } from "@/app/actions/payment";
 import { deleteGPACalculation, deleteAllGPACalculations } from "@/app/actions/gpaUser";
 import { useSearchParams, useRouter } from "next/navigation";
-import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar } from "lucide-react";
+import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar, MapPin } from "lucide-react";
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -117,6 +117,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     formData.append("name", user.name);
     formData.append("image", tempImageUrl);
     formData.append("studyYear", user.studyYear || "");
+    formData.append("wilaya", user.wilaya || "");
     formData.append("telegram", user.telegram || "");
     formData.append("instagram", user.instagram || "");
     formData.append("facebook", user.facebook || "");
@@ -183,7 +184,13 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
               </div>
               
               <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-1 tracking-tight">{user.name}</h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-bold">{user.email}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 font-bold">{user.email}</p>
+              {user.wilaya && (
+                <div className="inline-flex items-center justify-center gap-2 mb-6 rounded-2xl border border-medical-500/20 bg-medical-500/10 px-4 py-2 text-sm font-black text-medical-600 dark:text-medical-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>{user.wilaya}</span>
+                </div>
+              )}
               
               {/* Social Badges */}
               <div className="flex items-center justify-center gap-3 mb-8">
@@ -839,6 +846,71 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/30 text-slate-700 dark:text-slate-300 cursor-not-allowed outline-none transition-all font-bold shadow-sm"
                         />
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mr-1">{t("profile_settings_study_year_note")}</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label htmlFor="wilaya" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-medical-500" /> {t("profile_wilaya_label", "ولاية الدراسة")}
+                          <span className="text-[10px] bg-medical-500/10 text-medical-500 px-2 py-0.5 rounded-full border border-medical-500/20">مطلوب</span>
+                        </label>
+                        <div className="relative">
+                          <select 
+                            id="wilaya" name="wilaya" defaultValue={user.wilaya || ""} required
+                            className="w-full p-4 pr-14 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white shadow-sm appearance-none cursor-pointer text-right"
+                          >
+                            <option value="">{t("profile_wilaya_placeholder", "اختر ولايتك")}</option>
+                          {[
+                            "الجزائر — جامعة الجزائر 1 — كلية",
+                            "الجزائر — جامعة علوم الصحة — كلية",
+                            "البليدة — جامعة البليدة 1 — كلية",
+                            "وهران — جامعة وهران 1 — كلية",
+                            "قسنطينة — جامعة قسنطينة 3 — كلية",
+                            "عنابة — جامعة باجي مختار عنابة — كلية",
+                            "سطيف — جامعة سطيف 1 — كلية",
+                            "باتنة — جامعة باتنة 2 — كلية",
+                            "تلمسان — جامعة تلمسان — كلية",
+                            "سيدي بلعباس — جامعة الجيلالي ليابس — كلية",
+                            "تيزي وزو — جامعة مولود معمري — كلية",
+                            "بجاية — جامعة عبد الرحمان ميرة — كلية",
+                            "سعيدة — جامعة الدكتور مولاي الطاهر — كلية",
+                            "ورقلة — جامعة قاصدي مرباح — كلية",
+                            "الجلفة — جامعة زيان عاشور — كلية",
+                            "خنشلة — جامعة عباس لغرور — كلية",
+                            "تيارت — جامعة ابن خلدون — كلية",
+                            "المسيلة — جامعة محمد بوضياف — كلية",
+                            "سكيكدة — جامعة 20 أوت 1955 — كلية",
+                            "أم البواقي — جامعة العربي بن مهيدي — كلية",
+                            "جيجل — جامعة محمد الصديق بن يحيى — كلية",
+                            "الشلف — جامعة حسيبة بن بوعلي — كلية",
+                            "المدية — جامعة يحيى فارس — كلية",
+                            "بسكرة — جامعة محمد خيضر — كلية",
+                            "الوادي — جامعة الشهيد حمه لخضر — كلية",
+                            "بومرداس — جامعة أمحمد بوقرة — كلية",
+                            "قالمة — جامعة باجي مختار عنابة — ملحقة",
+                            "عين الدفلى (خميس مليانة) — جامعة الجيلالي بونعامة — ملحقة",
+                            "تبسة — جامعة قسنطينة 3 — ملحقة",
+                            "تمنراست — جامعة أحمد دراية أدرار — ملحقة",
+                            "سوق أهراس — جامعة باجي مختار عنابة — ملحقة",
+                            "خنشلة — جامعة باتنة 2 — ملحقة",
+                            "جيجل — جامعة عبد الرحمان ميرة بجاية — ملحقة",
+                            "تيارت — جامعة وهران 1 — ملحقة",
+                            "المسيلة — جامعة سطيف 1 — ملحقة",
+                            "أدرار — جامعة أحمد دراية — ملحقة",
+                            "تيبازة — جامعة البليدة 1 — ملحقة",
+                            "معسكر — جامعة الجيلالي ليابس سيدي بلعباس — ملحقة",
+                            "أم البواقي — جامعة قسنطينة 3 — ملحقة",
+                            "سكيكدة — جامعة باجي مختار عنابة — ملحقة"
+                          ].map((item) => (
+                            <option key={item} value={item}>{item}</option>
+                          ))}
+                          </select>
+                          <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            <MapPin className="w-4 h-4" />
+                          </div>
+                          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                        </div>
                       </div>
                     </div>
 

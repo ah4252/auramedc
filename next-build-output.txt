@@ -1,0 +1,19 @@
+   ▲ Next.js 15.5.18
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 62s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/app/profile/ProfileClient.tsx:911:30
+Type error: Cannot find name 'ChevronDown'.
+
+[0m [90m 909 |[39m                           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 910 |[39m                           [33m<[39m[33mdiv[39m className[33m=[39m[32m"pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"[39m[33m>[39m
+[31m[1m>[22m[39m[90m 911 |[39m                             [33m<[39m[33mChevronDown[39m className[33m=[39m[32m"w-4 h-4"[39m [33m/[39m[33m>[39m
+ [90m     |[39m                              [31m[1m^[22m[39m
+ [90m 912 |[39m                           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 913 |[39m                         [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 914 |[39m                       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 import MobileNav from "@/components/layout/MobileNav";
 import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 import { getSettings } from "@/app/actions/settings";
-import { prisma } from "@/lib/db";
+import { prisma, isDatabaseEnabled } from "@/lib/db";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
@@ -58,7 +58,7 @@ export default async function RootLayout({
   let incomingRequestsCount = 0;
   
   try {
-    if (userId) {
+    if (userId && isDatabaseEnabled()) {
       const users: any[] = await prisma.$queryRaw`SELECT id, name, image, "lastReadNewsAt" FROM "User" WHERE id = ${userId} LIMIT 1`;
       const user = users[0];
       userName = user?.name || "طالب";
@@ -76,16 +76,14 @@ export default async function RootLayout({
         unreadNewsCount = await (prisma as any).news.count();
       }
     }
-  } catch (error) {
-    console.error("Layout DB Error (User fetch):", error);
+  } catch {
     userName = "طالب (أوفلاين)";
   }
 
   let settings;
   try {
     settings = await getSettings();
-  } catch (error) {
-    console.error("Layout DB Error (Settings):", error);
+  } catch {
     settings = {
       primaryColor: "#0ea5e9",
       secondaryColor: "#6366f1",

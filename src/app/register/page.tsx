@@ -2,13 +2,49 @@
 
 import { registerUser } from "@/app/actions/auth";
 import { getAvailableStudyYears } from "@/app/actions/news";
-import { useState, useRef, useEffect } from "react";
-import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays, Eye, EyeOff, Globe, ChevronDown, Check } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { UserPlus, Mail, Lock, User, ArrowRight, Sparkles, HeartPulse, X, CalendarDays, Eye, EyeOff, Globe, ChevronDown, Check, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+
+const algerianWilayas = [
+  "الجزائر — جامعة الجزائر 1 — كلية",
+  "البليدة — جامعة البليدة 1 — كلية",
+  "وهران — جامعة وهران 1 — كلية",
+  "قسنطينة — جامعة قسنطينة 3 — كلية",
+  "عنابة — جامعة باجي مختار عنابة — كلية",
+  "سطيف — جامعة سطيف 1 — كلية",
+  "باتنة — جامعة باتنة 2 — كلية",
+  "تلمسان — جامعة تلمسان — كلية",
+  "سيدي بلعباس — جامعة الجيلالي ليابس — كلية",
+  "تيزي وزو — جامعة مولود معمري — كلية",
+  "بجاية — جامعة عبد الرحمان ميرة — كلية",
+  "سعيدة — جامعة الدكتور مولاي الطاهر — كلية",
+  "ورقلة — جامعة قاصدي مرباح — كلية",
+  "الجلفة — جامعة زيان عاشور — كلية",
+  "الشلف — جامعة حسيبة بن بوعلي — كلية",
+  "المدية — جامعة يحيى فارس — كلية",
+  "بسكرة — جامعة محمد خيضر — كلية",
+  "الوادي — جامعة الشهيد حمه لخضر — كلية",
+  "بومرداس — جامعة أمحمد بوقرة — كلية",
+  "قالمة — جامعة باجي مختار عنابة — ملحقة",
+  "عين الدفلى (خميس مليانة) — جامعة الجيلالي بونعامة — ملحقة",
+  "تبسة — جامعة باتنة — ملحقة",
+  "تمنراست — جامعة أحمد دراية أدرار — ملحقة",
+  "سوق أهراس — جامعة باجي مختار عنابة — ملحقة",
+  "خنشلة — جامعة قسنطينة 3 — ملحقة",
+  "جيجل — جامعة عبد الرحمان ميرة بجاية — ملحقة",
+  "تيارت — جامعة وهران 1 — ملحقة",
+  "المسيلة — جامعة سطيف 1 — ملحقة",
+  "أدرار — جامعة أحمد دراية — ملحقة",
+  "تيبازة — جامعة البليدة 1 — ملحقة",
+  "معسكر — جامعة الجيلالي ليابس سيدي بلعباس — ملحقة",
+  "أم البواقي — جامعة قسنطينة 3 — ملحقة",
+  "سكيكدة — جامعة باجي مختار عنابة — ملحقة"
+].sort((a, b) => a.localeCompare(b, 'ar', { sensitivity: 'base' }));
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
@@ -24,6 +60,7 @@ export default function RegisterPage() {
   const langMenuRef = useRef<HTMLDivElement | null>(null);
   const isRtl = lang === "ar";
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [wilayaType, setWilayaType] = useState<"ALL" | "كلية" | "ملحقة">("ALL");
 
   useEffect(() => {
     getAvailableStudyYears().then(setAvailableYears);
@@ -61,6 +98,15 @@ export default function RegisterPage() {
     } catch (e) {}
   }, []);
 
+  const filteredWilayas = useMemo(() => {
+    return algerianWilayas
+      .filter(wilaya => {
+        if (wilayaType === "ALL") return true;
+        return wilaya.includes(wilayaType === "كلية" ? "— كلية" : "— ملحقة");
+      })
+      .sort((a, b) => a.localeCompare(b, 'ar', { sensitivity: 'base' }));
+  }, [wilayaType]);
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
@@ -77,6 +123,7 @@ export default function RegisterPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
+    const wilaya = (formData.get("wilaya") as string)?.trim() || "";
     
     // التحقق من أن الإيميل ينتهي بـ @gmail.com
     if (!email.toLowerCase().endsWith("@gmail.com")) {
@@ -86,6 +133,11 @@ export default function RegisterPage() {
 
     if (password !== confirmPassword) {
       setError(t("register_error_password_mismatch", "كلمتا المرور غير متطابقتين"));
+      return;
+    }
+
+    if (!wilaya) {
+      setError(t("register_error_wilaya_required", "يجب اختيار ولاية الدراسة قبل إنشاء الحساب"));
       return;
     }
 
@@ -271,9 +323,53 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
+              <label className={`text-sm font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'} mr-2 flex items-center gap-2`}>
+                <MapPin className="w-4 h-4 text-medical-500" />
+                <span>{t("register_wilaya_label", "ولاية الدراسة")}</span>
+                <span className="text-[10px] bg-medical-500/10 text-medical-500 px-2 py-0.5 rounded-full border border-medical-500/20">إجباري</span>
+              </label>
+              <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
+                <div className="relative group">
+                  <label className="sr-only">نوع الولاية</label>
+                  <select
+                    value={wilayaType}
+                    onChange={(e) => setWilayaType(e.target.value as "ALL" | "كلية" | "ملحقة")}
+                    className={`${theme === 'dark' ? 'w-full pl-4 pr-10 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white' : 'w-full pl-4 pr-10 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900'} focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold appearance-none cursor-pointer`}
+                  >
+                    <option value="ALL">اختر نوع الولاية</option>
+                    <option value="كلية">كلية</option>
+                    <option value="ملحقة">ملحقة</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="relative group">
+                  <label className="sr-only">اختر الولاية</label>
+                  <select
+                    name="wilaya"
+                    required
+                    disabled={wilayaType === "ALL"}
+                    className={`${theme === 'dark' ? 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-700 bg-[#0B1120]/50 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.02)]' : 'w-full pl-4 pr-14 py-4 rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-sm'} focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold appearance-none cursor-pointer text-right ${wilayaType === "ALL" ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  >
+                    <option value="" disabled hidden>{wilayaType === "ALL" ? t("register_wilaya_placeholder", "اختر نوع الولاية أولاً") : t("register_wilaya_placeholder", "اختر ولايتك")}</option>
+                    {filteredWilayas.map(wilaya => (
+                      <option key={wilaya} value={wilaya} className="text-slate-900">{wilaya}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-xl group-focus-within:bg-medical-500 group-focus-within:text-white text-slate-500 dark:text-slate-400 transition-colors pointer-events-none">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
               <label className={`text-sm font-black ${theme === 'dark' ? 'text-slate-300' : 'text-slate-800'} mr-2`}>{t("password_label", "كلمة المرور")}</label>
               <div className="relative group">
-                <input 
+                <input
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required

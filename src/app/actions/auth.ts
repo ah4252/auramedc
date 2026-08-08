@@ -54,8 +54,9 @@ export async function registerUser(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const studyYear = (formData.get("studyYear") as string)?.trim() || "";
+  const wilaya = (formData.get("wilaya") as string)?.trim() || "";
 
-  if (!name || !email || !password || !studyYear) return { error: "الرجاء تعبئة كافة الحقول" };
+  if (!name || !email || !password || !studyYear || !wilaya) return { error: "الرجاء تعبئة كافة الحقول" };
   if (password.length < 6) return { error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" };
 
   try {
@@ -71,6 +72,7 @@ export async function registerUser(formData: FormData) {
         email,
         password: hashedPassword,
         studyYear,
+        wilaya,
         role: "USER",
       },
     });
@@ -256,6 +258,7 @@ const updateProfileSchema = z.object({
   name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل").max(50, "الاسم طويل جداً"),
   image: z.string().url("رابط الصورة غير صحيح").optional().or(z.literal("")),
   studyYear: z.string().max(50, "السنة الدراسية طويلة جداً").optional().or(z.literal("")),
+  wilaya: z.string().max(100, "اسم الولاية طويل جداً").optional().or(z.literal("")),
   telegram: z.string().optional().or(z.literal("")),
   instagram: z.string().optional().or(z.literal("")),
   facebook: z.string().optional().or(z.literal("")),
@@ -270,6 +273,7 @@ export async function updateProfile(formData: FormData) {
     name: formData.get("name") as string,
     image: formData.get("image") as string,
     studyYear: formData.get("studyYear") as string,
+    wilaya: formData.get("wilaya") as string,
     telegram: formData.get("telegram") as string,
     instagram: formData.get("instagram") as string,
     facebook: formData.get("facebook") as string,
@@ -283,7 +287,7 @@ export async function updateProfile(formData: FormData) {
 
   try {
     await prisma.$executeRaw`
-      UPDATE "User" SET name = ${validation.data.name}, image = ${validation.data.image || null}, "studyYear" = ${validation.data.studyYear || null}, telegram = ${validation.data.telegram || null}, instagram = ${validation.data.instagram || null}, facebook = ${validation.data.facebook || null} WHERE id = ${userId}
+      UPDATE "User" SET name = ${validation.data.name}, image = ${validation.data.image || null}, "studyYear" = ${validation.data.studyYear || null}, wilaya = ${validation.data.wilaya || null}, telegram = ${validation.data.telegram || null}, instagram = ${validation.data.instagram || null}, facebook = ${validation.data.facebook || null} WHERE id = ${userId}
     `;
 
     return { success: true };
