@@ -2,7 +2,7 @@
    - Environments: .env
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 20.2s
+ ✓ Compiled successfully in 22.1s
    Linting and checking validity of types ...
 
 Failed to compile.
@@ -293,11 +293,13 @@ Failed to compile.
 242:47  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
 ./src/app/admin/specialties/EditCategoryModal.tsx
-29:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
-64:10  Warning: 'success' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-64:19  Warning: 'setSuccess' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-125:9  Error: 'finalLinks' is never reassigned. Use 'const' instead.  prefer-const
-130:9  Error: 'finalImages' is never reassigned. Use 'const' instead.  prefer-const
+23:12  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+38:31  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+49:78  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:10  Warning: 'success' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+53:19  Warning: 'setSuccess' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+114:9  Error: 'finalLinks' is never reassigned. Use 'const' instead.  prefer-const
+119:9  Error: 'finalImages' is never reassigned. Use 'const' instead.  prefer-const
 
 ./src/app/admin/specialties/page.tsx
 28:12  Warning: '_error' is defined but never used.  @typescript-eslint/no-unused-vars
@@ -582,6 +584,7 @@ Failed to compile.
 370:76  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
 422:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 437:31  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+911:30  Error: 'ChevronDown' is not defined.  react/jsx-no-undef
 1031:105  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 1103:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
