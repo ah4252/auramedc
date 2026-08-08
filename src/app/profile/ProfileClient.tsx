@@ -6,7 +6,7 @@ import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth
 import { submitSubscriptionRequest } from "@/app/actions/payment";
 import { deleteGPACalculation, deleteAllGPACalculations } from "@/app/actions/gpaUser";
 import { useSearchParams, useRouter } from "next/navigation";
-import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar, MapPin } from "lucide-react";
+import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar, MapPin, ChevronDown } from "lucide-react";
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";

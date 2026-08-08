@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { updateCategory } from "@/app/actions/content";
+import type { LucideIcon } from "lucide-react";
 import { Edit2, X, Save, Plus, Link as LinkIcon, Trash2, Stethoscope, Activity, Dna, Brain, Bone, Eye, Heart, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+type Category = {
+  id: string;
+  name: string;
+  description?: string | null;
+};
 
 // Helper function to safely parse description JSON
 function parseDescription(desc: string | null) {
@@ -20,7 +26,7 @@ function parseDescription(desc: string | null) {
         images: parsed.images || []
       };
     }
-  } catch (e) {}
+  } catch (_error: unknown) {}
   return { brief: desc, content: "", videoUrl: "", iconName: "Stethoscope", links: [], images: [] };
 }
 
@@ -35,7 +41,7 @@ const AVAILABLE_ICONS = [
   { name: "BookOpen", label: "كتاب مفتوح" }
 ];
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   Stethoscope,
   Activity,
   Dna,
@@ -46,7 +52,12 @@ const iconMap: Record<string, any> = {
   BookOpen
 };
 
-export default function EditCategoryModal({ category, onSaved }: { category: any; onSaved?: () => void }) {
+type EditCategoryModalProps = {
+  category: Category;
+  onSaved?: () => void;
+};
+
+export default function EditCategoryModal({ category, onSaved }: EditCategoryModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
