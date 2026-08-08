@@ -265,6 +265,7 @@ export async function getFriendsData() {
             email: true,
             image: true,
             studyYear: true,
+            wilaya: true,
             telegram: true,
             facebook: true,
             lastActiveAt: true
@@ -277,6 +278,7 @@ export async function getFriendsData() {
             email: true,
             image: true,
             studyYear: true,
+            wilaya: true,
             telegram: true,
             instagram: true,
             facebook: true,

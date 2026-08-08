@@ -22,6 +22,7 @@ interface Friend {
     email: string;
     image: string | null;
     studyYear?: string | null;
+    wilaya?: string | null;
     telegram: string | null;
     instagram: string | null;
     facebook: string | null;
@@ -403,6 +404,15 @@ export default function FriendsClient({
                     <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
                       <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_status_label","Status")}</p>
                       <p className="text-base font-black text-emerald-600 dark:text-emerald-400">{t("friends_request_incoming","Incoming friend request")}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200/50 dark:border-slate-800">
+                      <p className="text-[10px] font-black text-slate-400 mb-2">{t("friends_wilaya_label","الولاية")}</p>
+                      <p className="text-base font-black text-indigo-600 dark:text-indigo-400">
+                        {selectedRequest.user.wilaya || t("not_defined","Not defined")}
+                      </p>
                     </div>
                   </div>
 
