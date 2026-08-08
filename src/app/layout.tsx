@@ -59,8 +59,14 @@ export default async function RootLayout({
   
   try {
     if (userId && isDatabaseEnabled()) {
-      const users: any[] = await prisma.$queryRaw`SELECT id, name, image, "lastReadNewsAt" FROM "User" WHERE id = ${userId} LIMIT 1`;
-      const user = users[0];
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          name: true,
+          image: true,
+          lastReadNewsAt: true,
+        },
+      });
       userName = user?.name || "طالب";
       userImage = user?.image || null;
 
@@ -79,6 +85,7 @@ export default async function RootLayout({
   } catch {
     userName = "طالب (أوفلاين)";
   }
+
 
   let settings;
   try {
