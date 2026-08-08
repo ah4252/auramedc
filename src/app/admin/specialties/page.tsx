@@ -2,9 +2,10 @@
 
 import { addCategory, getCategories, deleteCategory } from "@/app/actions/content";
 import { useState, useEffect } from "react";
+import type { LucideIcon } from "lucide-react";
 import { 
   Save, Trash2, AlertCircle, CheckCircle2, Loader2, Stethoscope, Activity,
-  Plus, X, Link as LinkIcon, Video, FileText, Info, Dna, Brain, Bone, Eye, Heart, BookOpen
+  Plus, X, Link as LinkIcon, Video, FileText, Dna, Brain, Bone, Eye, Heart, BookOpen
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EditCategoryModal from "./EditCategoryModal";
@@ -24,9 +25,16 @@ function parseDescription(desc: string | null) {
         images: parsed.images || []
       };
     }
-  } catch (e) {}
+  } catch (_error: unknown) {}
   return { brief: desc, content: "", videoUrl: "", iconName: "Stethoscope", links: [], images: [] };
 }
+
+type Category = {
+  id: string;
+  name: string;
+  type?: string;
+  description?: string | null;
+};
 
 const AVAILABLE_ICONS = [
   { name: "Stethoscope", label: "سماعة طبية" },
@@ -39,7 +47,7 @@ const AVAILABLE_ICONS = [
   { name: "BookOpen", label: "كتاب مفتوح" }
 ];
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   Stethoscope,
   Activity,
   Dna,
@@ -54,7 +62,7 @@ export default function AdminSpecialtiesPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"success" | "error" | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Links State for New Specialty Form
   const [linksList, setLinksList] = useState<{ title: string; url: string }[]>([]);
@@ -104,12 +112,12 @@ export default function AdminSpecialtiesPage() {
     const data = new FormData(form);
 
     // Auto-add current link inputs if user forgot to click "+" button
-    let finalLinks = [...linksList];
+    const finalLinks = [...linksList];
     if (linkTitle && linkUrl) {
       finalLinks.push({ title: linkTitle, url: linkUrl });
     }
 
-    let finalImages = [...imagesList];
+    const finalImages = [...imagesList];
     if (imageUrlInput) {
       finalImages.push(imageUrlInput);
     }

@@ -5,7 +5,13 @@ import { updateCategory } from "@/app/actions/content";
 import { Edit2, X, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function EditCategoryModal({ category }: { category: any }) {
+type Category = {
+  id: string;
+  name: string;
+  description?: string | null;
+};
+
+export default function EditCategoryModal({ category }: { category: Category }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

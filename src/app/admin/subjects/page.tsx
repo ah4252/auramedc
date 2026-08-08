@@ -3,19 +3,36 @@
 import { addCategory, getCategories, deleteCategory, addSubject, getSubjects, deleteSubject } from "@/app/actions/content";
 import { useState, useEffect } from "react";
 import { 
-  PlusCircle, Save, GraduationCap, Stethoscope, 
-  Trash2, Search, Filter, LayoutGrid, List,
+  Save, GraduationCap,
+  Trash2, List,
   AlertCircle, CheckCircle2, Loader2, BookOpen, Layers, ChevronLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+type ActionResponse = {
+  error?: string;
+  success?: boolean;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  type?: string;
+};
+
+type Subject = {
+  id: string;
+  categoryId?: string;
+  name?: string;
+};
 
 export default function AdminSubjectsPage() {
   const [activeTab, setActiveTab] = useState<"YEARS" | "SUBJECTS">("YEARS");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"success" | "error" | null>(null);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [filterYearId, setFilterYearId] = useState<string>("all");
 
   useEffect(() => {
@@ -40,7 +57,7 @@ export default function AdminSubjectsPage() {
     handleResponse(res);
   }
 
-  const handleResponse = (res: any) => {
+  const handleResponse = (res: ActionResponse) => {
     if (res.error) {
       setMessage(res.error);
       setStatus("error");
