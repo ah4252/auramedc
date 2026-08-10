@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Camera, ArrowRight, CheckCircle, X } from "lucide-react";
 import { useLocale } from "@/context/LocaleProvider.client";
 import { updateProfileImage } from "@/app/actions/auth";
+import { compressImage } from "@/lib/utils";
 
 export default function RegisterCompletePage() {
   const router = useRouter();
@@ -85,7 +86,20 @@ export default function RegisterCompletePage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={async (e) => {
+                    const selectedFile = e.target.files?.[0] || null;
+                    if (selectedFile) {
+                      try {
+                        const compressedFile = await compressImage(selectedFile);
+                        setFile(compressedFile);
+                      } catch (err) {
+                        console.error("Error compressing image:", err);
+                        setFile(selectedFile);
+                      }
+                    } else {
+                      setFile(null);
+                    }
+                  }}
                   className="sr-only"
                 />
               </label>

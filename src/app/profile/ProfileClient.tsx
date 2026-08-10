@@ -10,7 +10,7 @@ import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, Graduatio
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { getYoutubeThumbnail, getSocialUrl } from "@/lib/utils";
+import { getYoutubeThumbnail, getSocialUrl, compressImage } from "@/lib/utils";
 
 export default function ProfileClient({ user, news = [], latestSubscription = null }: { user: any, news?: any[], latestSubscription?: any }) {
   const searchParams = useSearchParams();
@@ -1146,12 +1146,19 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                     type="file"
                     name="imageFile"
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       const file = e.target.files?.[0] || null;
-                      setTempImageFile(file);
                       if (file) {
+                        try {
+                          const compressedFile = await compressImage(file);
+                          setTempImageFile(compressedFile);
+                        } catch (err) {
+                          console.error("Error compressing image:", err);
+                          setTempImageFile(file);
+                        }
                         setTempImageUrl("");
                       } else {
+                        setTempImageFile(null);
                         setTempImagePreview(tempImageUrl || "");
                       }
                     }}
