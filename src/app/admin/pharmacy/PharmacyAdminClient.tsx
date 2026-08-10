@@ -64,6 +64,31 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
 
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
+  // --- URL Helper ---
+  const normalizeImageUrl = (url: string): string => {
+    // i.ibb.co direct image links (with full path) — pass through as-is
+    // e.g. https://i.ibb.co/KcSSKrFH/957e5668-f0d6-4f29-bb1a-1c4431b95859.jpg
+    if (/^https?:\/\/i\.ibb\.co\/.+/.test(url)) return url;
+    // ibb.co share page — we can't reliably convert without an API, keep as-is
+    // blob: and all other https: links — keep as-is
+    return url;
+  };
+
+  const getUrlHint = (url: string): { type: "warning" | "info" | "error"; msg: string } | null => {
+    if (!url) return null;
+    if (url.startsWith("blob:"))
+      return { type: "warning", msg: "⚠️ رابط blob مؤقت ويعمل فقط في هذا المتصفح الآن — للحفظ الدائم ارفع الصورة على خدمة مثل ImgBB أو Cloudinary." };
+    // i.ibb.co direct image link (any path/filename)
+    if (/^https?:\/\/i\.ibb\.co\/.+\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url))
+      return { type: "info", msg: "✅ رابط ImgBB مباشر — سيعمل بشكل صحيح." };
+    if (/^https?:\/\/i\.ibb\.co\/.+/.test(url))
+      return { type: "info", msg: "✅ رابط ImgBB مباشر — سيعمل بشكل صحيح." };
+    // ibb.co share page (not direct)
+    if (/^https?:\/\/ibb\.co\/[A-Za-z0-9]+$/.test(url))
+      return { type: "info", msg: "ℹ️ رابط صفحة ImgBB — للحصول على أفضل نتيجة انسخ رابط الصورة المباشر (i.ibb.co/...) من صفحة ImgBB." };
+    return null;
+  };
+
   const showFeedback = (type: "success" | "error", msg: string) => {
     setFeedback({ type, msg });
     setTimeout(() => setFeedback(null), 3000);
@@ -75,7 +100,7 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
     const fd = new FormData();
     fd.append("name", sectionName);
     fd.append("description", sectionDesc);
-    fd.append("imageUrl", sectionImageUrl);
+    fd.append("imageUrl", normalizeImageUrl(sectionImageUrl));
     startTransition(async () => {
       const res = await addPharmacySection(fd);
       if (res?.error) { showFeedback("error", res.error); return; }
@@ -90,7 +115,7 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
     const fd = new FormData();
     fd.append("name", sectionName);
     fd.append("description", sectionDesc);
-    fd.append("imageUrl", sectionImageUrl);
+    fd.append("imageUrl", normalizeImageUrl(sectionImageUrl));
     startTransition(async () => {
       const res = await updatePharmacySection(editingSection.id, fd);
       if (res?.error) { showFeedback("error", res.error); return; }
@@ -142,7 +167,7 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
     if (!imageUrl.trim()) return;
     const fd = new FormData();
     fd.append("sectionId", sectionId);
-    fd.append("url", imageUrl);
+    fd.append("url", normalizeImageUrl(imageUrl));
     fd.append("title", imageTitle);
     fd.append("description", imageDesc);
     startTransition(async () => {
@@ -157,7 +182,7 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
   const handleUpdateImage = () => {
     if (!editingImage || !imageUrl.trim()) return;
     const fd = new FormData();
-    fd.append("url", imageUrl);
+    fd.append("url", normalizeImageUrl(imageUrl));
     fd.append("title", imageTitle);
     fd.append("description", imageDesc);
     startTransition(async () => {
@@ -338,15 +363,22 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
                     <input
                       value={sectionImageUrl}
                       onChange={e => setSectionImageUrl(e.target.value)}
-                      placeholder="https://..."
+                      placeholder="https://ibb.co/... أو i.ibb.co أو blob:https://gemini.google.com/..."
                       dir="ltr"
                       className="w-full pr-10 px-4 py-3 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium"
                     />
                   </div>
+                  {(() => { const hint = getUrlHint(sectionImageUrl); return hint ? (
+                    <p className={`text-xs mt-1.5 font-medium ${
+                      hint.type === "warning" ? "text-amber-600 dark:text-amber-400" :
+                      hint.type === "error"   ? "text-red-600 dark:text-red-400" :
+                      "text-sky-600 dark:text-sky-400"
+                    }`}>{hint.msg}</p>
+                  ) : null; })()}
                 </div>
                 {sectionImageUrl && (
                   <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
-                    <img src={sectionImageUrl} alt="preview" className="max-w-full max-h-full object-contain p-2" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <img src={normalizeImageUrl(sectionImageUrl)} alt="preview" className="max-w-full max-h-full object-contain p-2" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   </div>
                 )}
                 <div>
@@ -408,15 +440,22 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
                     <input
                       value={imageUrl}
                       onChange={e => setImageUrl(e.target.value)}
-                      placeholder="https://..."
+                      placeholder="https://ibb.co/... أو i.ibb.co أو blob:https://gemini.google.com/..."
                       dir="ltr"
                       className="w-full pr-10 px-4 py-3 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium"
                     />
                   </div>
+                  {(() => { const hint = getUrlHint(imageUrl); return hint ? (
+                    <p className={`text-xs mt-1.5 font-medium ${
+                      hint.type === "warning" ? "text-amber-600 dark:text-amber-400" :
+                      hint.type === "error"   ? "text-red-600 dark:text-red-400" :
+                      "text-sky-600 dark:text-sky-400"
+                    }`}>{hint.msg}</p>
+                  ) : null; })()}
                 </div>
                 {imageUrl && (
                   <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
-                    <img src={imageUrl} alt="preview" className="max-w-full max-h-full object-contain p-2" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    <img src={normalizeImageUrl(imageUrl)} alt="preview" className="max-w-full max-h-full object-contain p-2" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   </div>
                 )}
                 <div>
