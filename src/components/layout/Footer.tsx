@@ -129,12 +129,7 @@ export default function Footer() {
                      <span className="font-bold text-white">{t("footer_facebook", "فيسبوك (Facebook)")}</span>
                   </a>
                 )}
-                {(!settings.socialWhatsapp && !settings.socialTelegram && !settings.socialInstagram && !settings.socialFacebook) && (
-                  <div className="flex items-center gap-3 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
-                     <MapPin className="w-5 h-5 text-medical-500" />
-                     <span className="font-bold text-slate-300">{t("footer_location", "امجدل - بوسعادة - الجزائر")}</span>
-                  </div>
-                )}
+
              </div>
           </div>
         </div>

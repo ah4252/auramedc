@@ -1095,61 +1095,61 @@ export default function FriendsClient({
 
                 <div className="flex-1 w-full space-y-3 bg-white/20 dark:bg-slate-900/20 rounded-2xl p-4 border border-white/10">
                   <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500 font-bold">{t("email_label", "البريد الإلكتروني")}:</span>
                     {selectedUser.email ? (
-                      <a href={`mailto:${selectedUser.email}`} className="font-black text-right text-slate-900 dark:text-white hover:underline hover:text-sky-500 transition-colors" dir="ltr">
+                      <a href={`mailto:${selectedUser.email}`} className="font-black text-slate-900 dark:text-white hover:underline hover:text-sky-500 transition-colors" dir="ltr">
                         {selectedUser.email}
                       </a>
                     ) : (
-                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                      <span className="font-black text-slate-400 dark:text-slate-600">{t("not_available", "لا يوجد")}</span>
                     )}
-                    <span className="text-slate-500 font-bold">البريد الإلكتروني:</span>
                   </div>
                   
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
-                    <span className={`font-black text-right ${selectedUser.studyYear ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
-                      {selectedUser.studyYear || "لا يوجد"}
+                    <span className="text-slate-500 font-bold">{t("friends_year_label", "السنة الدراسية")}:</span>
+                    <span className={`font-black ${selectedUser.studyYear ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
+                      {selectedUser.studyYear || t("not_available", "لا يوجد")}
                     </span>
-                    <span className="text-slate-500 font-bold">{t("friends_year_label","السنة الدراسية")}:</span>
                   </div>
 
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
-                    <span className={`font-black text-right ${selectedUser.wilaya ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
-                      {selectedUser.wilaya || "لا يوجد"}
+                    <span className="text-slate-500 font-bold">{t("wilaya", "ولاية الدراسة")}:</span>
+                    <span className={`font-black ${selectedUser.wilaya ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
+                      {selectedUser.wilaya || t("not_available", "لا يوجد")}
                     </span>
-                    <span className="text-slate-500 font-bold">{t("wilaya","ولاية الدراسة")}:</span>
                   </div>
 
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    <span className="text-slate-500 font-bold">{t("telegram_label", "تليجرام")}:</span>
                     {selectedUser.telegram ? (
-                      <a href={selectedUser.telegram.startsWith('http') ? selectedUser.telegram : `https://${selectedUser.telegram}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-blue-500 hover:underline hover:text-blue-400 transition-colors" dir="ltr">
+                      <a href={selectedUser.telegram.startsWith('http') ? selectedUser.telegram : `https://${selectedUser.telegram}`} target="_blank" rel="noopener noreferrer" className="font-black text-blue-500 hover:underline hover:text-blue-400 transition-colors" dir="ltr">
                         {selectedUser.telegram}
                       </a>
                     ) : (
-                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                      <span className="font-black text-slate-400 dark:text-slate-600">{t("not_available", "لا يوجد")}</span>
                     )}
-                    <span className="text-slate-500 font-bold">تليجرام:</span>
                   </div>
 
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    <span className="text-slate-500 font-bold">{t("instagram_label", "إنستغرام")}:</span>
                     {selectedUser.instagram ? (
-                      <a href={selectedUser.instagram.startsWith('http') ? selectedUser.instagram : `https://${selectedUser.instagram}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-pink-500 hover:underline hover:text-pink-400 transition-colors" dir="ltr">
+                      <a href={selectedUser.instagram.startsWith('http') ? selectedUser.instagram : `https://${selectedUser.instagram}`} target="_blank" rel="noopener noreferrer" className="font-black text-pink-500 hover:underline hover:text-pink-400 transition-colors" dir="ltr">
                         {selectedUser.instagram}
                       </a>
                     ) : (
-                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                      <span className="font-black text-slate-400 dark:text-slate-600">{t("not_available", "لا يوجد")}</span>
                     )}
-                    <span className="text-slate-500 font-bold">إنستغرام:</span>
                   </div>
 
                   <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    <span className="text-slate-500 font-bold">{t("facebook_label", "فيسبوك")}:</span>
                     {selectedUser.facebook ? (
-                      <a href={selectedUser.facebook.startsWith('http') ? selectedUser.facebook : `https://${selectedUser.facebook}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-blue-600 hover:underline hover:text-blue-500 transition-colors" dir="ltr">
+                      <a href={selectedUser.facebook.startsWith('http') ? selectedUser.facebook : `https://${selectedUser.facebook}`} target="_blank" rel="noopener noreferrer" className="font-black text-blue-600 hover:underline hover:text-blue-500 transition-colors" dir="ltr">
                         {selectedUser.facebook}
                       </a>
                     ) : (
-                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                      <span className="font-black text-slate-400 dark:text-slate-600">{t("not_available", "لا يوجد")}</span>
                     )}
-                    <span className="text-slate-500 font-bold">فيسبوك:</span>
                   </div>
                 </div>
               </div>
@@ -1186,7 +1186,7 @@ export default function FriendsClient({
               <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-900/10 dark:border-white/10">
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
                   <Lightbulb className="w-8 h-8 text-sky-500" />
-                  دليل نظام الأصدقاء
+                  {t("guide_title", "دليل نظام الأصدقاء")}
                 </h2>
                 <button onClick={() => setShowHelpModal(false)} className="p-3 bg-slate-900/5 dark:bg-white/5 rounded-2xl hover:bg-red-500/10 hover:text-red-500 transition-all" title={t("close","Close")}>
                   <X className="w-6 h-6" />
@@ -1197,28 +1197,28 @@ export default function FriendsClient({
                 
                 <div className="bg-sky-500/10 p-5 rounded-2xl border border-sky-500/20">
                   <h3 className="flex items-center gap-2 text-lg font-black text-sky-700 dark:text-sky-400 mb-2">
-                    <Search className="w-5 h-5" /> كيف أبحث عن صديق؟
+                    <Search className="w-5 h-5" /> {t("guide_search_title", "كيف أبحث عن صديق؟")}
                   </h3>
                   <p className="text-sm">
-                    استخدم شريط البحث السريع في يسار الشاشة (أو في الأعلى). فقط ابدأ بكتابة البريد الإلكتروني الخاص بزميلك، وستظهر النتائج فوراً بمجرد كتابة حرفين على الأقل.
+                    {t("guide_search_desc", "استخدم شريط البحث السريع في يسار الشاشة (أو في الأعلى). فقط ابدأ بكتابة البريد الإلكتروني الخاص بزميلك، وستظهر النتائج فوراً بمجرد كتابة حرفين على الأقل.")}
                   </p>
                 </div>
 
                 <div className="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/20">
                   <h3 className="flex items-center gap-2 text-lg font-black text-emerald-700 dark:text-emerald-400 mb-2">
-                    <UserPlus className="w-5 h-5" /> كيف أرسل طلب صداقة؟
+                    <UserPlus className="w-5 h-5" /> {t("guide_add_title", "كيف أرسل طلب صداقة؟")}
                   </h3>
                   <p className="text-sm">
-                    بعد العثور على زميلك في نتائج البحث، اضغط على زر <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">إضافة</span> بجانب اسمه. سيتم إرسال الطلب، وسيظهر له في قسم "الطلبات المعلقة".
+                    {t("guide_add_desc_1", "بعد العثور على زميلك في نتائج البحث، اضغط على زر")} <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">{t("guide_add_btn", "إضافة")}</span> {t("guide_add_desc_2", "بجانب اسمه. سيتم إرسال الطلب، وسيظهر له في قسم الطلبات المعلقة.")}
                   </p>
                 </div>
 
                 <div className="bg-indigo-500/10 p-5 rounded-2xl border border-indigo-500/20">
                   <h3 className="flex items-center gap-2 text-lg font-black text-indigo-700 dark:text-indigo-400 mb-2">
-                    <UserCheck className="w-5 h-5" /> كيف أقبل أو أرفض الطلبات؟
+                    <UserCheck className="w-5 h-5" /> {t("guide_accept_title", "كيف أقبل أو أرفض الطلبات؟")}
                   </h3>
                   <p className="text-sm">
-                    انتقل إلى تبويب <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">الطلبات المعلقة</span>. هناك سترى الطلبات التي أرسلتها (الصادرة) والطلبات التي تلقيتها (الواردة). يمكنك قبول أو رفض الطلبات الواردة، كما يمكنك إلغاء الطلبات التي أرسلتها.
+                    {t("guide_accept_desc_1", "انتقل إلى تبويب")} <span className="px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-lg shadow-sm mx-1 text-xs">{t("guide_accept_btn", "الطلبات المعلقة")}</span> {t("guide_accept_desc_2", "هناك سترى الطلبات التي أرسلتها (الصادرة) والطلبات التي تلقيتها (الواردة). يمكنك قبول أو رفض الطلبات الواردة، كما يمكنك إلغاء الطلبات التي أرسلتها.")}
                   </p>
                 </div>
               </div>
@@ -1228,7 +1228,7 @@ export default function FriendsClient({
                   onClick={() => setShowHelpModal(false)}
                   className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-black transition-all shadow-lg shadow-sky-500/20"
                 >
-                  فهمت ذلك
+                  {t("guide_understood", "فهمت ذلك")}
                 </button>
               </div>
             </motion.div>
