@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -144,9 +145,11 @@ export default async function RootLayout({
               <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
             )}
             <main className="flex-1 pb-20 md:pb-0">
-              <SectionMaintenanceGuard settings={settings}>
-                {children}
-              </SectionMaintenanceGuard>
+              <Suspense fallback={null}>
+                <SectionMaintenanceGuard settings={settings}>
+                  {children}
+                </SectionMaintenanceGuard>
+              </Suspense>
             </main>
             <Footer />
             {showTopNav && <MobileNav />}

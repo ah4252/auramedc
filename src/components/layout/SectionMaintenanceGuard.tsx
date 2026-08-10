@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Hammer, Clock, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -11,8 +11,9 @@ export default function SectionMaintenanceGuard({
   settings: any;
   children: React.ReactNode;
 }) {
-  // ✅ Hook is always called unconditionally - no early returns before this line
+  // ✅ Hooks are always called unconditionally - no early returns before this line
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Determine maintenance state AFTER all hooks
   const isAdmin = pathname.startsWith("/admin");
@@ -21,15 +22,21 @@ export default function SectionMaintenanceGuard({
   let sectionName = "";
 
   if (!isAdmin) {
-    if (pathname.startsWith("/courses") && settings.maintenanceCourses) {
+    // قسم الصيدلة: يشمل /pharmacy و /courses?tab=pharmacy و /courses/pharmacy/[sectionId]
+    const isPharmacyTab =
+      pathname.startsWith("/courses") && searchParams.get("tab") === "pharmacy";
+    const isPharmacyPage =
+      pathname.startsWith("/pharmacy") || pathname.startsWith("/courses/pharmacy");
+
+    if ((isPharmacyTab || isPharmacyPage) && settings.maintenancePharmacy) {
+      isUnderMaintenance = true;
+      sectionName = "قسم الصيدلة";
+    } else if (pathname.startsWith("/courses") && !isPharmacyTab && settings.maintenanceCourses) {
       isUnderMaintenance = true;
       sectionName = "قسم المحاضرات";
     } else if (pathname.startsWith("/subjects") && settings.maintenanceSubjects) {
       isUnderMaintenance = true;
       sectionName = "قسم التخصصات";
-    } else if (pathname.startsWith("/pharmacy") && settings.maintenancePharmacy) {
-      isUnderMaintenance = true;
-      sectionName = "قسم الصيدلة";
     } else if (pathname.startsWith("/timetable") && settings.maintenanceTimetable) {
       isUnderMaintenance = true;
       sectionName = "الجدول الدراسي";
