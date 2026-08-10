@@ -74,7 +74,10 @@ export default function YearsClient({
       {/* Unified Seamless Switcher */}
       <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-[1.8rem] w-fit mx-auto mb-12 shadow-inner border border-slate-200/50 dark:border-slate-700/50" dir="rtl">
         <button 
-          onClick={() => setActiveTab("years")}
+          onClick={() => {
+            setActiveTab("years");
+            window.history.pushState({}, "", "/courses");
+          }}
           className={`flex items-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 ${
             activeTab === "years" 
               ? "bg-white dark:bg-dark-card shadow-lg text-medical-600 scale-[1.02]" 
@@ -85,7 +88,11 @@ export default function YearsClient({
           السنوات الدراسية
         </button>
         <button 
-          onClick={() => setActiveTab("pharmacy")}
+          onClick={() => {
+            setActiveTab("pharmacy");
+            window.history.pushState({}, "", "/courses?tab=pharmacy");
+            window.dispatchEvent(new Event("popstate"));
+          }}
           className={`flex items-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-sm transition-all duration-300 ${
             activeTab === "pharmacy" 
               ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/25 scale-[1.02]" 
