@@ -33,8 +33,18 @@ export async function addCategory(formData: FormData) {
 }
 
 export async function getCategories(type?: string) {
+  if (type) {
+    return await prisma.category.findMany({
+      where: { type },
+      orderBy: { createdAt: "asc" }
+    });
+  }
   return await prisma.category.findMany({
-    where: type ? { type } : {},
+    where: {
+      type: {
+        not: "PHARMACY"
+      }
+    },
     orderBy: { createdAt: "asc" }
   });
 }
@@ -77,6 +87,13 @@ export async function getLessonsBySubjectSlug(subjectSlug: string) {
 // --- Subjects ---
 export async function getSubjects() {
   return await prisma.subject.findMany({
+    where: {
+      category: {
+        type: {
+          not: "PHARMACY"
+        }
+      }
+    },
     include: { category: true, lessons: { select: { id: true } } },
     orderBy: { createdAt: "desc" }
   });

@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
   const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
   const { sectionId } = await params;
-  const section = await (prisma as any).pharmacySection.findUnique({
+  const section = await prisma.subject.findUnique({
     where: { id: sectionId },
   });
 
@@ -22,16 +22,32 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
 
 export default async function PharmacySectionPage({ params }: { params: Promise<{ sectionId: string }> }) {
   const { sectionId } = await params;
-  const section = await (prisma as any).pharmacySection.findUnique({
+  const section = await prisma.subject.findUnique({
     where: { id: sectionId },
     include: {
-      images: {
-        orderBy: { order: "asc" },
+      lessons: {
+        orderBy: { createdAt: "asc" },
       },
     },
   });
 
   if (!section) return notFound();
 
-  return <SectionClient section={section} />;
+  // Map to old PharmacySection/PharmacyImage shape for the client component
+  const mappedSection = {
+    id: section.id,
+    name: section.name,
+    description: section.description,
+    imageUrl: section.lessons[0]?.thumbnail || null,
+    order: 0,
+    images: section.lessons.map(l => ({
+      id: l.id,
+      title: l.title,
+      url: l.pdfUrl || l.thumbnail || "",
+      description: l.description,
+      order: 0
+    }))
+  };
+
+  return <SectionClient section={mappedSection} />;
 }

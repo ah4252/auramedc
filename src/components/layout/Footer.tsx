@@ -83,7 +83,6 @@ export default function Footer() {
                 <li><Link href="/" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_home", "الرئيسية")}</Link></li>
                 <li><Link href="/courses" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_courses", "السنوات الدراسية")}</Link></li>
                 <li><Link href="/subjects" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_subjects", "التخصصات الطبية")}</Link></li>
-                <li><Link href="/pharmacy" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_pharmacy", "الصيدلة")}</Link></li>
                 <li><Link href="/timetable" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_timetable", "جدول الدراسة")}</Link></li>
                 <li><Link href="/news" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_news", "الأخبار")}</Link></li>
                 <li><Link href="/friends" className="hover:text-white hover:translate-x-1 transition-all inline-block font-bold">{t("footer_friends", "الأصدقاء")}</Link></li>

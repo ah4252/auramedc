@@ -16,7 +16,6 @@ export default function MobileNav() {
   const navItems = [
     { name: t("home", "الرئيسية"), icon: Home, path: "/" },
     { name: t("courses", "الدروس"), icon: PlayCircle, path: "/courses" },
-    { name: t("pharmacy", "الصيدلة"), icon: FlaskConical, path: "/pharmacy" },
     { name: t("gpa", "الحاسبة"), icon: Calculator, path: "/gpa-calculator" },
     { name: t("profile", "حسابي"), icon: User, path: "/profile" },
   ];

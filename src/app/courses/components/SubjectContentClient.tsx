@@ -134,7 +134,14 @@ export default function SubjectContentClient({ subject }: { subject: any }) {
                                    المحاضرة {idx + 1}
                                 </div>
                              </div>
-                          ) : (
+                           ) : lesson.thumbnail ? (
+                             <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden relative shrink-0 bg-slate-100 dark:bg-slate-900 shadow-lg border border-slate-200/20">
+                                <img src={lesson.thumbnail} alt={lesson.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+                                <div className="absolute top-3 right-3 bg-emerald-600 text-white text-[9px] font-black px-2 py-1 rounded-lg z-10 shadow-md">
+                                   دواء / ملف
+                                </div>
+                             </div>
+                           ) : (
                              <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden relative shrink-0 bg-gradient-to-br from-slate-900 via-slate-950 to-medical-950/30 border border-slate-200/10 dark:border-slate-800/30 flex items-center justify-center shadow-lg">
                                 {/* Ambient glow */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-medical-500/10 rounded-full blur-xl pointer-events-none"></div>

@@ -6,19 +6,51 @@ import { requireAdmin } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
 import { broadcast } from "@/lib/sse-store";
 
+// Helper to get or create Pharmacy category
+async function getOrCreatePharmacyCategory() {
+  return await prisma.category.upsert({
+    where: { slug: "pharmacy" },
+    update: {
+      type: "PHARMACY"
+    },
+    create: {
+      name: "الصيدلة",
+      slug: "pharmacy",
+      type: "PHARMACY",
+      description: "قسم الصيدلة والأدوية والمستندات الطبية"
+    }
+  });
+}
 
-// --- Pharmacy Sections ---
+// --- Pharmacy Sections (Subjects) ---
 
 export async function getPharmacySections() {
   try {
-    return await (prisma as any).pharmacySection.findMany({
+    const cat = await getOrCreatePharmacyCategory();
+    const subjects = await prisma.subject.findMany({
+      where: { categoryId: cat.id },
       include: {
-        images: {
-          orderBy: { order: "asc" },
+        lessons: {
+          orderBy: { createdAt: "asc" },
         },
       },
-      orderBy: { order: "asc" },
+      orderBy: { createdAt: "asc" },
     });
+
+    return subjects.map(sub => ({
+      id: sub.id,
+      name: sub.name,
+      description: sub.description,
+      imageUrl: sub.lessons[0]?.thumbnail || null, // cover image
+      order: 0,
+      images: sub.lessons.map(l => ({
+        id: l.id,
+        title: l.title,
+        url: l.pdfUrl || l.thumbnail || "",
+        description: l.description,
+        order: 0
+      }))
+    }));
   } catch (error) {
     console.error("Get Pharmacy Sections Error:", error);
     return [];
@@ -34,17 +66,48 @@ export async function addPharmacySection(formData: FormData) {
   if (!name) return { error: "اسم القسم مطلوب" };
 
   try {
-    const count = await (prisma as any).pharmacySection.count();
-    await (prisma as any).pharmacySection.create({
+    const cat = await getOrCreatePharmacyCategory();
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, "-");
+    const slug = `${baseSlug}-${Date.now()}`;
+
+    const subject = await prisma.subject.create({
       data: {
         name,
         description: description || null,
-        imageUrl: imageUrl || null,
-        order: count,
+        slug,
+        categoryId: cat.id
       },
     });
+
+    // If section cover imageUrl was provided during creation, create cover image lesson
+    if (imageUrl && imageUrl.trim()) {
+      const coverSlug = `cover-${subject.id.substring(0, 8)}-${Date.now()}`;
+      const lesson = await prisma.lesson.create({
+        data: {
+          title: `غلاف قسم - ${name}`,
+          description: "صورة غلاف القسم الصيدلاني",
+          slug: coverSlug,
+          thumbnail: imageUrl,
+          pdfUrl: imageUrl,
+          videoUrl: "",
+          isPublished: true,
+          subjectId: subject.id
+        }
+      });
+      await prisma.resource.create({
+        data: {
+          id: `res-${lesson.id}`,
+          title: "صورة الغلاف",
+          type: "IMAGE",
+          url: imageUrl,
+          lessonId: lesson.id
+        }
+      });
+    }
+
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     
     // SSE
     broadcast("notification", { title: "قسم صيدلاني جديد 💊", body: `تم إضافة قسم جديد: ${name}`, url: "/pharmacy" });
@@ -67,12 +130,55 @@ export async function updatePharmacySection(id: string, formData: FormData) {
   if (!name) return { error: "اسم القسم مطلوب" };
 
   try {
-    await (prisma as any).pharmacySection.update({
+    await prisma.subject.update({
       where: { id },
-      data: { name, description: description || null, imageUrl: imageUrl || null },
+      data: { 
+        name, 
+        description: description || null 
+      },
     });
+
+    // Update cover image if provided
+    if (imageUrl && imageUrl.trim()) {
+      const firstLesson = await prisma.lesson.findFirst({
+        where: { subjectId: id },
+        orderBy: { createdAt: "asc" }
+      });
+
+      if (firstLesson) {
+        await prisma.lesson.update({
+          where: { id: firstLesson.id },
+          data: { thumbnail: imageUrl, pdfUrl: imageUrl }
+        });
+      } else {
+        const coverSlug = `cover-${id.substring(0, 8)}-${Date.now()}`;
+        const lesson = await prisma.lesson.create({
+          data: {
+            title: `غلاف قسم - ${name}`,
+            description: "صورة غلاف القسم الصيدلاني",
+            slug: coverSlug,
+            thumbnail: imageUrl,
+            pdfUrl: imageUrl,
+            videoUrl: "",
+            isPublished: true,
+            subjectId: id
+          }
+        });
+        await prisma.resource.create({
+          data: {
+            id: `res-${lesson.id}`,
+            title: "صورة الغلاف",
+            type: "IMAGE",
+            url: imageUrl,
+            lessonId: lesson.id
+          }
+        });
+      }
+    }
+
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
     return { error: "حدث خطأ أثناء التعديل" };
@@ -82,11 +188,26 @@ export async function updatePharmacySection(id: string, formData: FormData) {
 export async function deletePharmacySection(id: string) {
   await requireAdmin();
   try {
-    await (prisma as any).pharmacySection.delete({ where: { id } });
+    // Delete all lessons first (due to DB cascade policies or Prisma relation constraints)
+    const lessons = await prisma.lesson.findMany({ where: { subjectId: id } });
+    const lessonIds = lessons.map(l => l.id);
+
+    if (lessonIds.length > 0) {
+      await prisma.comment.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.favorite.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.progress.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.resource.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } });
+    }
+
+    await prisma.subject.delete({ where: { id } });
+    
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
+    console.error("Delete Pharmacy Section Error:", error);
     return { error: "حدث خطأ أثناء الحذف" };
   }
 }
@@ -94,11 +215,24 @@ export async function deletePharmacySection(id: string) {
 export async function bulkDeletePharmacySections(ids: string[]) {
   await requireAdmin();
   try {
-    await (prisma as any).pharmacySection.deleteMany({
+    // Delete lessons for all matching sections
+    const lessons = await prisma.lesson.findMany({ where: { subjectId: { in: ids } } });
+    const lessonIds = lessons.map(l => l.id);
+
+    if (lessonIds.length > 0) {
+      await prisma.comment.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.favorite.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.progress.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.resource.deleteMany({ where: { lessonId: { in: lessonIds } } });
+      await prisma.lesson.deleteMany({ where: { id: { in: lessonIds } } });
+    }
+
+    await prisma.subject.deleteMany({
       where: { id: { in: ids } },
     });
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
     console.error("Bulk delete sections error:", error);
@@ -106,7 +240,7 @@ export async function bulkDeletePharmacySections(ids: string[]) {
   }
 }
 
-// --- Pharmacy Images ---
+// --- Pharmacy Images (Lessons) ---
 
 export async function addPharmacyImage(formData: FormData) {
   await requireAdmin();
@@ -118,18 +252,36 @@ export async function addPharmacyImage(formData: FormData) {
   if (!sectionId || !url) return { error: "القسم والرابط مطلوبان" };
 
   try {
-    const count = await (prisma as any).pharmacyImage.count({ where: { sectionId } });
-    await (prisma as any).pharmacyImage.create({
+    const baseSlug = (title || "file").toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, "-");
+    const slug = `${baseSlug}-${Date.now()}`;
+
+    const lesson = await prisma.lesson.create({
       data: {
-        sectionId,
-        url,
-        title: title || null,
+        title: title || "ملف / صورة",
         description: description || null,
-        order: count,
+        slug,
+        thumbnail: url,
+        pdfUrl: url,
+        videoUrl: "",
+        isPublished: true,
+        subjectId: sectionId
       },
     });
+
+    // Also add to Resource
+    await prisma.resource.create({
+      data: {
+        id: `res-${lesson.id}`,
+        title: title || "ملف",
+        type: "IMAGE",
+        url: url,
+        lessonId: lesson.id
+      }
+    });
+
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
 
     // SSE
     broadcast("notification", { title: "دواء جديد 💊", body: `تمت إضافة دواء/ملف جديد: ${title || 'صورة جديدة'}`, url: "/pharmacy" });
@@ -146,9 +298,15 @@ export async function addPharmacyImage(formData: FormData) {
 export async function deletePharmacyImage(id: string) {
   await requireAdmin();
   try {
-    await (prisma as any).pharmacyImage.delete({ where: { id } });
+    await prisma.comment.deleteMany({ where: { lessonId: id } });
+    await prisma.favorite.deleteMany({ where: { lessonId: id } });
+    await prisma.progress.deleteMany({ where: { lessonId: id } });
+    await prisma.resource.deleteMany({ where: { lessonId: id } });
+    await prisma.lesson.delete({ where: { id } });
+
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
     return { error: "حدث خطأ أثناء حذف الصورة" };
@@ -158,11 +316,16 @@ export async function deletePharmacyImage(id: string) {
 export async function bulkDeletePharmacyImages(ids: string[]) {
   await requireAdmin();
   try {
-    await (prisma as any).pharmacyImage.deleteMany({
+    await prisma.comment.deleteMany({ where: { lessonId: { in: ids } } });
+    await prisma.favorite.deleteMany({ where: { lessonId: { in: ids } } });
+    await prisma.progress.deleteMany({ where: { lessonId: { in: ids } } });
+    await prisma.resource.deleteMany({ where: { lessonId: { in: ids } } });
+    await prisma.lesson.deleteMany({
       where: { id: { in: ids } },
     });
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
     console.error("Bulk delete error:", error);
@@ -179,14 +342,38 @@ export async function updatePharmacyImage(id: string, formData: FormData) {
   if (!url) return { error: "رابط الصورة مطلوب" };
 
   try {
-    await (prisma as any).pharmacyImage.update({
+    await prisma.lesson.update({
       where: { id },
-      data: { url, title: title || null, description: description || null },
+      data: { 
+        thumbnail: url,
+        pdfUrl: url,
+        title: title || "ملف / صورة", 
+        description: description || null 
+      },
     });
+
+    // Update resource too
+    await prisma.resource.upsert({
+      where: { id: `res-${id}` },
+      update: {
+        title: title || "ملف",
+        url: url
+      },
+      create: {
+        id: `res-${id}`,
+        title: title || "ملف",
+        type: "IMAGE",
+        url: url,
+        lessonId: id
+      }
+    });
+
     revalidatePath("/admin/pharmacy");
     revalidatePath("/pharmacy");
+    revalidatePath("/courses");
     return { success: true };
   } catch (error) {
+    console.error("Update pharmacy image error:", error);
     return { error: "حدث خطأ أثناء التعديل" };
   }
 }

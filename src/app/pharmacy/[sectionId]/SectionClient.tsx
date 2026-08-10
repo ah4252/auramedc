@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FlaskConical, X, Search, ArrowRight, Image as ImageIcon } from "lucide-react";
+import { FlaskConical, X, Search, ArrowRight, Image as ImageIcon, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "@/context/LocaleProvider.client";
 
@@ -24,8 +24,9 @@ type PharmacySection = {
 };
 
 export default function SectionClient({ section }: { section: PharmacySection }) {
-  const [lightboxImage, setLightboxImage] = useState<PharmacyImage | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [zoomLevel, setZoomLevel] = useState(1);
   const { t } = useLocale();
 
   const filteredImages = section.images.filter(img =>
@@ -33,180 +34,284 @@ export default function SectionClient({ section }: { section: PharmacySection })
     (img.description || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  const activeImage = lightboxIndex !== null ? filteredImages[lightboxIndex] : null;
+
+  const handlePrev = () => {
+    if (lightboxIndex === null) return;
+    setZoomLevel(1);
+    setLightboxIndex(prev => (prev! > 0 ? prev! - 1 : filteredImages.length - 1));
+  };
+
+  const handleNext = () => {
+    if (lightboxIndex === null) return;
+    setZoomLevel(1);
+    setLightboxIndex(prev => (prev! < filteredImages.length - 1 ? prev! + 1 : 0));
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (lightboxIndex === null) return;
+      if (e.key === "ArrowRight") handlePrev();
+      if (e.key === "ArrowLeft") handleNext();
+      if (e.key === "Escape") setLightboxIndex(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, filteredImages.length]);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[var(--dark-bg)]">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-slate-900 py-20 px-4">
-        {/* Background Image/Gradient */}
-        {section.imageUrl ? (
-          <div className="absolute inset-0">
-            <img src={section.imageUrl} alt={section.name} className="w-full h-full object-cover opacity-40 blur-sm scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40" />
-          </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-800" />
-        )}
+    <div className="container mx-auto px-4 py-8 sm:py-12 relative" dir="rtl">
+      {/* Floating Sticky Back Button (Stays on screen as you scroll down) */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <Link
+          href="/courses?tab=pharmacy"
+          className="group flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-lg border border-white/20"
+        >
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <span>العودة إلى قسم الصيدلة</span>
+        </Link>
+      </div>
 
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-teal-400/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto text-center pt-8">
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="absolute top-0 right-0"
-          >
-            <Link
-              href="/pharmacy"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2.5 text-white/90 text-sm font-bold transition-colors"
-            >
-              <ArrowRight className="w-4 h-4" />
-              {t("pharmacy_back_to_sections", "Back to sections")}
-            </Link>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight"
-          >
-            {section.name}
-          </motion.h1>
-
-          {section.description && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-white/80 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10"
-            >
-              {section.description}
-            </motion.p>
-          )}
-
-          {/* Search */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="relative max-w-xl mx-auto"
-          >
-            <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={t("pharmacy_section_search_placeholder", "Quick search for a medicine in this section...")}
-              className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 outline-none focus:border-white/40 focus:bg-white/15 transition-all font-medium shadow-lg"
-            />
-          </motion.div>
+      {/* Static Top Header Badge */}
+      <div className="mb-8 flex items-center justify-end">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black">
+          <FlaskConical className="w-3.5 h-3.5" />
+          <span>قسم صيدلاني</span>
         </div>
       </div>
 
-      {/* Content Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      {/* Header Banner */}
+      <div className="relative overflow-hidden rounded-[2.8rem] border border-emerald-500/20 bg-white dark:bg-slate-900/80 p-8 sm:p-12 mb-10 shadow-xl shadow-emerald-500/5 backdrop-blur-xl">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 rounded-full -mr-28 -mt-28 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-teal-500/5 rounded-full -ml-28 -mb-28 blur-3xl" />
+
+        <div className="relative max-w-3xl">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="px-3.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider">
+              الموسوعة الصيدلانية
+            </span>
+            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white mb-4 leading-tight">
+            {section.name}
+          </h1>
+
+          <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg font-medium leading-relaxed mb-8">
+            {section.description || "استعرض الأدوية والملفات والصور التوضيحية الخاصة بهذا القسم مع إمكانية التكبير والبحث السريع."}
+          </p>
+
+          {/* Embedded Search Control Bar */}
+          <div className="relative max-w-xl">
+            <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="بحث سريع عن دواء أو ملف داخل هذا القسم..."
+              className="w-full pr-14 pl-6 py-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-bold text-sm shadow-inner"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid Display of Items */}
+      <div>
         {filteredImages.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-24"
+            className="text-center py-20 bg-white/50 dark:bg-slate-900/30 rounded-[3rem] border border-dashed border-emerald-500/20"
           >
-            <ImageIcon className="w-20 h-20 mx-auto text-slate-300 dark:text-slate-600 mb-6" />
-            <h2 className="text-2xl font-black text-slate-400 dark:text-slate-500">
-              {search ? t("pharmacy_section_no_results_title", "No matching medicine found") : t("pharmacy_section_no_images_title", "No medicines in this section yet")}
+            <ImageIcon className="w-16 h-16 mx-auto text-emerald-500/30 mb-4" />
+            <h2 className="text-xl font-black text-slate-600 dark:text-slate-400">
+              {search ? "لا يوجد دواء أو ملف مطابق لبحثك" : "لا توجد أدوية مضافة في هذا القسم حالياً"}
             </h2>
-            <p className="text-slate-400 dark:text-slate-600 mt-2">
-              {search ? t("pharmacy_section_no_results_description", "Try another search") : t("pharmacy_section_no_images_description", "Medicines will be added soon")}
+            <p className="text-slate-400 text-sm mt-1">
+              {search ? "جرّب البحث بكلمة أخرى" : "سيتم إضافة المزيد من الملفات قريباً"}
             </p>
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="mt-4 text-emerald-600 dark:text-emerald-400 font-black text-sm hover:underline"
+              >
+                إعادة ضبط البحث
+              </button>
+            )}
           </motion.div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-            {filteredImages.map((img, i) => (
-              <motion.button
-                key={img.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                onClick={() => setLightboxImage(img)}
-                className="group text-right relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/5 transition-all duration-300 border border-slate-200/60 dark:border-slate-700/60 flex flex-col"
-              >
-                <div className="relative aspect-[4/5] w-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-4">
-                  <img
-                    src={img.url}
-                    alt={img.title || t("pharmacy_image_alt", "Medicine")}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-900 shadow-xl transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                      <Search className="w-5 h-5" />
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">
+                تم العثور على {filteredImages.length} دواء / ملف
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 pb-16">
+              {filteredImages.map((img, i) => (
+                <motion.button
+                  key={img.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => {
+                    setZoomLevel(1);
+                    setLightboxIndex(i);
+                  }}
+                  className="group text-right relative bg-white dark:bg-dark-card rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/5 transition-all duration-300 border border-slate-200/80 dark:border-slate-800 flex flex-col hover:-translate-y-1"
+                >
+                  <div className="relative aspect-[4/5] w-full bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center p-3">
+                    <img
+                      src={img.url}
+                      alt={img.title || "صورة دواء"}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="w-10 h-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full flex items-center justify-center text-emerald-600 shadow-xl transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                        <Search className="w-5 h-5" />
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {(img.title || img.description) && (
-                  <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    {img.title && (
-                      <h3 className="font-bold text-slate-900 dark:text-white line-clamp-1 mb-1 group-hover:text-emerald-500 transition-colors">{img.title}</h3>
-                    )}
-                    {img.description && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{img.description}</p>
-                    )}
-                  </div>
-                )}
-              </motion.button>
-            ))}
+
+                  {(img.title || img.description) && (
+                    <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-white dark:bg-dark-card flex-1 flex flex-col justify-between">
+                      {img.title && (
+                        <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1 mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                          {img.title}
+                        </h3>
+                      )}
+                      {img.description && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 font-medium">
+                          {img.description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Lightbox */}
+      {/* Clean Single Card Lightbox Modal */}
       <AnimatePresence>
-        {lightboxImage && (
+        {activeImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl"
-            onClick={() => setLightboxImage(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md select-none"
+            onClick={() => setLightboxIndex(null)}
           >
+            {/* Modal Card Box */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              key={activeImage.id}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ duration: 0.2 }}
               onClick={e => e.stopPropagation()}
-              className="relative w-full max-w-4xl"
+              className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <div className="relative rounded-3xl overflow-hidden bg-slate-900 shadow-2xl border border-white/10">
-                <img
-                  src={lightboxImage.url}
-                  alt={lightboxImage.title || ""}
-                  className="w-full max-h-[80vh] object-contain"
-                />
-              </div>
-              
-              {(lightboxImage.title || lightboxImage.description) && (
-                <div className="mt-6 text-center max-w-2xl mx-auto">
-                  {lightboxImage.title && (
-                    <h3 className="text-white font-black text-2xl mb-2">{lightboxImage.title}</h3>
-                  )}
-                  {lightboxImage.description && (
-                    <p className="text-slate-300 text-base leading-relaxed">{lightboxImage.description}</p>
+              {/* Header Bar */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-slate-900/50">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-emerald-400 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                    {lightboxIndex! + 1} / {filteredImages.length}
+                  </span>
+                  {activeImage.title && (
+                    <h3 className="text-white font-bold text-base line-clamp-1">{activeImage.title}</h3>
                   )}
                 </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50 text-white">
+                    <button
+                      onClick={() => setZoomLevel(prev => Math.min(prev + 0.3, 2.5))}
+                      title="تكبير"
+                      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setZoomLevel(prev => Math.max(prev - 0.3, 0.6))}
+                      title="تصغير"
+                      className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                    {zoomLevel !== 1 && (
+                      <button
+                        onClick={() => setZoomLevel(1)}
+                        title="إعادة الضبط"
+                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-emerald-400"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setLightboxIndex(null)}
+                    title="إغلاق"
+                    className="w-9 h-9 bg-slate-800 hover:bg-rose-600/80 rounded-xl flex items-center justify-center text-white transition-colors border border-slate-700/50"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Main Image Area with Navigation Buttons */}
+              <div className="relative flex-1 bg-slate-950/60 overflow-hidden flex items-center justify-center p-4 min-h-[300px]">
+                {/* Navigation Arrows inside Card */}
+                {filteredImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                      title="السابق"
+                      className="absolute right-4 z-10 w-11 h-11 bg-slate-900/80 hover:bg-emerald-600 text-white border border-slate-700/80 rounded-2xl flex items-center justify-center transition-all shadow-xl hover:scale-105 active:scale-95"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                      title="التالي"
+                      className="absolute left-4 z-10 w-11 h-11 bg-slate-900/80 hover:bg-emerald-600 text-white border border-slate-700/80 rounded-2xl flex items-center justify-center transition-all shadow-xl hover:scale-105 active:scale-95"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+
+                <div className="w-full h-full max-h-[55vh] flex items-center justify-center overflow-auto custom-scrollbar p-2">
+                  <img
+                    src={activeImage.url}
+                    alt={activeImage.title || ""}
+                    style={{ transform: `scale(${zoomLevel})` }}
+                    className="max-h-[52vh] max-w-full object-contain transition-transform duration-200 ease-out"
+                  />
+                </div>
+              </div>
+
+              {/* Description Box inside Card */}
+              {activeImage.description && (
+                <div className="p-4 bg-slate-900 border-t border-slate-800/80 max-h-32 overflow-y-auto custom-scrollbar">
+                  <p className="text-slate-300 text-sm font-medium leading-relaxed text-right">
+                    {activeImage.description}
+                  </p>
+                </div>
               )}
-              
-              <button
-                onClick={() => setLightboxImage(null)}
-                title={t("pharmacy_section_close_button", "Close")}
-                className="absolute -top-12 right-0 md:-right-12 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors border border-white/10"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </motion.div>
           </motion.div>
         )}
