@@ -26,7 +26,13 @@ export async function searchUserByEmail(email: string) {
         id: true,
         name: true,
         email: true,
-        image: true
+        image: true,
+        studyYear: true,
+        wilaya: true,
+        telegram: true,
+        instagram: true,
+        facebook: true,
+        lastActiveAt: true
       }
     });
 
@@ -393,12 +399,13 @@ export async function searchUsersLive(query: string) {
       return { success: true, users: [] };
     }
 
-    // Find up to 5 matching users
+    // Find up to 5 matching users by name or email
     const matchedUsers = await prisma.user.findMany({
       where: {
-        email: {
-          contains: cleanQuery
-        }
+        OR: [
+          { name: { contains: cleanQuery, mode: "insensitive" } },
+          { email: { contains: cleanQuery, mode: "insensitive" } }
+        ]
       },
       select: {
         id: true,
@@ -406,6 +413,10 @@ export async function searchUsersLive(query: string) {
         email: true,
         image: true,
         studyYear: true,
+        wilaya: true,
+        telegram: true,
+        instagram: true,
+        facebook: true,
         lastActiveAt: true
       },
       take: 5

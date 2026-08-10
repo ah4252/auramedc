@@ -45,10 +45,11 @@ export default function FriendsClient({
   const [incoming, setIncoming] = useState<Friend[]>(initialIncoming);
   const [outgoing, setOutgoing] = useState<Friend[]>(initialOutgoing);
 
-  const [searchEmail, setSearchEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchError, setSearchError] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const [activeTab, setActiveTab] = useState<"my-friends" | "requests">("my-friends");
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -134,7 +135,7 @@ export default function FriendsClient({
 
   // Debounced Live Search Hook
   useEffect(() => {
-    const cleanQuery = searchEmail.trim();
+    const cleanQuery = searchQuery.trim();
     if (cleanQuery.length < 2) {
       setSearchResults([]);
       setSearchError("");
@@ -166,7 +167,7 @@ export default function FriendsClient({
     }, 300); // Debounce delay 300ms
 
     return () => clearTimeout(delayDebounce);
-  }, [searchEmail]);
+  }, [searchQuery]);
 
   // Send Request Action
   const handleSendRequest = async (userId: string) => {
@@ -525,7 +526,7 @@ export default function FriendsClient({
             <div className="flex items-center justify-between mb-6 relative z-10">
               <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Search className="w-5 h-5 text-medical-500" />
-                <span>{t("friends_search_quick","Quick search")}</span>
+                <span>{t("friends_search_quick","Quick search by name")}</span>
               </h2>
               {searchLoading && <Loader2 className="w-5 h-5 text-medical-500 animate-spin" />}
             </div>
@@ -534,9 +535,9 @@ export default function FriendsClient({
               <div className="relative">
                 <input
                   type="text"
-                  value={searchEmail}
-                  onChange={e => setSearchEmail(e.target.value)}
-                  placeholder={t("friends_search_placeholder","Start typing your colleague's email...")}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={t("friends_search_placeholder","Start typing your colleague's name or email...")}
                   className="w-full p-4 pl-12 rounded-3xl border border-white/15 dark:border-white/15 bg-white/10 dark:bg-slate-950/30 text-slate-900 dark:text-white focus:ring-2 focus:ring-medical-500/20 outline-none transition-all text-sm font-bold font-mono backdrop-blur-xl"
                   dir="ltr"
                 />
@@ -572,7 +573,8 @@ export default function FriendsClient({
                         key={result.id}
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="p-4 bg-white/10 dark:bg-slate-950/30 rounded-[2rem] border border-white/10 dark:border-white/10 backdrop-blur-xl flex items-center justify-between gap-4 relative overflow-hidden shadow-lg shadow-slate-900/10"
+                        onClick={() => setSelectedUser(result)}
+                        className="p-4 bg-white/10 dark:bg-slate-950/30 hover:bg-white/20 dark:hover:bg-slate-900/40 rounded-[2rem] border border-white/10 dark:border-white/10 backdrop-blur-xl flex items-center justify-between gap-4 relative overflow-hidden shadow-lg shadow-slate-900/10 cursor-pointer transition-colors"
                       >
                         <div className="absolute top-0 right-0 w-16 h-16 bg-medical-500/5 rounded-full blur-xl -z-10" />
                         
@@ -620,7 +622,7 @@ export default function FriendsClient({
 
                           {result.status === "NONE" && (
                             <button
-                              onClick={() => handleSendRequest(result.id)}
+                              onClick={(e) => { e.stopPropagation(); handleSendRequest(result.id); }}
                               disabled={loadingId === result.id}
                               className="py-1.5 px-3 bg-medical-500 hover:bg-medical-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center gap-1 shadow-md shadow-medical-500/10"
                             >
@@ -635,7 +637,7 @@ export default function FriendsClient({
                                 {t("pending","Pending")}
                               </span>
                               <button
-                                onClick={() => handleRejectCancelRequest(result.requestId || "temp-" + result.id, result.id, false)}
+                                onClick={(e) => { e.stopPropagation(); handleRejectCancelRequest(result.requestId || "temp-" + result.id, result.id, false); }}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
@@ -647,7 +649,7 @@ export default function FriendsClient({
                           {result.status === "PENDING_RECEIVED" && (
                             <div className="flex gap-1">
                               <button
-                                onClick={() => handleAcceptRequest(result.requestId, result)}
+                                onClick={(e) => { e.stopPropagation(); handleAcceptRequest(result.requestId, result); }}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
                                 title={t("friends_accept_title","Accept friend request")}
@@ -655,7 +657,7 @@ export default function FriendsClient({
                                 <Check className="w-3 h-3" />
                               </button>
                               <button
-                                onClick={() => handleRejectCancelRequest(result.requestId, result.id, true)}
+                                onClick={(e) => { e.stopPropagation(); handleRejectCancelRequest(result.requestId, result.id, true); }}
                                 disabled={loadingId === result.requestId}
                                 className="py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black transition-all flex items-center justify-center"
                                 title={t("friends_reject_title","Reject friend request")}
@@ -672,7 +674,7 @@ export default function FriendsClient({
                                 <span>{t("friend_label","Friend")}</span>
                               </span>
                               <button
-                                onClick={() => handleUnfriend(result.id, result.name)}
+                                onClick={(e) => { e.stopPropagation(); handleUnfriend(result.id, result.name); }}
                                 disabled={loadingId === result.id}
                                 className="text-red-500 hover:underline text-[9px] font-bold"
                               >
@@ -1041,6 +1043,130 @@ export default function FriendsClient({
       </div>
 
       {/* Friends Guide Modal */}
+      <AnimatePresence>
+        {selectedUser && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedUser(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl backdrop-saturate-150 rounded-[2rem] md:rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20 p-6 md:p-8"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-medical-500/20 rounded-full blur-3xl -z-10" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -z-10" />
+
+              <div className="flex justify-between items-start mb-6">
+                <button onClick={() => setSelectedUser(null)} className="p-2 bg-slate-900/5 dark:bg-white/5 rounded-full hover:bg-red-500/10 hover:text-red-500 transition-all" title={t("close","Close")}>
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="flex flex-col items-end">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                    {t("user_profile", "الملف الشخصي")}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-8 items-center md:items-stretch">
+                <div className="flex flex-col items-center justify-center gap-4 md:w-1/3">
+                  {selectedUser.image ? (
+                    <img
+                      src={selectedUser.image}
+                      alt={selectedUser.name || "User"}
+                      className="w-24 h-24 rounded-3xl object-cover border-4 border-white/20 shadow-xl"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-tr from-medical-500 to-indigo-600 text-white rounded-3xl flex items-center justify-center font-black text-3xl shadow-xl uppercase border-4 border-white/20">
+                      {(selectedUser.name || "U").substring(0, 2)}
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                      {selectedUser.name || t("user_fallback","Unnamed user")}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="flex-1 w-full space-y-3 bg-white/20 dark:bg-slate-900/20 rounded-2xl p-4 border border-white/10">
+                  <div className="flex justify-between items-center text-sm">
+                    {selectedUser.email ? (
+                      <a href={`mailto:${selectedUser.email}`} className="font-black text-right text-slate-900 dark:text-white hover:underline hover:text-sky-500 transition-colors" dir="ltr">
+                        {selectedUser.email}
+                      </a>
+                    ) : (
+                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                    )}
+                    <span className="text-slate-500 font-bold">البريد الإلكتروني:</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    <span className={`font-black text-right ${selectedUser.studyYear ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
+                      {selectedUser.studyYear || "لا يوجد"}
+                    </span>
+                    <span className="text-slate-500 font-bold">{t("friends_year_label","السنة الدراسية")}:</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    <span className={`font-black text-right ${selectedUser.wilaya ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-600"}`}>
+                      {selectedUser.wilaya || "لا يوجد"}
+                    </span>
+                    <span className="text-slate-500 font-bold">{t("wilaya","ولاية الدراسة")}:</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    {selectedUser.telegram ? (
+                      <a href={selectedUser.telegram.startsWith('http') ? selectedUser.telegram : `https://${selectedUser.telegram}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-blue-500 hover:underline hover:text-blue-400 transition-colors" dir="ltr">
+                        {selectedUser.telegram}
+                      </a>
+                    ) : (
+                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                    )}
+                    <span className="text-slate-500 font-bold">تليجرام:</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    {selectedUser.instagram ? (
+                      <a href={selectedUser.instagram.startsWith('http') ? selectedUser.instagram : `https://${selectedUser.instagram}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-pink-500 hover:underline hover:text-pink-400 transition-colors" dir="ltr">
+                        {selectedUser.instagram}
+                      </a>
+                    ) : (
+                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                    )}
+                    <span className="text-slate-500 font-bold">إنستغرام:</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                    {selectedUser.facebook ? (
+                      <a href={selectedUser.facebook.startsWith('http') ? selectedUser.facebook : `https://${selectedUser.facebook}`} target="_blank" rel="noopener noreferrer" className="font-black text-right text-blue-600 hover:underline hover:text-blue-500 transition-colors" dir="ltr">
+                        {selectedUser.facebook}
+                      </a>
+                    ) : (
+                      <span className="font-black text-right text-slate-400 dark:text-slate-600" dir="rtl">لا يوجد</span>
+                    )}
+                    <span className="text-slate-500 font-bold">فيسبوك:</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-slate-900/10 dark:border-white/10">
+                <button 
+                  onClick={() => setSelectedUser(null)}
+                  className="w-full py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl font-black transition-all"
+                >
+                  {t("close","إغلاق")}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showHelpModal && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">

@@ -153,8 +153,7 @@ export default function RegisterPage() {
       setError(res.error);
       setLoading(false);
     } else {
-      router.push("/");
-      router.refresh();
+      router.push("/register/complete");
     }
   }
 

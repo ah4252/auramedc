@@ -323,6 +323,43 @@ export async function updateProfile(formData: FormData) {
   }
 }
 
+export async function updateProfileImage(formData: FormData) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_token")?.value;
+  if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
+
+  const imageFile = formData.get("imageFile") as File | null;
+  const removeImage = formData.get("removeImage") === "true";
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!currentUser) return { error: "المستخدم غير موجود" };
+
+  let imageUrl: string | null = currentUser.image || null;
+
+  if (removeImage) {
+    imageUrl = null;
+  } else if (imageFile && typeof imageFile.arrayBuffer === "function") {
+    try {
+      const arrayBuffer = await imageFile.arrayBuffer();
+      const mimeType = imageFile.type && imageFile.type.startsWith("image/") ? imageFile.type : "image/png";
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      imageUrl = `data:${mimeType};base64,${base64}`;
+    } catch (err: any) {
+      console.error("Profile image upload error:", err);
+      return { error: "فشل رفع الصورة، حاول مرة أخرى" };
+    }
+  }
+
+  try {
+    await prisma.$executeRaw`
+      UPDATE "User" SET image = ${imageUrl || null} WHERE id = ${userId}
+    `;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Profile image update error:", err);
+    return { error: `فشل حفظ الصورة: ${err.message || "خطأ غير معروف"}` };
+  }
+}
+
 // Complete password reset (setting custom password after login with temporary password)
 export async function resetForgotPassword(email: string, tempPassword: string, newPassword: string) {
   if (!email || !tempPassword || !newPassword) {
