@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Hammer, Clock, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,9 +12,22 @@ export default function SectionMaintenanceGuard({
   settings: any;
   children: React.ReactNode;
 }) {
-  // ✅ Hooks are always called unconditionally - no early returns before this line
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [currentQuery, setCurrentQuery] = useState(searchParams.get("tab"));
+
+  useEffect(() => {
+    setCurrentQuery(searchParams.get("tab"));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      setCurrentQuery(urlParams.get("tab"));
+    };
+    window.addEventListener("popstate", handleUrlChange);
+    return () => window.removeEventListener("popstate", handleUrlChange);
+  }, []);
 
   // Determine maintenance state AFTER all hooks
   const isAdmin = pathname.startsWith("/admin");
@@ -23,8 +37,8 @@ export default function SectionMaintenanceGuard({
 
   if (!isAdmin) {
     // قسم الصيدلة: يشمل /pharmacy و /courses?tab=pharmacy و /courses/pharmacy/[sectionId]
-    const isPharmacyTab =
-      pathname.startsWith("/courses") && searchParams.get("tab") === "pharmacy";
+    const activeTab = currentQuery || searchParams.get("tab");
+    const isPharmacyTab = pathname.startsWith("/courses") && activeTab === "pharmacy";
     const isPharmacyPage =
       pathname.startsWith("/pharmacy") || pathname.startsWith("/courses/pharmacy");
 
