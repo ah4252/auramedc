@@ -389,6 +389,8 @@
   "profile_close_button":"إغلاق",
   "profile_change_image_modal_title":"تغيير صورة العرض",
   "profile_new_image_url_label":"رابط الصورة الجديدة",
+  "profile_new_image_file_label":"رفع صورة جديدة",
+  "profile_upload_image_help":"اختر صورة من جهازك أو أدخل رابط الصورة.",
   "profile_save_image_button":"حفظ الصورة",
   "profile_cancel_button":"إلغاء",
   "profile_delete_confirm_title":"تأكيد حذف الحساب",

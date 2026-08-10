@@ -429,6 +429,8 @@
   "profile_close_button":"Fermer",
   "profile_change_image_modal_title":"Changer l'image de profil",
   "profile_new_image_url_label":"URL de la nouvelle image",
+  "profile_new_image_file_label":"Télécharger une nouvelle image",
+  "profile_upload_image_help":"Choisissez une image locale à télécharger ou saisissez une URL d'image.",
   "profile_save_image_button":"Enregistrer l'image",
   "profile_cancel_button":"Annuler",
   "profile_delete_confirm_title":"Confirmer la suppression du compte",

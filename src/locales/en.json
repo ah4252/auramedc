@@ -399,6 +399,8 @@
   "profile_close_button": "Close",
   "profile_change_image_modal_title": "Change profile image",
   "profile_new_image_url_label": "New image URL",
+  "profile_new_image_file_label": "Upload new image",
+  "profile_upload_image_help": "Choose a local image file to upload, or enter an image URL.",
   "profile_save_image_button": "Save image",
   "profile_cancel_button": "Cancel",
   "profile_payment_receipt_image_label": "Receipt image",

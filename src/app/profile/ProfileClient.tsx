@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "@/context/LocaleProvider.client";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
 import { submitSubscriptionRequest } from "@/app/actions/payment";
@@ -40,12 +40,23 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   // Image modal state
   const [showImageModal, setShowImageModal] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState(user.image || "");
+  const [tempImageFile, setTempImageFile] = useState<File | null>(null);
+  const [tempImagePreview, setTempImagePreview] = useState(user.image || "");
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    if (tempImageFile) {
+      const objectUrl = URL.createObjectURL(tempImageFile);
+      setTempImagePreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setTempImagePreview(tempImageUrl || "");
+  }, [tempImageFile, tempImageUrl]);
 
   async function handleDeleteGpa(id: string) {
     if (!confirm(t("profile_confirm_delete_gpa"))) return;
@@ -115,7 +126,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     setLoading(true);
     const formData = new FormData();
     formData.append("name", user.name);
-    formData.append("image", tempImageUrl);
+    if (tempImageFile) {
+      formData.append("imageFile", tempImageFile);
+    } else {
+      formData.append("image", tempImageUrl);
+    }
     formData.append("studyYear", user.studyYear || "");
     formData.append("wilaya", user.wilaya || "");
     formData.append("telegram", user.telegram || "");
@@ -1099,8 +1114,8 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
               <div className="mb-6 flex justify-center">
                 <div className="w-32 h-32 rounded-full border-4 border-medical-500/20 overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                   {tempImageUrl ? (
-                      <img src={tempImageUrl} alt="Preview" className="w-full h-full object-cover" onError={() => setTempImageUrl("")} />
+                   {tempImagePreview ? (
+                      <img src={tempImagePreview} alt="Preview" className="w-full h-full object-cover" onError={() => { setTempImagePreview(""); setTempImageFile(null); }} />
                    ) : (
                       <User className="w-12 h-12 text-slate-400" />
                    )}
@@ -1109,11 +1124,33 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
 
               <form onSubmit={handleImageUpdate}>
                 <div className="space-y-2 mb-6">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">{t("profile_new_image_file_label")}</label>
+                  <input 
+                    type="file"
+                    name="imageFile"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setTempImageFile(file);
+                      if (file) {
+                        setTempImageUrl("");
+                      } else {
+                        setTempImagePreview(tempImageUrl || "");
+                      }
+                    }}
+                    className="w-full text-right file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-purple-500/10 file:text-purple-600 hover:file:bg-purple-500/20 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-4 outline-none transition-all"
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t("profile_upload_image_help")}</p>
+                </div>
+                <div className="space-y-2 mb-6">
                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">{t("profile_new_image_url_label")}</label>
                   <input 
                     type="url"
                     value={tempImageUrl}
-                    onChange={(e) => setTempImageUrl(e.target.value)}
+                    onChange={(e) => {
+                      setTempImageUrl(e.target.value);
+                      setTempImageFile(null);
+                    }}
                     placeholder="https://..."
                     dir="ltr"
                     className="w-full p-4 pl-4 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold"

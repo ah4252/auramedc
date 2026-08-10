@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import fs from "fs/promises";
+import path from "path";
 import { generateAdminToken, verifyAdminToken } from "@/lib/auth-helpers";
 import { z } from "zod";
 
@@ -256,7 +258,11 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل").max(50, "الاسم طويل جداً"),
-  image: z.string().url("رابط الصورة غير صحيح").optional().or(z.literal("")),
+  image: z.string().max(1000, "رابط الصورة طويل جداً").optional().or(z.literal(""
+  )).refine((value) => {
+    if (!value) return true;
+    return value.startsWith("/") || z.string().url().safeParse(value).success;
+  }, "رابط الصورة غير صحيح"),
   studyYear: z.string().max(50, "السنة الدراسية طويلة جداً").optional().or(z.literal("")),
   wilaya: z.string().max(100, "اسم الولاية طويل جداً").optional().or(z.literal("")),
   telegram: z.string().optional().or(z.literal("")),
@@ -269,9 +275,29 @@ export async function updateProfile(formData: FormData) {
   const userId = cookieStore.get("user_token")?.value;
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
+  const imageFile = formData.get("imageFile") as File | null;
+  let imageUrl = (formData.get("image") as string | null) || null;
+
+  if (imageFile && typeof (imageFile as File).arrayBuffer === "function") {
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", "profiles");
+      await fs.mkdir(uploadsDir, { recursive: true });
+      const extension = path.extname(imageFile.name).toLowerCase() || ".png";
+      const safeExtension = [".png", ".jpg", ".jpeg", ".webp", ".gif"].includes(extension) ? extension : ".png";
+      const fileName = `${userId}-${Date.now()}${safeExtension}`;
+      const filePath = path.join(uploadsDir, fileName);
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+      imageUrl = `/uploads/profiles/${fileName}`;
+    } catch (err: any) {
+      console.error("Profile image upload error:", err);
+      return { error: "فشل رفع الصورة، حاول مرة أخرى" };
+    }
+  }
+
   const rawData = {
     name: formData.get("name") as string,
-    image: formData.get("image") as string,
+    image: imageUrl || "",
     studyYear: formData.get("studyYear") as string,
     wilaya: formData.get("wilaya") as string,
     telegram: formData.get("telegram") as string,
