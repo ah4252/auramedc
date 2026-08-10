@@ -62,13 +62,13 @@ export default function SectionClient({ section }: { section: PharmacySection })
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12 relative" dir="rtl">
-      {/* Floating Sticky Back Button (Stays on screen as you scroll down) */}
-      <div className="fixed bottom-6 right-6 z-40">
+      {/* Floating Sticky Back Button - visible on all screens including mobile */}
+      <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[60]">
         <Link
           href="/courses?tab=pharmacy"
-          className="group flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-lg border border-white/20"
+          className="group flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-lg border border-white/20"
         >
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           <span>العودة إلى قسم الصيدلة</span>
         </Link>
       </div>
