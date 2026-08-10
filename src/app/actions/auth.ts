@@ -276,9 +276,22 @@ export async function updateProfile(formData: FormData) {
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   const imageFile = formData.get("imageFile") as File | null;
-  let imageUrl = (formData.get("image") as string | null) || null;
+  const removeImage = formData.get("removeImage") === "true";
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
-  if (imageFile && typeof (imageFile as File).arrayBuffer === "function") {
+  let imageUrl: string | null = currentUser?.image || null;
+
+  if (removeImage) {
+    if (currentUser?.image?.startsWith("/uploads/profiles/")) {
+      try {
+        const filePath = path.join(process.cwd(), "public", currentUser.image.replace("/", ""));
+        await fs.unlink(filePath).catch(() => undefined);
+      } catch (err) {
+        console.warn("Failed to delete old profile image file:", err);
+      }
+    }
+    imageUrl = null;
+  } else if (imageFile && typeof (imageFile as File).arrayBuffer === "function") {
     try {
       const uploadsDir = path.join(process.cwd(), "public", "uploads", "profiles");
       await fs.mkdir(uploadsDir, { recursive: true });
@@ -288,6 +301,9 @@ export async function updateProfile(formData: FormData) {
       const filePath = path.join(uploadsDir, fileName);
       const buffer = Buffer.from(await imageFile.arrayBuffer());
       await fs.writeFile(filePath, buffer);
+      if (currentUser?.image?.startsWith("/uploads/profiles/")) {
+        await fs.unlink(path.join(process.cwd(), "public", currentUser.image.replace("/", ""))).catch(() => undefined);
+      }
       imageUrl = `/uploads/profiles/${fileName}`;
     } catch (err: any) {
       console.error("Profile image upload error:", err);

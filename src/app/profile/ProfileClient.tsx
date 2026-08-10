@@ -42,6 +42,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [tempImageUrl, setTempImageUrl] = useState(user.image || "");
   const [tempImageFile, setTempImageFile] = useState<File | null>(null);
   const [tempImagePreview, setTempImagePreview] = useState(user.image || "");
+  const [removeImageLoading, setRemoveImageLoading] = useState(false);
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -128,8 +129,6 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
     formData.append("name", user.name);
     if (tempImageFile) {
       formData.append("imageFile", tempImageFile);
-    } else {
-      formData.append("image", tempImageUrl);
     }
     formData.append("studyYear", user.studyYear || "");
     formData.append("wilaya", user.wilaya || "");
@@ -145,6 +144,28 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
        router.refresh();
     }
     setLoading(false);
+  }
+
+  async function handleRemoveImage() {
+    if (!confirm(t("profile_confirm_remove_image"))) return;
+    setRemoveImageLoading(true);
+    const formData = new FormData();
+    formData.append("name", user.name);
+    formData.append("removeImage", "true");
+    formData.append("studyYear", user.studyYear || "");
+    formData.append("wilaya", user.wilaya || "");
+    formData.append("telegram", user.telegram || "");
+    formData.append("instagram", user.instagram || "");
+    formData.append("facebook", user.facebook || "");
+
+    const res = await updateProfile(formData);
+    if (res?.error) {
+      alert(res.error || t("profile_update_failed"));
+    } else {
+      setShowImageModal(false);
+      router.refresh();
+    }
+    setRemoveImageLoading(false);
   }
 
   const completedCount = user.progress?.filter((p: any) => p.completed).length || 0;
@@ -197,6 +218,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
+              {!user.image && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 max-w-[18rem] mx-auto">
+                  {t("profile_no_image_upload_hint")}
+                </p>
+              )}
               
               <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-1 tracking-tight">{user.name}</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 font-bold">{user.email}</p>
@@ -841,15 +867,6 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                         />
                       </div>
 
-                      <div className="space-y-3">
-                        <label className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
-                          <Camera className="w-4 h-4 text-purple-500" /> {t("profile_profile_image_url_label")}
-                        </label>
-                        <input 
-                          name="image" defaultValue={user.image || ""} placeholder="https://example.com/image.jpg" dir="ltr"
-                          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all font-medium text-slate-800 dark:text-white placeholder:text-slate-400 shadow-sm"
-                        />
-                      </div>
 
                       <div className="space-y-3">
                         <label htmlFor="studyYear" className="text-sm font-black text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-2">
@@ -1142,28 +1159,18 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400">{t("profile_upload_image_help")}</p>
                 </div>
-                <div className="space-y-2 mb-6">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block text-right">{t("profile_new_image_url_label")}</label>
-                  <input 
-                    type="url"
-                    value={tempImageUrl}
-                    onChange={(e) => {
-                      setTempImageUrl(e.target.value);
-                      setTempImageFile(null);
-                    }}
-                    placeholder="https://..."
-                    dir="ltr"
-                    className="w-full p-4 pl-4 text-left rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-medical-500 focus:ring-4 focus:ring-medical-500/10 outline-none transition-all font-bold"
-                  />
-                </div>
-                
-                <div className="flex gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <button type="submit" disabled={loading} className="flex-1 py-4 bg-medical-500 hover:bg-medical-600 text-white rounded-2xl font-black transition-all shadow-[0_10px_20px_-10px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 disabled:opacity-50">
                     {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Save className="w-4 h-4" /> {t("profile_save_image_button")}</>}
                   </button>
                   <button type="button" onClick={() => setShowImageModal(false)} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all">
                     {t("profile_cancel_button")}
                   </button>
+                  {user.image && (
+                    <button type="button" onClick={handleRemoveImage} disabled={removeImageLoading} className="flex-1 py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black transition-all shadow-[0_10px_20px_-10px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 disabled:opacity-50">
+                      {removeImageLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : t("profile_remove_image_button")}
+                    </button>
+                  )}
                 </div>
               </form>
             </motion.div>
