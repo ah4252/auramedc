@@ -3,8 +3,6 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
-import fs from "fs/promises";
-import path from "path";
 import { generateAdminToken, verifyAdminToken } from "@/lib/auth-helpers";
 import { z } from "zod";
 
@@ -258,10 +256,10 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "الاسم يجب أن يكون حرفين على الأقل").max(50, "الاسم طويل جداً"),
-  image: z.string().max(1000, "رابط الصورة طويل جداً").optional().or(z.literal(""
+  image: z.string().max(200000, "رابط الصورة طويل جداً").optional().or(z.literal(""
   )).refine((value) => {
     if (!value) return true;
-    return value.startsWith("/") || z.string().url().safeParse(value).success;
+    return value.startsWith("/") || value.startsWith("data:") || z.string().url().safeParse(value).success;
   }, "رابط الصورة غير صحيح"),
   studyYear: z.string().max(50, "السنة الدراسية طويلة جداً").optional().or(z.literal("")),
   wilaya: z.string().max(100, "اسم الولاية طويل جداً").optional().or(z.literal("")),
@@ -279,32 +277,18 @@ export async function updateProfile(formData: FormData) {
   const removeImage = formData.get("removeImage") === "true";
   const currentUser = await prisma.user.findUnique({ where: { id: userId } });
 
-  let imageUrl: string | null = currentUser?.image || null;
+  if (!currentUser) return { error: "المستخدم غير موجود" };
+
+  let imageUrl: string | null = currentUser.image || null;
 
   if (removeImage) {
-    if (currentUser?.image?.startsWith("/uploads/profiles/")) {
-      try {
-        const filePath = path.join(process.cwd(), "public", currentUser.image.replace("/", ""));
-        await fs.unlink(filePath).catch(() => undefined);
-      } catch (err) {
-        console.warn("Failed to delete old profile image file:", err);
-      }
-    }
     imageUrl = null;
-  } else if (imageFile && typeof (imageFile as File).arrayBuffer === "function") {
+  } else if (imageFile && typeof imageFile.arrayBuffer === "function") {
     try {
-      const uploadsDir = path.join(process.cwd(), "public", "uploads", "profiles");
-      await fs.mkdir(uploadsDir, { recursive: true });
-      const extension = path.extname(imageFile.name).toLowerCase() || ".png";
-      const safeExtension = [".png", ".jpg", ".jpeg", ".webp", ".gif"].includes(extension) ? extension : ".png";
-      const fileName = `${userId}-${Date.now()}${safeExtension}`;
-      const filePath = path.join(uploadsDir, fileName);
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
-      if (currentUser?.image?.startsWith("/uploads/profiles/")) {
-        await fs.unlink(path.join(process.cwd(), "public", currentUser.image.replace("/", ""))).catch(() => undefined);
-      }
-      imageUrl = `/uploads/profiles/${fileName}`;
+      const arrayBuffer = await imageFile.arrayBuffer();
+      const mimeType = imageFile.type && imageFile.type.startsWith("image/") ? imageFile.type : "image/png";
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      imageUrl = `data:${mimeType};base64,${base64}`;
     } catch (err: any) {
       console.error("Profile image upload error:", err);
       return { error: "فشل رفع الصورة، حاول مرة أخرى" };
