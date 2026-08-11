@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { prisma, isDatabaseEnabled } from "@/lib/db";
+import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
 import { getCategories } from "@/app/actions/content";
 import { getPharmacySections } from "@/app/actions/pharmacy";
 import YearsClient from "./components/YearsClient";
@@ -8,16 +9,16 @@ import YearsClient from "./components/YearsClient";
 export default async function CoursesPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_token")?.value;
-  const isAdmin = !!cookieStore.get("admin_token");
+  const admin = await checkIsAdmin();
 
-  let canAccessPharmacy = isAdmin;
+  let canAccessPharmacy = admin;
 
   if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { studyYear: true },
     });
-    if (user && user.studyYear && user.studyYear.trim().includes("الثالثة")) {
+    if (user && user.studyYear && (user.studyYear.includes("الثالثة") || user.studyYear.includes("3"))) {
       canAccessPharmacy = true;
     }
   }

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { prisma, isDatabaseEnabled } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
+import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
 import { tServer, type Locale } from "@/lib/i18n";
 import SectionClient from "./SectionClient";
 
@@ -23,16 +24,16 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
 export default async function PharmacySectionPage({ params }: { params: Promise<{ sectionId: string }> }) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_token")?.value;
-  const isAdmin = !!cookieStore.get("admin_token");
+  const admin = await checkIsAdmin();
 
-  let canAccessPharmacy = isAdmin;
+  let canAccessPharmacy = admin;
 
   if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { studyYear: true },
     });
-    if (user && user.studyYear && user.studyYear.trim().includes("الثالثة")) {
+    if (user && user.studyYear && (user.studyYear.includes("الثالثة") || user.studyYear.includes("3"))) {
       canAccessPharmacy = true;
     }
   }
