@@ -152,7 +152,7 @@ export default async function Home() {
 
             {/* الصيدلة */}
             {canViewPharmacy && (
-              <Link href="/pharmacy" className="group relative flex flex-col justify-between bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/25 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-500 min-h-[160px]">
+              <Link href="/courses?tab=pharmacy" className="group relative flex flex-col justify-between bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/25 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-500 min-h-[160px]">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=60')] bg-cover bg-center opacity-[0.04] dark:opacity-[0.1] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.15] transition-opacity duration-700" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
                 <div className="relative z-10">
@@ -286,7 +286,7 @@ export default async function Home() {
                 badgeColor: "bg-violet-500/20 text-violet-300",
               },
               ...(canViewPharmacy ? [{
-                href: "/pharmacy",
+                href: "/courses?tab=pharmacy",
                 icon: Pill,
                 title: tServer("home_feature_pharmacy_title", siteLang, "الصيدلة"),
                 desc: tServer("home_feature_pharmacy_desc", siteLang, "مرجع دوائي شامل وتفاعلي للأدوية وجرعاتها وتفاعلاتها الدوائية."),
