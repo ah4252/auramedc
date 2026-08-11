@@ -48,6 +48,9 @@ export async function getPharmacySections() {
         title: l.title,
         url: l.pdfUrl || l.thumbnail || "",
         description: l.description,
+        indications: l.indications,
+        sideEffects: l.sideEffects,
+        ageLimit: l.ageLimit,
         order: 0
       }))
     }));
@@ -248,6 +251,9 @@ export async function addPharmacyImage(formData: FormData) {
   const url = formData.get("url") as string;
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
+  const indications = formData.get("indications") as string;
+  const sideEffects = formData.get("sideEffects") as string;
+  const ageLimit = formData.get("ageLimit") as string;
 
   if (!sectionId || !url) return { error: "القسم والرابط مطلوبان" };
 
@@ -259,6 +265,9 @@ export async function addPharmacyImage(formData: FormData) {
       data: {
         title: title || "ملف / صورة",
         description: description || null,
+        indications: indications || null,
+        sideEffects: sideEffects || null,
+        ageLimit: ageLimit || null,
         slug,
         thumbnail: url,
         pdfUrl: url,
@@ -338,6 +347,9 @@ export async function updatePharmacyImage(id: string, formData: FormData) {
   const url = formData.get("url") as string;
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
+  const indications = formData.get("indications") as string;
+  const sideEffects = formData.get("sideEffects") as string;
+  const ageLimit = formData.get("ageLimit") as string;
 
   if (!url) return { error: "رابط الصورة مطلوب" };
 
@@ -348,7 +360,10 @@ export async function updatePharmacyImage(id: string, formData: FormData) {
         thumbnail: url,
         pdfUrl: url,
         title: title || "ملف / صورة", 
-        description: description || null 
+        description: description || null,
+        indications: indications || null,
+        sideEffects: sideEffects || null,
+        ageLimit: ageLimit || null
       },
     });
 

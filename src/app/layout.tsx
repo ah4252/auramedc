@@ -101,7 +101,8 @@ export default async function RootLayout({
       maintenanceTimetable: false,
 
       maintenanceGpa: false,
-      maintenanceNews: false
+      maintenanceNews: false,
+      maintenanceQcms: false
     };
   }
 

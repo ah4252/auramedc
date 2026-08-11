@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3, Pill } from "lucide-react";
+import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3, Pill, NotebookPen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection, getSystemStatus } from "@/app/actions/settings";
@@ -17,6 +17,7 @@ export default function AdminSettingsPage() {
   const [maintenanceTimetable, setMaintenanceTimetable] = useState(false);
   const [maintenanceGpa, setMaintenanceGpa] = useState(false);
   const [maintenanceNews, setMaintenanceNews] = useState(false);
+  const [maintenanceQcms, setMaintenanceQcms] = useState(false);
   const [allowRegistration, setAllowRegistration] = useState(true);
   const [siteName, setSiteName] = useState("Aura Med Elite");
   const [primaryColor, setPrimaryColor] = useState("#0ea5e9");
@@ -62,6 +63,7 @@ export default function AdminSettingsPage() {
       setMaintenanceTimetable(s.maintenanceTimetable || false);
       setMaintenanceGpa(s.maintenanceGpa || false);
       setMaintenanceNews(s.maintenanceNews || false);
+      setMaintenanceQcms(s.maintenanceQcms || false);
       setAllowRegistration(s.allowRegistration);
       setSiteName(s.siteName || "Aura Med Elite");
       setPrimaryColor(s.primaryColor || "#0ea5e9");
@@ -105,6 +107,7 @@ export default function AdminSettingsPage() {
       case 'timetable': setMaintenanceTimetable(value); await updateSettings({ maintenanceTimetable: value }); break;
       case 'gpa': setMaintenanceGpa(value); await updateSettings({ maintenanceGpa: value }); break;
       case 'news': setMaintenanceNews(value); await updateSettings({ maintenanceNews: value }); break;
+      case 'qcms': setMaintenanceQcms(value); await updateSettings({ maintenanceQcms: value }); break;
     }
   };
 
@@ -690,6 +693,7 @@ export default function AdminSettingsPage() {
                                { id: 'timetable', label: 'الجدول الدراسي', icon: Sliders, value: maintenanceTimetable },
                                { id: 'gpa', label: 'حاسبة المعدل', icon: Sliders, value: maintenanceGpa },
                                { id: 'news', label: 'الأخبار والمستجدات', icon: Globe, value: maintenanceNews },
+                               { id: 'qcms', label: 'QCMs', icon: NotebookPen, value: maintenanceQcms },
                              ].map((section) => {
                                const Icon = section.icon;
                                return (

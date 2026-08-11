@@ -60,6 +60,9 @@ export default function SectionMaintenanceGuard({
     } else if (pathname.startsWith("/news") && settings.maintenanceNews) {
       isUnderMaintenance = true;
       sectionName = "الأخبار والمستجدات";
+    } else if ((pathname.startsWith("/qcms") || (pathname.startsWith("/courses") && activeTab === "qcms")) && settings.maintenanceQcms) {
+      isUnderMaintenance = true;
+      sectionName = "قسم QCMs";
     }
   }
 

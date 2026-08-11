@@ -15,6 +15,7 @@ export async function getSettings() {
     maintenanceTimetable: false,
     maintenanceGpa: false,
     maintenanceNews: false,
+    maintenanceQcms: false,
     allowRegistration: true,
     primaryColor: "#0ea5e9",
     secondaryColor: "#6366f1",
@@ -47,6 +48,7 @@ export async function getSettings() {
         maintenanceTimetable: true,
         maintenanceGpa: true,
         maintenanceNews: true,
+        maintenanceQcms: true,
         allowRegistration: true,
         primaryColor: true,
         secondaryColor: true,
@@ -92,6 +94,7 @@ export async function updateSettings(data: any) {
     if (data.maintenanceTimetable !== undefined) updateData.maintenanceTimetable = data.maintenanceTimetable;
     if (data.maintenanceGpa !== undefined) updateData.maintenanceGpa = data.maintenanceGpa;
     if (data.maintenanceNews !== undefined) updateData.maintenanceNews = data.maintenanceNews;
+    if (data.maintenanceQcms !== undefined) updateData.maintenanceQcms = data.maintenanceQcms;
     if (data.allowRegistration !== undefined) updateData.allowRegistration = data.allowRegistration;
     if (data.primaryColor !== undefined) updateData.primaryColor = data.primaryColor;
     if (data.secondaryColor !== undefined) updateData.secondaryColor = data.secondaryColor;

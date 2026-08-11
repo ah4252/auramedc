@@ -19,6 +19,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/qcms")) {
+    return NextResponse.next();
+  }
+
   if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
   }

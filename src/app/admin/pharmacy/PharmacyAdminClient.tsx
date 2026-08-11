@@ -51,6 +51,9 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
   const [imageUrl, setImageUrl] = useState("");
   const [imageTitle, setImageTitle] = useState("");
   const [imageDesc, setImageDesc] = useState("");
+  const [medicineIndications, setMedicineIndications] = useState("");
+  const [medicineSideEffects, setMedicineSideEffects] = useState("");
+  const [medicineAgeLimit, setMedicineAgeLimit] = useState("");
 
   // Expanded sections
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(initialSections.map(s => s.id)));
@@ -170,11 +173,14 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
     fd.append("url", normalizeImageUrl(imageUrl));
     fd.append("title", imageTitle);
     fd.append("description", imageDesc);
+    fd.append("indications", medicineIndications);
+    fd.append("sideEffects", medicineSideEffects);
+    fd.append("ageLimit", medicineAgeLimit);
     startTransition(async () => {
       const res = await addPharmacyImage(fd);
       if (res?.error) { showFeedback("error", res.error); return; }
       showFeedback("success", "تم إضافة الصورة بنجاح");
-      setShowAddImage(null); setImageUrl(""); setImageTitle(""); setImageDesc("");
+      setShowAddImage(null); setImageUrl(""); setImageTitle(""); setImageDesc(""); setMedicineIndications(""); setMedicineSideEffects(""); setMedicineAgeLimit("");
       window.location.reload();
     });
   };
@@ -185,11 +191,14 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
     fd.append("url", normalizeImageUrl(imageUrl));
     fd.append("title", imageTitle);
     fd.append("description", imageDesc);
+    fd.append("indications", medicineIndications);
+    fd.append("sideEffects", medicineSideEffects);
+    fd.append("ageLimit", medicineAgeLimit);
     startTransition(async () => {
       const res = await updatePharmacyImage(editingImage.image.id, fd);
       if (res?.error) { showFeedback("error", res.error); return; }
       showFeedback("success", "تم تعديل الصورة بنجاح");
-      setEditingImage(null); setImageUrl(""); setImageTitle(""); setImageDesc("");
+      setEditingImage(null); setImageUrl(""); setImageTitle(""); setImageDesc(""); setMedicineIndications(""); setMedicineSideEffects(""); setMedicineAgeLimit("");
       window.location.reload();
     });
   };
@@ -425,7 +434,7 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
                   {editingImage ? "تعديل الصورة" : "إضافة صورة"}
                 </h3>
                 <button
-                  onClick={() => { setShowAddImage(null); setEditingImage(null); setImageUrl(""); setImageTitle(""); setImageDesc(""); }}
+                  onClick={() => { setShowAddImage(null); setEditingImage(null); setImageUrl(""); setImageTitle(""); setImageDesc(""); setMedicineIndications(""); setMedicineSideEffects(""); setMedicineAgeLimit(""); }}
                   title="إغلاق النافذة"
                   className="p-2 bg-slate-100 dark:bg-slate-800/50 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                 >
@@ -475,6 +484,35 @@ export default function PharmacyAdminClient({ sections: initialSections }: { sec
                     rows={2}
                     placeholder="وصف مختصر..."
                     className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">دواعي الاستعمال</label>
+                  <textarea
+                    value={medicineIndications}
+                    onChange={e => setMedicineIndications(e.target.value)}
+                    rows={3}
+                    placeholder="أدخل دواعي الاستعمال..."
+                    className="w-full px-4 py-3 text-sm rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">الأثار الجانبية</label>
+                  <textarea
+                    value={medicineSideEffects}
+                    onChange={e => setMedicineSideEffects(e.target.value)}
+                    rows={3}
+                    placeholder="أدخل الآثار الجانبية..."
+                    className="w-full px-4 py-3 text-sm rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/60 dark:bg-rose-950/20 focus:border-rose-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 block">السن المحدد</label>
+                  <input
+                    value={medicineAgeLimit}
+                    onChange={e => setMedicineAgeLimit(e.target.value)}
+                    placeholder="مثل: 12 سنة فما فوق"
+                    className="w-full px-4 py-3 text-sm rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 focus:border-amber-500 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all font-medium"
                   />
                 </div>
                 <button

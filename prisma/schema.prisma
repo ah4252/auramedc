@@ -67,6 +67,9 @@ model Lesson {
   id          String     @id @default(cuid())
   title       String
   description String?
+  indications String?
+  sideEffects String?
+  ageLimit    String?
   slug        String     @unique
   thumbnail   String?
   videoUrl    String?
@@ -174,6 +177,7 @@ model SiteSettings {
   socialWhatsapp         String?
   maintenancePharmacy    Boolean  @default(false)
   maintenanceSubjects    Boolean  @default(false)
+  maintenanceQcms         Boolean  @default(false)
 }
 
 model Timetable {
@@ -201,6 +205,37 @@ model GpaSubject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   gpaYear     GpaYear  @relation(fields: [gpaYearId], references: [id], onDelete: Cascade)
+}
+
+model QcmsYear {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  subjects  QcmsSubject[]
+}
+
+model QcmsSubject {
+  id          String           @id @default(cuid())
+  name        String
+  code        String?
+  order       Int              @default(0)
+  qcmsYearId  String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  qcmsYear    QcmsYear         @relation(fields: [qcmsYearId], references: [id], onDelete: Cascade)
+  examLinks   QcmsExamLink[]
+}
+
+model QcmsExamLink {
+  id            String       @id @default(cuid())
+  label         String
+  url           String
+  qcmsSubjectId String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  qcmsSubject   QcmsSubject  @relation(fields: [qcmsSubjectId], references: [id], onDelete: Cascade)
 }
 
 model News {
