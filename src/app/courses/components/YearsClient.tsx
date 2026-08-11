@@ -222,9 +222,9 @@ export default function YearsClient({
                   </div>
 
                   {selectedQcmsSubject ? (
-                    <div className="mt-10 rounded-[2rem] bg-slate-900/80 p-8">
-                      <div className="mb-6 flex items-center justify-between">
-                        <div>
+                    <div className="mt-10 rounded-[2rem] bg-slate-900/80 p-4 sm:p-8">
+                      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
                           <button
                             onClick={() => {
                               setSelectedQcmsSubjectId(null);
@@ -234,27 +234,27 @@ export default function YearsClient({
                             <ArrowLeft className="h-4 w-4" />
                             {t("qcms_back_to_subjects", "Back to subjects")}
                           </button>
-                          <h3 className="mt-4 text-3xl font-black text-white">{selectedQcmsSubject.name}</h3>
+                          <h3 className="mt-4 text-2xl font-black text-white sm:text-3xl">{selectedQcmsSubject.name}</h3>
                           <p className="mt-2 text-sm font-bold text-slate-400">{t("qcms_year_label", "Year")}: {selectedQcmsYear?.name}</p>
                         </div>
-                        <span className="rounded-full border border-violet-400/40 bg-violet-500/10 px-4 py-2 text-xs font-black text-violet-200">
+                        <span className="inline-flex w-fit rounded-full border border-violet-400/40 bg-violet-500/10 px-4 py-2 text-xs font-black text-violet-200">
                           {selectedQcmsSubject.code || t("qcms_code_default", "QCM")}
                         </span>
                       </div>
-                      <div className="rounded-[2rem] bg-violet-500/5 p-10">
+                      <div className="rounded-[2rem] bg-violet-500/5 p-4 sm:p-10">
                         <div className="mb-4 flex justify-center">
                           <NotebookPen className="h-12 w-12 text-violet-300" />
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-1">
-                          <div className="rounded-[1.6rem] bg-slate-900/50 p-5">
+                        <div className="grid grid-cols-1 gap-6">
+                          <div className="rounded-[1.6rem] bg-slate-900/50 p-4 sm:p-5">
                             <h4 className="text-xl font-black text-white">روابط الامتحانات</h4>
                             <div className="mt-4 space-y-3">
                               {(selectedQcmsSubject.examLinks || []).length > 0 ? (
                                 (selectedQcmsSubject.examLinks || []).map((link: any) => (
-                                  <a key={link.id} href={link.url} target="_blank" rel="noreferrer" className="block rounded-2xl bg-violet-500/10 px-4 py-3 transition hover:bg-violet-500/20">
-                                    <span className="block text-sm font-black text-violet-200">{link.label}</span>
-                                    <span className="mt-1 block truncate text-[10px] font-bold text-slate-400">{link.url}</span>
+                                  <a key={link.id} href={link.url} target="_blank" rel="noreferrer" className="block min-w-0 overflow-hidden rounded-2xl bg-violet-500/10 px-4 py-3 transition hover:bg-violet-500/20">
+                                    <span className="block break-words text-sm font-black text-violet-200">{link.label}</span>
+                                    <span className="mt-1 block max-w-full truncate text-[10px] font-bold text-slate-400">{link.url}</span>
                                   </a>
                                 ))
                               ) : (
