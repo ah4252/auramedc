@@ -5,6 +5,7 @@
 
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
 // ============================================================
 // Admin Token — نظام توكن المدير الآمن
@@ -92,6 +93,36 @@ export async function getCurrentUserId(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+export function normalizeStudyYear(value?: string | null): string {
+  return (value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+export function isThirdYearStudyYear(value?: string | null): boolean {
+  const normalized = normalizeStudyYear(value);
+  if (!normalized) return false;
+
+  const simplePatterns = [
+    /^s?\d+$/,
+    /^(?:السنة\s*)?(?:الثالثة|3|3e|3rd|third)$/,
+    /^(?:السنة\s*)?(?:الثالثة|3|3e|3rd|third)\s*(?:طب|medicine|medecine)?$/,
+    /(?:السنة\s*(?:الثالثة|3)|3(?:rd|e)?\s*(?:year|année|annee)|third\s*year|troisi(?:è|e)me\s*année)/,
+  ];
+
+  return simplePatterns.some(pattern => pattern.test(normalized));
+}
+
+export async function canAccessPharmacy(): Promise<boolean> {
+  const userId = await getCurrentUserId();
+  if (!userId) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { studyYear: true },
+  });
+
+  return isThirdYearStudyYear(user?.studyYear ?? null);
 }
 
 // ============================================================

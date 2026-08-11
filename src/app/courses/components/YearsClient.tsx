@@ -19,14 +19,14 @@ type PharmacySection = {
 export default function YearsClient({ 
   yearCategories, 
   pharmacyCategories,
-  canAccessPharmacy = false
+  canViewPharmacy = false,
 }: { 
   yearCategories: any[]; 
-  pharmacyCategories: PharmacySection[];
-  canAccessPharmacy?: boolean;
+  pharmacyCategories: PharmacySection[]; 
+  canViewPharmacy?: boolean;
 }) {
   const searchParams = useSearchParams();
-  const initialTab = (canAccessPharmacy && searchParams.get("tab") === "pharmacy") ? "pharmacy" : "years";
+  const initialTab = searchParams.get("tab") === "pharmacy" && canViewPharmacy ? "pharmacy" : "years";
   const [activeTab, setActiveTab] = useState<"years" | "pharmacy">(initialTab);
   const [pharmacySearch, setPharmacySearch] = useState("");
 
@@ -54,7 +54,7 @@ export default function YearsClient({
           transition={{ delay: 0.1 }}
           className="text-4xl sm:text-6xl font-black mb-6 text-slate-900 dark:text-white leading-tight"
         >
-          {activeTab === "years" || !canAccessPharmacy ? (
+          {activeTab === "years" ? (
             <>اختر <span className="text-transparent bg-clip-text bg-gradient-to-l from-medical-600 to-medical-400">سنتك الدراسية</span></>
           ) : (
             <>دليل <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 via-teal-500 to-emerald-400">الأقسام الصيدلانية</span></>
@@ -67,14 +67,14 @@ export default function YearsClient({
           transition={{ delay: 0.2 }}
           className="text-lg text-slate-500 dark:text-slate-400 font-medium"
         >
-          {activeTab === "years" || !canAccessPharmacy
+          {activeTab === "years" 
             ? "نظمنا لك المحتوى بدقة متناهية لِيتناسب مع متطلبات كل مرحلة في رحلتك الطبية."
             : "الموسوعة الصيدلانية الموحدة — تصفح الأقسام والمستندات والأدوية بكل سهولة."}
         </motion.p>
       </div>
 
-      {/* Unified Seamless Switcher - Only visible if user has access to pharmacy */}
-      {canAccessPharmacy && (
+      {/* Unified Seamless Switcher */}
+      {canViewPharmacy ? (
         <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-[1.8rem] w-fit mx-auto mb-12 shadow-inner border border-slate-200/50 dark:border-slate-700/50" dir="rtl">
           <Link 
             href="/courses"
@@ -101,7 +101,7 @@ export default function YearsClient({
             قسم الصيدلة
           </Link>
         </div>
-      )}
+      ) : null}
 
       {/* ===== YEARS TAB CONTENT ===== */}
       <AnimatePresence mode="wait">

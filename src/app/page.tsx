@@ -2,10 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, LayoutGrid, Calculator, Newspaper, Pill, Users, GraduationCap, Sparkles, ChevronLeft, Star, Zap, Clock, TrendingUp } from "lucide-react";
-import { prisma, isDatabaseEnabled } from "@/lib/db";
-import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
+import { canAccessPharmacy } from "@/lib/auth-helpers";
 import { tServer, Locale } from "@/lib/i18n";
 
 export default async function Home() {
@@ -19,22 +19,7 @@ export default async function Home() {
   let subjectCount = 0;
   let userCount = 0;
 
-  let canAccessPharmacy = false;
-
   try {
-    const admin = await checkIsAdmin();
-    canAccessPharmacy = admin;
-
-    if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { studyYear: true },
-      });
-      if (user && user.studyYear && (user.studyYear.includes("الثالثة") || user.studyYear.includes("3"))) {
-        canAccessPharmacy = true;
-      }
-    }
-
     const [lessonsResult, lessonCountResult, subjectCountResult, userCountResult] = await Promise.allSettled([
       prisma.lesson.findMany({
         orderBy: { createdAt: "desc" },
@@ -73,6 +58,7 @@ export default async function Home() {
   const cookieStore = await cookies();
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
   const isRtl = siteLang === "ar";
+  const canViewPharmacy = await canAccessPharmacy();
 
   return (
     <div className="flex flex-col min-h-screen" dir={isRtl ? "rtl" : "ltr"}>
@@ -165,7 +151,7 @@ export default async function Home() {
             </Link>
 
             {/* الصيدلة */}
-            {canAccessPharmacy && (
+            {canViewPharmacy && (
               <Link href="/pharmacy" className="group relative flex flex-col justify-between bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/25 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-500 min-h-[160px]">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=60')] bg-cover bg-center opacity-[0.04] dark:opacity-[0.1] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.15] transition-opacity duration-700" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
@@ -299,7 +285,7 @@ export default async function Home() {
                 badge: tServer("home_feature_specialties_badge", siteLang, "متعدد التخصصات"),
                 badgeColor: "bg-violet-500/20 text-violet-300",
               },
-              {
+              ...(canViewPharmacy ? [{
                 href: "/pharmacy",
                 icon: Pill,
                 title: tServer("home_feature_pharmacy_title", siteLang, "الصيدلة"),
@@ -309,7 +295,7 @@ export default async function Home() {
                 iconColor: "text-emerald-400",
                 badge: tServer("home_feature_pharmacy_badge", siteLang, "مرجع تفاعلي"),
                 badgeColor: "bg-emerald-500/20 text-emerald-300",
-              },
+              }] : []),
               {
                 href: "/timetable",
                 icon: LayoutGrid,
