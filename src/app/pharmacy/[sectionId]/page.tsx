@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/db";
-import { notFound } from "next/navigation";
+import { prisma, isDatabaseEnabled } from "@/lib/db";
+import { notFound, redirect } from "next/navigation";
 import { tServer, type Locale } from "@/lib/i18n";
 import SectionClient from "./SectionClient";
 
@@ -21,6 +21,26 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
 }
 
 export default async function PharmacySectionPage({ params }: { params: Promise<{ sectionId: string }> }) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_token")?.value;
+  const isAdmin = !!cookieStore.get("admin_token");
+
+  let canAccessPharmacy = isAdmin;
+
+  if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { studyYear: true },
+    });
+    if (user && user.studyYear && user.studyYear.trim().includes("الثالثة")) {
+      canAccessPharmacy = true;
+    }
+  }
+
+  if (!canAccessPharmacy) {
+    redirect("/courses");
+  }
+
   const { sectionId } = await params;
   const section = await prisma.subject.findUnique({
     where: { id: sectionId },

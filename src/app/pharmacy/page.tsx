@@ -1,4 +1,6 @@
 import { cookies } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { prisma, isDatabaseEnabled } from "@/lib/db";
 import { getPharmacySections } from "@/app/actions/pharmacy";
 import PharmacyClient from "./PharmacyClient";
 import { tServer, type Locale } from "@/lib/i18n";
@@ -15,6 +17,26 @@ export const metadata = async (): Promise<Metadata> => {
 };
 
 export default async function PharmacyPage() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_token")?.value;
+  const isAdmin = !!cookieStore.get("admin_token");
+
+  let canAccessPharmacy = isAdmin;
+
+  if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { studyYear: true },
+    });
+    if (user && user.studyYear && user.studyYear.trim().includes("الثالثة")) {
+      canAccessPharmacy = true;
+    }
+  }
+
+  if (!canAccessPharmacy) {
+    redirect("/courses");
+  }
+
   const sections = await getPharmacySections();
   return <PharmacyClient sections={sections} />;
 }
