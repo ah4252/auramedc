@@ -95,7 +95,7 @@ export default function SectionMaintenanceGuard({
                 عذراً، هذا القسم يخضع حالياً لعملية صيانة وتحديث. يرجى العودة لاحقاً.
               </p>
 
-              <div className="bg-slate-100 dark:bg-slate-800/80 p-5 rounded-2xl inline-block text-right border border-slate-200/50 dark:border-slate-700/50">
+              <div className="bg-slate-100 dark:bg-slate-800/80 p-5 rounded-2xl inline-block text-right border border-slate-200/50 dark:border-slate-700/50 mb-6">
                 <div className="flex items-center gap-2.5 text-red-500 font-bold mb-1 text-sm">
                   <ShieldAlert className="w-4 h-4" />
                   <span>إشعار النظام</span>
@@ -104,6 +104,17 @@ export default function SectionMaintenanceGuard({
                   باقي أقسام المنصة تعمل بشكل طبيعي ويمكنك تصفحها.
                 </p>
               </div>
+
+              {sectionName === "قسم الصيدلة" && (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="/courses"
+                    className="px-6 py-3 rounded-xl bg-medical-600 hover:bg-medical-700 text-white text-xs sm:text-sm font-black transition-all shadow-md shadow-medical-600/20 active:scale-95 flex items-center gap-2"
+                  >
+                    العودة إلى السنوات الدراسية
+                  </a>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
