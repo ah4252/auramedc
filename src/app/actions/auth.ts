@@ -36,8 +36,9 @@ export async function loginAdmin(formData: FormData) {
     });
 
     return { success: true };
-  } catch (error) {
-    return { error: "حدث خطأ في الاتصال بقاعدة البيانات" };
+  } catch (error: any) {
+    console.error("[loginAdmin] DB Error:", error?.message || error);
+    return { error: `حدث خطأ في الاتصال بقاعدة البيانات: ${error?.message || "خطأ غير معروف"}` };
   }
 }
 

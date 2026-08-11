@@ -1,23 +1,39 @@
-if (!process.env.DATABASE_URL) {
-  // Fallback for local development / environments without a real DB
-  // This URL satisfies Prisma's validation (protocol must be postgresql://)
-  // Adjust the credentials if you have a local Postgres instance.
-  process.env.DATABASE_URL = "postgresql://user:password@localhost:5432/postgres";
-}
 import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig, Pool } from "@neondatabase/serverless";
+
+// Required for Vercel serverless (uses WebSocket instead of TCP)
+if (typeof WebSocket === "undefined") {
+  // Node.js environment (local dev) — use ws
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  neonConfig.webSocketConstructor = require("ws");
+}
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+function createPrismaClient() {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString || connectionString.includes("localhost:5432/postgres")) {
+    // Fallback client for environments without a real DB
+    return new PrismaClient({ log: ["error"] });
+  }
+
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaNeon(pool);
+
+  return new PrismaClient({
+    adapter,
+    log: ["error"],
+  });
+}
+
+export const prisma = globalForPrisma.prisma || createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export function isDatabaseEnabled() {
   const databaseUrl = (process.env.DATABASE_URL || "").trim();
   if (!databaseUrl) return false;
   return true;
 }
-
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log: ["error"],
-  });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
