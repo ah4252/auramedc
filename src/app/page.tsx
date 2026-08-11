@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, LayoutGrid, Calculator, Newspaper, Pill, Users, GraduationCap, Sparkles, ChevronLeft, Star, Zap, Clock, TrendingUp } from "lucide-react";
-import { prisma } from "@/lib/db";
+import { prisma, isDatabaseEnabled } from "@/lib/db";
+import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
 import { tServer, Locale } from "@/lib/i18n";
@@ -18,7 +19,22 @@ export default async function Home() {
   let subjectCount = 0;
   let userCount = 0;
 
+  let canAccessPharmacy = false;
+
   try {
+    const admin = await checkIsAdmin();
+    canAccessPharmacy = admin;
+
+    if (!canAccessPharmacy && userId && isDatabaseEnabled()) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { studyYear: true },
+      });
+      if (user && user.studyYear && (user.studyYear.includes("الثالثة") || user.studyYear.includes("3"))) {
+        canAccessPharmacy = true;
+      }
+    }
+
     const [lessonsResult, lessonCountResult, subjectCountResult, userCountResult] = await Promise.allSettled([
       prisma.lesson.findMany({
         orderBy: { createdAt: "desc" },
@@ -149,19 +165,21 @@ export default async function Home() {
             </Link>
 
             {/* الصيدلة */}
-            <Link href="/pharmacy" className="group relative flex flex-col justify-between bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/25 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-500 min-h-[160px]">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=60')] bg-cover bg-center opacity-[0.04] dark:opacity-[0.1] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.15] transition-opacity duration-700" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
-              <div className="relative z-10">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center border border-emerald-200 dark:border-emerald-800/60 group-hover:scale-110 transition-transform duration-300">
-                  <Pill className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            {canAccessPharmacy && (
+              <Link href="/pharmacy" className="group relative flex flex-col justify-between bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/25 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-500 min-h-[160px]">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=800&q=60')] bg-cover bg-center opacity-[0.04] dark:opacity-[0.1] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.15] transition-opacity duration-700" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+                <div className="relative z-10">
+                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center border border-emerald-200 dark:border-emerald-800/60 group-hover:scale-110 transition-transform duration-300">
+                    <Pill className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                 </div>
-              </div>
-              <div className="relative z-10 text-right mt-auto">
-                <p className="text-emerald-500 dark:text-emerald-500 text-xs font-medium mb-1">{tServer("home_section_pharmacy_description", siteLang, "مرجع دوائي")}</p>
-                <h2 className="text-xl font-black text-slate-800 dark:text-white">{tServer("home_section_pharmacy_title", siteLang, "الصيدلة")}</h2>
-              </div>
-            </Link>
+                <div className="relative z-10 text-right mt-auto">
+                  <p className="text-emerald-500 dark:text-emerald-500 text-xs font-medium mb-1">{tServer("home_section_pharmacy_description", siteLang, "مرجع دوائي")}</p>
+                  <h2 className="text-xl font-black text-slate-800 dark:text-white">{tServer("home_section_pharmacy_title", siteLang, "الصيدلة")}</h2>
+                </div>
+              </Link>
+            )}
 
             {/* الجدول الدراسي */}
             <Link href="/timetable" className="group relative flex flex-col justify-between bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/25 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-500/15 transition-all duration-500 min-h-[160px]">
