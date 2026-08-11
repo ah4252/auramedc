@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PlayCircle, Calculator, User, FlaskConical } from "lucide-react";
+import { Home, PlayCircle, Calculator, User, Newspaper } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
 
@@ -16,6 +16,7 @@ export default function MobileNav() {
   const navItems = [
     { name: t("home", "الرئيسية"), icon: Home, path: "/" },
     { name: t("courses", "الدروس"), icon: PlayCircle, path: "/courses" },
+    { name: t("news", "الأخبار"), icon: Newspaper, path: "/news" },
     { name: t("gpa", "الحاسبة"), icon: Calculator, path: "/gpa-calculator" },
     { name: t("profile", "حسابي"), icon: User, path: "/profile" },
   ];

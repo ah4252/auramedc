@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocale } from "@/context/LocaleProvider.client";
 
 import { useSearchParams } from "next/navigation";
 
@@ -26,6 +27,8 @@ export default function YearsClient({
   canViewPharmacy?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const { t, lang } = useLocale();
+  const isRtl = lang === "ar";
   const initialTab = searchParams.get("tab") === "pharmacy" && canViewPharmacy ? "pharmacy" : "years";
   const [activeTab, setActiveTab] = useState<"years" | "pharmacy">(initialTab);
   const [pharmacySearch, setPharmacySearch] = useState("");
@@ -36,7 +39,7 @@ export default function YearsClient({
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:py-16">
+    <div className="container mx-auto px-4 py-8 sm:py-16" dir={isRtl ? "rtl" : "ltr"}>
       {/* Header Section */}
       <div className="max-w-4xl mx-auto mb-10 text-center">
         <motion.div
@@ -45,7 +48,7 @@ export default function YearsClient({
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-medical-500/10 text-medical-600 dark:text-medical-400 text-xs font-black uppercase tracking-widest mb-6"
         >
           <Sparkles className="w-4 h-4" />
-          بوابة التعليم الطبي النخبوية
+          {t("courses_portal_badge", "Elite medical learning portal")}
         </motion.div>
         
         <motion.h1 
@@ -55,9 +58,13 @@ export default function YearsClient({
           className="text-4xl sm:text-6xl font-black mb-6 text-slate-900 dark:text-white leading-tight"
         >
           {activeTab === "years" ? (
-            <>اختر <span className="text-transparent bg-clip-text bg-gradient-to-l from-medical-600 to-medical-400">سنتك الدراسية</span></>
+            <>
+              {t("courses_years_prompt", "اختر")} <span className="text-transparent bg-clip-text bg-gradient-to-l from-medical-600 to-medical-400">{t("courses_years_highlight", "سنتك الدراسية")}</span>
+            </>
           ) : (
-            <>دليل <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 via-teal-500 to-emerald-400">الأقسام الصيدلانية</span></>
+            <>
+              {t("courses_pharmacy_prompt", "دليل")} <span className="text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 via-teal-500 to-emerald-400">{t("courses_pharmacy_highlight", "الأقسام الصيدلانية")}</span>
+            </>
           )}
         </motion.h1>
         
@@ -68,14 +75,14 @@ export default function YearsClient({
           className="text-lg text-slate-500 dark:text-slate-400 font-medium"
         >
           {activeTab === "years" 
-            ? "نظمنا لك المحتوى بدقة متناهية لِيتناسب مع متطلبات كل مرحلة في رحلتك الطبية."
-            : "الموسوعة الصيدلانية الموحدة — تصفح الأقسام والمستندات والأدوية بكل سهولة."}
+            ? t("courses_years_description", "نظمنا لك المحتوى بدقة متناهية لِيتناسب مع متطلبات كل مرحلة في رحلتك الطبية.")
+            : t("courses_pharmacy_description", "الموسوعة الصيدلانية الموحدة — تصفح الأقسام والمستندات والأدوية بكل سهولة.")}
         </motion.p>
       </div>
 
       {/* Unified Seamless Switcher */}
       {canViewPharmacy ? (
-        <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-[1.8rem] w-fit mx-auto mb-12 shadow-inner border border-slate-200/50 dark:border-slate-700/50" dir="rtl">
+        <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-[1.8rem] w-fit mx-auto mb-12 shadow-inner border border-slate-200/50 dark:border-slate-700/50" dir={isRtl ? "rtl" : "ltr"}>
           <Link 
             href="/courses"
             onClick={() => setActiveTab("years")}
@@ -86,7 +93,7 @@ export default function YearsClient({
             }`}
           >
             <GraduationCap className="w-5 h-5" />
-            السنوات الدراسية
+            {t("courses_years_tab", "السنوات الدراسية")}
           </Link>
           <Link 
             href="/courses?tab=pharmacy"
@@ -98,7 +105,7 @@ export default function YearsClient({
             }`}
           >
             <FlaskConical className="w-5 h-5" />
-            قسم الصيدلة
+            {t("courses_pharmacy_tab", "قسم الصيدلة")}
           </Link>
         </div>
       ) : null}
@@ -137,12 +144,12 @@ export default function YearsClient({
                       </h3>
                       
                       <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 flex-1 leading-relaxed">
-                        {cat.description || `استكشف كافة المواد والدروس المخصصة لطلاب ${cat.name}.`}
+                        {cat.description || t("courses_year_default_description", "Explore all subjects and lessons dedicated to students in").replace("{{year}}", cat.name)}
                       </p>
                       
                       <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800/60">
                         <span className="text-sm font-black text-medical-600 dark:text-medical-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                          عرض المواد الدراسية
+                          {t("courses_view_subjects", "View study subjects")}
                           <ChevronRight className="w-4 h-4 rotate-180" />
                         </span>
                       </div>
@@ -151,10 +158,10 @@ export default function YearsClient({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/20 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800" dir="rtl">
+              <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/20 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800" dir={isRtl ? "rtl" : "ltr"}>
                 <BookOpen className="w-16 h-16 text-slate-300 mx-auto mb-6" />
-                <h3 className="text-2xl font-black text-slate-400">لا توجد سنوات دراسية مضافة حالياً</h3>
-                <p className="text-slate-500 mt-2">سيتم تفعيل هذا القسم قريباً جداً.</p>
+                <h3 className="text-2xl font-black text-slate-400">{t("courses_no_years_title", "No study years added yet")}</h3>
+                <p className="text-slate-500 mt-2">{t("courses_no_years_description", "This section will be activated soon.")}</p>
               </div>
             )}
           </motion.div>
@@ -178,7 +185,7 @@ export default function YearsClient({
                   type="text"
                   value={pharmacySearch}
                   onChange={e => setPharmacySearch(e.target.value)}
-                  placeholder="ابحث عن قسم صيدلاني أو علاج محدد..."
+                  placeholder={t("courses_pharmacy_search_placeholder", "ابحث عن قسم صيدلاني أو علاج محدد...")}
                   className="w-full pr-14 pl-6 py-4 rounded-2xl bg-white dark:bg-slate-900/90 border border-emerald-500/20 dark:border-emerald-500/30 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-bold text-sm shadow-lg shadow-emerald-500/5 backdrop-blur-xl"
                 />
               </div>
@@ -193,9 +200,9 @@ export default function YearsClient({
               >
                 <FlaskConical className="w-16 h-16 mx-auto text-emerald-500/40 mb-4" />
                 <h3 className="text-xl font-black text-slate-600 dark:text-slate-300">
-                  {pharmacySearch ? "لا توجد نتائج مطابقة لبحثك" : "لا توجد أقسام صيدلانية حالياً"}
+                  {pharmacySearch ? t("courses_pharmacy_no_results", "لا توجد نتائج مطابقة لبحثك") : t("courses_pharmacy_empty_state", "لا توجد أقسام صيدلانية حالياً")}
                 </h3>
-                <p className="text-slate-400 text-sm mt-1">جرّب البحث بكلمات أخرى أو تصفح باقي الأقسام.</p>
+                <p className="text-slate-400 text-sm mt-1">{t("courses_pharmacy_empty_hint", "جرّب البحث بكلمات أخرى أو تصفح باقي الأقسام.")}</p>
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" dir="rtl">
@@ -222,7 +229,7 @@ export default function YearsClient({
 
                           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-black">
                             <Pill className="w-3.5 h-3.5" />
-                            <span>{section.images?.length || 0} عنصر</span>
+                            <span>{section.images?.length || 0} {t("courses_pharmacy_item_count", "عنصر")}</span>
                           </div>
                         </div>
 
@@ -233,7 +240,7 @@ export default function YearsClient({
 
                         {/* Description */}
                         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 line-clamp-2 flex-1">
-                          {section.description || "تصفح الصور والأدوية والوثائق الطبية الخاصة بهذا القسم الصيدلاني."}
+                          {section.description || t("courses_pharmacy_section_default_description", "تصفح الصور والأدوية والوثائق الطبية الخاصة بهذا القسم الصيدلاني.")}
                         </p>
 
                         {/* Image Previews Strip (if images available) */}
@@ -255,7 +262,7 @@ export default function YearsClient({
                         {/* Card Action Link */}
                         <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between mt-auto">
                           <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                            استكشف المحتوى الصيدلاني
+                            {t("courses_pharmacy_explore", "استكشف المحتوى الصيدلاني")}
                             <ChevronRight className="w-4 h-4 rotate-180" />
                           </span>
                         </div>

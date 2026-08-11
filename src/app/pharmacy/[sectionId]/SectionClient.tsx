@@ -27,7 +27,8 @@ export default function SectionClient({ section }: { section: PharmacySection })
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
-  const { t } = useLocale();
+  const { t, lang } = useLocale();
+  const isRtl = lang === "ar";
 
   const filteredImages = section.images.filter(img =>
     (img.title || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -61,7 +62,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
   }, [lightboxIndex, filteredImages.length]);
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:py-12 relative" dir="rtl">
+    <div className="container mx-auto px-4 py-8 sm:py-12 relative" dir={isRtl ? "rtl" : "ltr"}>
       {/* Floating Sticky Back Button - visible on all screens including mobile */}
       <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[60]">
         <Link
@@ -69,7 +70,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
           className="group flex items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-lg border border-white/20"
         >
           <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-          <span>العودة إلى قسم الصيدلة</span>
+          <span>{t("pharmacy_back_to_sections", "Back to sections")}</span>
         </Link>
       </div>
 
@@ -77,7 +78,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
       <div className="mb-8 flex items-center justify-end">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-black">
           <FlaskConical className="w-3.5 h-3.5" />
-          <span>قسم صيدلاني</span>
+          <span>{t("pharmacy_section_badge", "Pharmacy section")}</span>
         </div>
       </div>
 
@@ -89,7 +90,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
         <div className="relative max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
             <span className="px-3.5 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider">
-              الموسوعة الصيدلانية
+              {t("pharmacy_section_banner_label", "Medical encyclopedia")}
             </span>
             <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
           </div>
@@ -99,7 +100,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
           </h1>
 
           <p className="text-slate-500 dark:text-slate-400 text-base sm:text-lg font-medium leading-relaxed mb-8">
-            {section.description || "استعرض الأدوية والملفات والصور التوضيحية الخاصة بهذا القسم مع إمكانية التكبير والبحث السريع."}
+            {section.description || t("pharmacy_section_default_description", "Browse medicines, files, and images in this section with fast search and zoom.")}
           </p>
 
           {/* Embedded Search Control Bar */}
@@ -108,7 +109,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="بحث سريع عن دواء أو ملف داخل هذا القسم..."
+              placeholder={t("pharmacy_section_search_placeholder", "Quick search for a medicine in this section...")}
               className="w-full pr-14 pl-6 py-3.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-bold text-sm shadow-inner"
             />
             {search && (
@@ -133,17 +134,17 @@ export default function SectionClient({ section }: { section: PharmacySection })
           >
             <ImageIcon className="w-16 h-16 mx-auto text-emerald-500/30 mb-4" />
             <h2 className="text-xl font-black text-slate-600 dark:text-slate-400">
-              {search ? "لا يوجد دواء أو ملف مطابق لبحثك" : "لا توجد أدوية مضافة في هذا القسم حالياً"}
+              {search ? t("pharmacy_section_no_results_title", "No matching medicine found") : t("pharmacy_section_no_images_title", "No medicines in this section yet")}
             </h2>
             <p className="text-slate-400 text-sm mt-1">
-              {search ? "جرّب البحث بكلمة أخرى" : "سيتم إضافة المزيد من الملفات قريباً"}
+              {search ? t("pharmacy_section_no_results_description", "Try another search") : t("pharmacy_section_no_images_description", "Medicines will be added soon")}
             </p>
             {search && (
               <button
                 onClick={() => setSearch("")}
                 className="mt-4 text-emerald-600 dark:text-emerald-400 font-black text-sm hover:underline"
               >
-                إعادة ضبط البحث
+                {t("pharmacy_reset_search", "Reset search")}
               </button>
             )}
           </motion.div>
@@ -151,7 +152,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
           <div>
             <div className="flex items-center justify-between mb-6">
               <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">
-                تم العثور على {filteredImages.length} دواء / ملف
+                {t("pharmacy_items_found", "Found")} {filteredImages.length} {t("pharmacy_item_label_plural", "medicine/file")}
               </p>
             </div>
 
@@ -278,7 +279,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
                   <>
                     <button
                       onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                      title="السابق"
+                      title={t("pharmacy_prev", "Previous")}
                       className="absolute right-4 z-10 w-11 h-11 bg-slate-900/80 hover:bg-emerald-600 text-white border border-slate-700/80 rounded-2xl flex items-center justify-center transition-all shadow-xl hover:scale-105 active:scale-95"
                     >
                       <ChevronRight className="w-6 h-6" />
@@ -286,7 +287,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
 
                     <button
                       onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                      title="التالي"
+                      title={t("pharmacy_next", "Next")}
                       className="absolute left-4 z-10 w-11 h-11 bg-slate-900/80 hover:bg-emerald-600 text-white border border-slate-700/80 rounded-2xl flex items-center justify-center transition-all shadow-xl hover:scale-105 active:scale-95"
                     >
                       <ChevronLeft className="w-6 h-6" />
@@ -297,7 +298,7 @@ export default function SectionClient({ section }: { section: PharmacySection })
                 <div className="w-full h-full max-h-[55vh] flex items-center justify-center overflow-auto custom-scrollbar p-2">
                   <img
                     src={activeImage.url}
-                    alt={activeImage.title || ""}
+                    alt={activeImage.title || t("pharmacy_image_alt", "Medicine image")}
                     style={{ transform: `scale(${zoomLevel})` }}
                     className="max-h-[52vh] max-w-full object-contain transition-transform duration-200 ease-out"
                   />
