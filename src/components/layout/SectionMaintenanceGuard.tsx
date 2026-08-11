@@ -63,23 +63,22 @@ export default function SectionMaintenanceGuard({
     }
   }
 
-  // ✅ Single return point — no conditional hooks violation
   return (
     <>
-      {isUnderMaintenance ? (
-        <div className="min-h-[80vh] flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full text-center relative z-10">
+      {isUnderMaintenance && (
+        <div className="py-12 px-4 flex items-center justify-center">
+          <div className="max-w-2xl w-full text-center relative z-10 bg-white/50 dark:bg-slate-900/50 p-8 sm:p-12 rounded-[2.5rem] border border-red-500/20 shadow-xl backdrop-blur-xl">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="mb-8 inline-block"
+              className="mb-6 inline-block"
             >
               <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-tr from-red-600 to-red-400 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-red-600/20 rotate-12">
-                  <Hammer className="w-10 h-10" />
+                <div className="w-16 h-16 bg-gradient-to-tr from-red-600 to-red-400 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-600/20 rotate-12">
+                  <Hammer className="w-8 h-8" />
                 </div>
-                <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-red-500 border-4 border-slate-900">
-                  <Clock className="w-5 h-5 animate-spin-slow" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center text-red-500 border-2 border-slate-900">
+                  <Clock className="w-4 h-4 animate-spin-slow" />
                 </div>
               </div>
             </motion.div>
@@ -87,31 +86,29 @@ export default function SectionMaintenanceGuard({
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.1 }}
             >
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3">
                 <span className="text-red-500">{sectionName}</span> تحت الصيانة
-              </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-400 mb-8 leading-relaxed font-medium">
-                عذراً، هذا القسم يخضع حالياً لعملية صيانة وتحديث. يرجى العودة
-                لاحقاً.
+              </h2>
+              <p className="text-base text-slate-500 dark:text-slate-400 mb-6 leading-relaxed font-medium">
+                عذراً، هذا القسم يخضع حالياً لعملية صيانة وتحديث. يرجى العودة لاحقاً.
               </p>
 
-              <div className="bg-slate-100 dark:bg-slate-800/50 p-6 rounded-[2rem] inline-block text-right">
-                <div className="flex items-center gap-3 text-red-500 font-bold mb-2">
-                  <ShieldAlert className="w-5 h-5" />
+              <div className="bg-slate-100 dark:bg-slate-800/80 p-5 rounded-2xl inline-block text-right border border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex items-center gap-2.5 text-red-500 font-bold mb-1 text-sm">
+                  <ShieldAlert className="w-4 h-4" />
                   <span>إشعار النظام</span>
                 </div>
-                <p className="text-slate-600 dark:text-slate-300 text-sm">
+                <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                   باقي أقسام المنصة تعمل بشكل طبيعي ويمكنك تصفحها.
                 </p>
               </div>
             </motion.div>
           </div>
         </div>
-      ) : (
-        children
       )}
+      {!isUnderMaintenance && children}
     </>
   );
 }
