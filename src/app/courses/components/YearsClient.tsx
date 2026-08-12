@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, NotebookPen } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, ArrowRight, NotebookPen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
 
@@ -193,7 +193,7 @@ export default function YearsClient({
           </motion.div>
         )}
 
-        {/* ===== PHARMACY TAB CONTENT ===== */}
+        {/* ===== QCMS TAB CONTENT ===== */}
         {activeTab === "qcms" && (
           <motion.div
             key="qcms"
@@ -203,215 +203,407 @@ export default function YearsClient({
             transition={{ duration: 0.25 }}
             className="w-full"
           >
-            <div className="mx-auto max-w-6xl overflow-hidden rounded-[2.7rem] border border-violet-400/20 bg-[#071526]/95 shadow-[0_0_0_1px_rgba(139,92,246,0.15),0_30px_80px_-30px_rgba(91,33,182,0.9)] backdrop-blur-xl">
-              <div className={`grid gap-0 ${selectedQcmsSubject ? "lg:grid-cols-1" : "lg:grid-cols-[1.12fr_0.88fr]"}`}>
-                <div className="relative p-6 sm:p-8 lg:p-10 xl:p-12">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.12),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.1),transparent_30%)]" />
-                  <div className="relative">
-                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-violet-200">
-                      <NotebookPen className="h-3.5 w-3.5" />
-                      {t("qcms_badge", "Smart assessments")}
-                    </div>
+            <div className="mx-auto max-w-7xl overflow-hidden rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
+              <div className={`grid gap-0 ${selectedQcmsSubject ? "lg:grid-cols-1" : "lg:grid-cols-[1.18fr_0.82fr]"}`}>
+                
+                {/* Main Content Area */}
+                <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14">
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.14),transparent_45%)]" />
+                  
+                  <div className="relative z-10">
+                    
+                    {/* TOP NAVIGATION BREADCRUMBS BAR */}
+                    <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/90 pb-6">
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-400">
+                        <button
+                          onClick={() => {
+                            setSelectedQcmsYearId(null);
+                            setSelectedQcmsSubjectId(null);
+                          }}
+                          className="flex items-center gap-1.5 hover:text-violet-300 transition-colors"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                          <span>{isRtl ? "مركز QCMs الطبي" : "QCM Center"}</span>
+                        </button>
 
-                    <div className="max-w-xl">
-                      <h2 className="mb-4 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-[3.2rem]">
-                        {t("qcms_title", "QCMs section")}
-                      </h2>
-                      <p className="text-base leading-8 text-slate-300 sm:text-lg">
-                        {t("qcms_description", "A specialized training platform for short tests, designed to strengthen understanding and track the student's level professionally.")}
-                      </p>
-                    </div>
-
-                    <div className="mt-8 flex flex-wrap gap-3">
-                      <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-4 py-2 text-sm font-bold text-violet-100 shadow-[0_0_18px_rgba(167,139,250,0.12)]">
-                        {t("qcms_qc_tag", "Questions")}
-                      </span>
-                      <span className="rounded-full border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-sm font-bold text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.12)]">
-                        {t("qcms_finstant_tag", "Instant assessment")}
-                      </span>
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-100 shadow-[0_0_18px_rgba(52,211,153,0.12)]">
-                        {t("qcms_content_tag", "Updated content")}
-                      </span>
-                    </div>
-
-                    {selectedQcmsSubject ? (
-                      <div className="mt-10 rounded-[2rem] border border-violet-400/20 bg-[#111c2d]/90 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_20px_50px_-25px_rgba(91,33,182,0.8)] sm:p-7">
-                        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="min-w-0">
+                        {selectedQcmsYear && (
+                          <>
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <button
                               onClick={() => setSelectedQcmsSubjectId(null)}
-                              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-black text-slate-700 transition hover:border-violet-300 hover:bg-violet-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-violet-400/60 dark:hover:bg-slate-800"
+                              className="text-violet-300 hover:text-white transition-colors"
                             >
-                              <ArrowLeft className="h-4 w-4" />
-                              {t("qcms_back_to_subjects", "Back to subjects")}
+                              {selectedQcmsYear.name}
                             </button>
-                            <h3 className="mt-4 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">{selectedQcmsSubject.name}</h3>
-                            <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">{t("qcms_year_label", "Year")}: {selectedQcmsYear?.name}</p>
-                          </div>
-                          <span className="inline-flex w-fit rounded-full border border-violet-200 bg-violet-100 px-4 py-2 text-xs font-black text-violet-700 dark:border-violet-400/40 dark:bg-violet-500/10 dark:text-violet-200">
-                            {selectedQcmsSubject.code || t("qcms_code_default", "QCM")}
+                          </>
+                        )}
+
+                        {selectedQcmsSubject && (
+                          <>
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
+                            <span className="text-cyan-300 font-black">{selectedQcmsSubject.name}</span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Back Navigation Action Button */}
+                      {(selectedQcmsYear || selectedQcmsSubject) && (
+                        <button
+                          onClick={() => {
+                            if (selectedQcmsSubject) {
+                              setSelectedQcmsSubjectId(null);
+                            } else {
+                              setSelectedQcmsYearId(null);
+                            }
+                          }}
+                          className="group inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/90 px-4 py-2 text-xs font-black text-slate-200 shadow-md transition-all hover:border-violet-400 hover:bg-slate-800"
+                        >
+                          {isRtl ? (
+                            <ArrowRight className="h-3.5 w-3.5 text-violet-400 transition-transform group-hover:translate-x-1" />
+                          ) : (
+                            <ArrowLeft className="h-3.5 w-3.5 text-violet-400 transition-transform group-hover:-translate-x-1" />
+                          )}
+                          <span>
+                            {selectedQcmsSubject
+                              ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects")
+                              : (isRtl ? "العودة للسنوات الدراسية" : "Back to Years")}
                           </span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* HERO OVERVIEW (Displayed when no year/subject selected) */}
+                    {!selectedQcmsYear && !selectedQcmsSubject && (
+                      <div className="mb-10 max-w-2xl">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/15 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-violet-200 shadow-inner">
+                          <NotebookPen className="h-4 w-4 text-violet-400" />
+                          <span>{t("qcms_badge", "Smart Medical Assessment Hub")}</span>
                         </div>
 
-                        <div className="p-4 sm:p-8">
-                          <div className="mb-6 flex justify-center">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-200">
-                              <NotebookPen className="h-7 w-7" />
-                            </div>
-                          </div>
+                        <h2 className="mb-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl tracking-tight">
+                          {t("qcms_title", "اختر مرحلتك الأكاديمية")}
+                        </h2>
+                        
+                        <p className="text-base leading-8 text-slate-300 font-medium">
+                          {t("qcms_description", "تصفح بنك أسئلة ونماذج امتحانات الـ QCMs المنظمة حسب المنهج الدراسي والسنة الجامعية بنظام أكاديمي حديث.")}
+                        </p>
 
-                          <div className="rounded-[1.5rem] bg-[#18273f] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-4">
-                            <h4 className="px-1 text-xl font-black text-white">{isRtl ? "روابط الامتحانات" : "Exam links"}</h4>
-
-                            {(selectedQcmsSubject.examLinks || []).length > 0 ? (
-                              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                {(selectedQcmsSubject.examLinks || []).map((link: any) => (
-                                  <a
-                                    key={link.id}
-                                    href={link.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="group flex min-h-[150px] items-center justify-center rounded-[1.35rem] border border-violet-300/10 bg-[#2a3b57] p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_10px_20px_-14px_rgba(59,130,246,0.7)] transition duration-200 hover:-translate-y-1 hover:border-violet-300/30 hover:bg-[#30466d]"
-                                  >
-                                    <span className="block break-words text-sm font-black leading-6 text-white">{link.label}</span>
-                                  </a>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="mt-4 text-sm font-bold text-slate-400">
-                                {isRtl ? "لا توجد روابط امتحانات لهذا المساق" : "No exam links are available for this subject yet."}
-                              </p>
-                            )}
-                          </div>
+                        <div className="mt-6 flex flex-wrap gap-2.5">
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-2 text-xs font-bold text-violet-200">
+                            {t("qcms_qc_tag", "أسئلة سابقة ونماذج موثقة")}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-400/20 bg-cyan-500/10 px-4 py-2 text-xs font-bold text-cyan-200">
+                            {t("qcms_finstant_tag", "تصفح حسب المادة")}
+                          </span>
                         </div>
                       </div>
-                    ) : selectedQcmsYear ? (
-                      <div className="mt-10">
-                        <div className="mb-5 flex items-center justify-between gap-4">
-                          <div>
-                            <button
-                              onClick={() => {
-                                setSelectedQcmsYearId(null);
-                                setSelectedQcmsSubjectId(null);
-                              }}
-                              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-black text-slate-700 transition hover:border-violet-300 hover:bg-violet-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-violet-400/60 dark:hover:bg-slate-800"
-                            >
-                              <ArrowLeft className="h-4 w-4" />
-                              {t("qcms_back_to_years", "Back to years")}
-                            </button>
-                            <h3 className="mt-4 text-3xl font-black text-slate-900 dark:text-white">{selectedQcmsYear.name}</h3>
+                    )}
+
+                    {/* ========================================================================= */}
+                    {/* LEVEL 3: EXAM DASHBOARD VIEW (Selected Subject)                           */}
+                    {/* ========================================================================= */}
+                    {selectedQcmsSubject ? (
+                      <div className="rounded-[2.5rem] border border-violet-500/25 bg-[#0b172a]/95 p-6 sm:p-10 shadow-2xl">
+                        
+                        {/* Subject Header Banner */}
+                        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800/90 pb-6">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 text-xs font-bold text-violet-400 mb-2">
+                              <span>{selectedQcmsYear?.name}</span>
+                              <ChevronRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
+                              <span>{isRtl ? "بنك امتحانات المادة" : "Exams Bank"}</span>
+                            </div>
+                            <h3 className="text-3xl font-black text-white sm:text-4xl">{selectedQcmsSubject.name}</h3>
                           </div>
-                          <span className="rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-black text-violet-700 dark:border-violet-400/40 dark:bg-violet-500/10 dark:text-violet-200">
-                            {selectedQcmsYear.subjects?.length || 0} {t("qcms_subject_count_suffix", "subjects")}
-                          </span>
+                          
+                          <div className="flex items-center gap-3">
+                            <span className="rounded-2xl border border-violet-400/30 bg-violet-500/15 px-4 py-2 text-xs font-black text-violet-200">
+                              {selectedQcmsSubject.code || "QCM"}
+                            </span>
+                            <span className="rounded-2xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-xs font-black text-cyan-200">
+                              {(selectedQcmsSubject.examLinks || []).length} {isRtl ? "امتحان متاح" : "Exams"}
+                            </span>
+                          </div>
                         </div>
 
-                        {selectedQcmsYear.subjects?.length ? (
-                          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                            {selectedQcmsYear.subjects.map((subject: any) => (
-                              <button
-                                key={subject.id}
-                                onClick={() => setSelectedQcmsSubjectId(subject.id)}
-                                className="group rounded-[2rem] border border-slate-200 bg-white p-5 text-start shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/10 dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-violet-400/50"
-                              >
-                                <div className="mb-4 flex items-center justify-between gap-3">
-                                  <span className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[10px] font-black text-violet-700 dark:border-violet-400/40 dark:bg-violet-500/10 dark:text-violet-200">
-                                    {subject.code || t("qcms_code_default", "QCM")}
-                                  </span>
-                                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-200">
-                                    <NotebookPen className="h-5 w-5" />
+                        {/* Exam Cards Grid */}
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xl font-black text-white flex items-center gap-2.5">
+                              <NotebookPen className="h-5 w-5 text-violet-400" />
+                              <span>{isRtl ? "قائمة نماذج الامتحانات المتاحة" : "Available Exam Papers"}</span>
+                            </h4>
+                          </div>
+
+                          {(selectedQcmsSubject.examLinks || []).length > 0 ? (
+                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                              {(selectedQcmsSubject.examLinks || []).map((link: any, idx: number) => (
+                                <div
+                                  key={link.id}
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-[#102138] to-[#0c182b] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
+                                >
+                                  {/* Top Paper Header */}
+                                  <div>
+                                    <div className="mb-4 flex items-center justify-between">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 text-violet-300 group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all">
+                                        <NotebookPen className="h-5.5 w-5.5" />
+                                      </div>
+                                      <span className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-violet-300 transition-colors">
+                                        PAPER #{idx + 1}
+                                      </span>
+                                    </div>
+
+                                    <h5 className="my-3 text-lg font-black leading-snug text-white group-hover:text-violet-200 transition-colors">
+                                      {link.label}
+                                    </h5>
+                                  </div>
+
+                                  {/* Bottom Action CTA Button */}
+                                  <div className="mt-6 pt-4 border-t border-slate-800/80">
+                                    <a
+                                      href={link.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3.5 px-4 text-xs font-black text-white shadow-lg shadow-violet-600/30 transition-all hover:scale-[1.02] hover:shadow-violet-600/50 active:scale-[0.98]"
+                                    >
+                                      <span>{isRtl ? "بدء الامتحان الآن" : "Start Exam Now"}</span>
+                                      <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+                                    </a>
                                   </div>
                                 </div>
-                                <h4 className="text-xl font-black text-slate-900 dark:text-white">{subject.name}</h4>
-                                <p className="mt-3 text-xs font-bold text-slate-500 dark:text-slate-400">{t("qcms_open_subject", "Open subject")}</p>
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="rounded-[2rem] border border-dashed border-violet-200 bg-violet-50 p-8 text-center text-slate-600 dark:border-violet-500/20 dark:bg-violet-500/5 dark:text-slate-300">
-                            {t("qcms_no_subjects_in_year", "No subjects have been added to this year yet.")}
-                          </div>
-                        )}
+                              ))}
+                            </div>
+                          ) : (
+                            /* Empty Exam Links State */
+                            <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-950/60 p-12 text-center">
+                              <NotebookPen className="h-14 w-14 text-slate-600 mx-auto mb-4" />
+                              <h5 className="text-lg font-black text-slate-300">
+                                {isRtl ? "لا توجد روابط امتحانات لهذا المساق حالياً" : "No exam papers available for this subject yet."}
+                              </h5>
+                              <p className="text-xs text-slate-500 mt-2 font-medium">
+                                {isRtl ? "سيتم رفع النماذج الجديدة فور اعتمادها من قبل الإدارة." : "Exams will be uploaded soon."}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                        {(qcmsYears || []).map((year: any) => (
-                          <button
-                            key={year.id}
-                            onClick={() => {
-                              setSelectedQcmsYearId(year.id);
-                              setSelectedQcmsSubjectId(null);
-                            }}
-                            className="group flex min-h-[170px] flex-col justify-between rounded-[2rem] border border-violet-200 bg-gradient-to-br from-violet-500/12 via-white to-cyan-500/10 p-5 text-start shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/15 dark:border-violet-400/20 dark:from-violet-500/15 dark:via-slate-900 dark:to-cyan-500/10"
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <span className="rounded-full border border-violet-200 bg-white/80 px-3 py-1.5 text-[10px] font-black text-violet-700 dark:border-violet-500/20 dark:bg-slate-900/70 dark:text-violet-200">
-                                {year.subjects?.length || 0} {t("qcms_subject_count_suffix", "subjects")}
-                              </span>
-                              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600/10 text-violet-600 dark:bg-violet-500/15 dark:text-violet-200">
-                                <NotebookPen className="h-5 w-5" />
-                              </div>
-                            </div>
 
-                            <div className="mt-4">
-                              <h3 className="text-2xl font-black leading-tight text-slate-900 dark:text-white sm:text-3xl">{year.name}</h3>
-                              <p className="mt-3 text-sm font-bold text-slate-600 dark:text-slate-300">{t("qcms_click_view_subjects", "Open subjects")}</p>
+                    ) : selectedQcmsYear ? (
+                      /* ========================================================================= */
+                      /* LEVEL 2: SUBJECT EXPLORER VIEW (Selected Year)                            */
+                      /* ========================================================================= */
+                      <div className="mt-4">
+                        
+                        {/* Year Banner Header */}
+                        <div className="mb-8 rounded-3xl border border-slate-800 bg-gradient-to-r from-[#0d1e35] via-[#102440] to-[#0b1a2e] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6 shadow-xl">
+                          <div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-violet-400 mb-1">
+                              <GraduationCap className="h-4 w-4" />
+                              <span>{isRtl ? "السنة الدراسية المحددة" : "Selected Year"}</span>
                             </div>
-                          </button>
-                        ))}
-
-                        {(!qcmsYears || qcmsYears.length === 0) && (
-                          <div className="rounded-[2rem] border border-dashed border-violet-200 bg-violet-50 p-8 text-center text-slate-600 dark:border-violet-500/20 dark:bg-violet-500/5 dark:text-slate-300 md:col-span-2">
-                            {t("qcms_no_years_for_now", "No QCM years have been added yet.")}
+                            <h3 className="text-3xl font-black text-white sm:text-4xl">{selectedQcmsYear.name}</h3>
+                            <p className="mt-1 text-xs font-bold text-slate-400">
+                              {isRtl ? "استكشف المواد الدراسية واختر المادة المطلوبة لحل اختباراتها." : "Browse subjects and select one to start taking exams."}
+                            </p>
                           </div>
-                        )}
+
+                          <div className="flex items-center gap-3">
+                            <div className="rounded-2xl border border-slate-700 bg-slate-900/80 px-5 py-3 text-center">
+                              <p className="text-2xl font-black text-violet-300">{selectedQcmsYear.subjects?.length || 0}</p>
+                              <p className="text-[10px] font-bold text-slate-400">{isRtl ? "مواد متوفرة" : "Subjects"}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Subjects Grid */}
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-black text-white flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-cyan-400" />
+                            <span>{isRtl ? "استكشاف المواد الأكاديمية (Subject Explorer)" : "Subject Explorer"}</span>
+                          </h4>
+
+                          {selectedQcmsYear.subjects?.length ? (
+                            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                              {selectedQcmsYear.subjects.map((subject: any) => (
+                                <button
+                                  key={subject.id}
+                                  onClick={() => setSelectedQcmsSubjectId(subject.id)}
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-[#0c182b] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-400/50 hover:bg-[#11223b] hover:shadow-2xl hover:shadow-cyan-500/15"
+                                >
+                                  <div>
+                                    <div className="mb-5 flex items-center justify-between">
+                                      <span className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-3 py-1 text-[11px] font-black text-cyan-300">
+                                        {subject.code || "QCM"}
+                                      </span>
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/15 text-cyan-300 group-hover:bg-cyan-500 group-hover:text-white transition-all">
+                                        <NotebookPen className="h-5 w-5" />
+                                      </div>
+                                    </div>
+
+                                    <h4 className="text-xl font-black text-white group-hover:text-cyan-200 transition-colors leading-tight">
+                                      {subject.name}
+                                    </h4>
+                                  </div>
+
+                                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-800/80">
+                                    <span className="text-xs font-bold text-slate-400">
+                                      {(subject.examLinks || []).length} {isRtl ? "امتحان متاح" : "exams"}
+                                    </span>
+                                    <span className="text-xs font-black text-cyan-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                      {t("qcms_open_subject", "استكشاف الاختبارات")}
+                                      <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+                                    </span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            /* Empty Subjects State */
+                            <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-950/60 p-12 text-center text-slate-400">
+                              <BookOpen className="h-14 w-14 text-slate-600 mx-auto mb-3" />
+                              <p className="text-base font-bold">{t("qcms_no_subjects_in_year", "لم يتم إضافة مواد لهذه السنة الدراسية بعد.")}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                    ) : (
+                      /* ========================================================================= */
+                      /* LEVEL 1: ACADEMIC YEARS GRID VIEW (Feature Cards with Giant Index)        */
+                      /* ========================================================================= */
+                      <div className="mt-4">
+                        <div className="mb-6 flex items-center justify-between">
+                          <h3 className="text-xl font-black text-white flex items-center gap-2.5">
+                            <GraduationCap className="h-5.5 w-5.5 text-violet-400" />
+                            <span>{isRtl ? "المراحل والسنوات الدراسية" : "Academic Stages"}</span>
+                          </h3>
+                          <span className="text-xs font-bold text-slate-400">
+                            {(qcmsYears || []).length} {isRtl ? "سنوات دراسية ممهدة" : "Years Available"}
+                          </span>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                          {(qcmsYears || []).map((year: any, idx: number) => {
+                            const indexStr = (idx + 1).toString().padStart(2, '0');
+                            return (
+                              <button
+                                key={year.id}
+                                onClick={() => {
+                                  setSelectedQcmsYearId(year.id);
+                                  setSelectedQcmsSubjectId(null);
+                                }}
+                                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-slate-800 bg-gradient-to-br from-[#0c182b] via-[#0f1e35] to-[#091222] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
+                              >
+                                {/* Giant Background Index Number */}
+                                <span className="pointer-events-none absolute -bottom-6 -left-2 text-8xl font-black tracking-tighter text-slate-800/40 transition-colors group-hover:text-violet-500/20 select-none">
+                                  {indexStr}
+                                </span>
+
+                                {/* Header Tag & Icon */}
+                                <div className="relative z-10 flex items-center justify-between gap-3">
+                                  <span className="rounded-xl border border-violet-500/25 bg-violet-500/10 px-3.5 py-1.5 text-xs font-black text-violet-300">
+                                    {year.subjects?.length || 0} {t("qcms_subject_count_suffix", "مواد دراسية")}
+                                  </span>
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 text-violet-300 shadow-inner group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300">
+                                    <GraduationCap className="h-6 w-6" />
+                                  </div>
+                                </div>
+
+                                {/* Body Content */}
+                                <div className="relative z-10 mt-6">
+                                  <h4 className="text-2xl font-black leading-tight text-white group-hover:text-violet-200 transition-colors">
+                                    {year.name}
+                                  </h4>
+                                  <p className="mt-2 text-xs font-bold text-slate-400">
+                                    {isRtl ? "اضغط لاستعراض المواد ونماذج الـ QCMs" : "Click to view subjects and QCM exams"}
+                                  </p>
+                                </div>
+
+                                {/* Footer Action */}
+                                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-slate-800/80">
+                                  <span className="text-xs font-black text-violet-400 group-hover:text-cyan-300 transition-colors">
+                                    {t("qcms_click_view_subjects", "تصفح المواد والأقسام")}
+                                  </span>
+                                  <ChevronRight className={`h-4 w-4 text-violet-400 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} />
+                                </div>
+                              </button>
+                            );
+                          })}
+
+                          {(!qcmsYears || qcmsYears.length === 0) && (
+                            <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-950/60 p-12 text-center text-slate-400 md:col-span-2">
+                              <NotebookPen className="h-14 w-14 text-slate-600 mx-auto mb-3" />
+                              <p className="text-base font-bold">{t("qcms_no_years_for_now", "لم يتم إضافة سنوات دراسية لـ QCMs بعد.")}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
+                {/* SIDEBAR DASHBOARD OVERVIEW PANEL (Visible when no subject selected) */}
                 {!selectedQcmsSubject && (
-                  <aside className="relative overflow-hidden border-t border-violet-400/10 bg-[#0c1727] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10 xl:p-12">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(167,139,250,0.25),transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.18),transparent_35%)]" />
-                    <div className="relative h-full">
-                      <div className="mb-6 flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-400">Status</p>
-                          <h3 className="mt-2 text-2xl font-black text-white">QCMs</h3>
-                        </div>
-                        <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-200">
-                          live
-                        </span>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="rounded-[1.75rem] border border-violet-400/10 bg-[#111f32] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">{isRtl ? "المحتوى" : "Content"}</p>
-                              <p className="mt-2 text-3xl font-black text-slate-900 dark:text-white">{qcmsYears.length || 0}</p>
-                            </div>
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:text-violet-200">
-                              <Sparkles className="h-6 w-6" />
-                            </div>
+                  <aside className="relative overflow-hidden border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.18),transparent_60%)]" />
+                    <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
+                      
+                      <div>
+                        <div className="mb-6 flex items-center justify-between gap-3 border-b border-slate-800 pb-5">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-400">Exam Center</p>
+                            <h3 className="mt-1 text-2xl font-black text-white">Dashboard</h3>
                           </div>
+                          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-300">
+                            LIVE HUB
+                          </span>
                         </div>
 
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                          <div className="rounded-[1.5rem] border border-violet-400/10 bg-[#111f32] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "الأسئلة" : "Questions"}</p>
-                            <p className="mt-2 text-2xl font-black text-white">
-                              {qcmsYears.reduce((total, year: any) => total + (year.subjects?.reduce((sum: number, subject: any) => sum + (subject.examLinks?.length || 0), 0) || 0), 0) || 0}
-                            </p>
+                        {/* Metric Cards */}
+                        <div className="space-y-4">
+                          <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-5 shadow-inner">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "السنوات الدراسية" : "Academic Years"}</p>
+                                <p className="mt-1 text-3xl font-black text-white">{qcmsYears.length || 0}</p>
+                              </div>
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300">
+                                <Sparkles className="h-6 w-6" />
+                              </div>
+                            </div>
                           </div>
-                          <div className="rounded-[1.5rem] border border-violet-400/10 bg-[#111f32] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "المواضيع" : "Subjects"}</p>
-                            <p className="mt-2 text-2xl font-black text-white">
-                              {qcmsYears.reduce((total, year: any) => total + (year.subjects?.length || 0), 0) || 0}
-                            </p>
+
+                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                            <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-4">
+                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "إجمالي المواد" : "Total Subjects"}</p>
+                              <p className="mt-1 text-2xl font-black text-violet-300">
+                                {qcmsYears.reduce((total, year: any) => total + (year.subjects?.length || 0), 0) || 0}
+                              </p>
+                            </div>
+
+                            <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-4">
+                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "نماذج الامتحانات" : "Exam Papers"}</p>
+                              <p className="mt-1 text-2xl font-black text-cyan-300">
+                                {qcmsYears.reduce((total, year: any) => total + (year.subjects?.reduce((sum: number, subject: any) => sum + (subject.examLinks?.length || 0), 0) || 0), 0) || 0}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
+
+                      {/* Medical Study Tip Box */}
+                      <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-cyan-500/10 p-5">
+                        <div className="flex items-center gap-3 mb-2">
+                          <GraduationCap className="h-5 w-5 text-violet-400" />
+                          <h4 className="text-xs font-black uppercase tracking-wider text-white">{isRtl ? "نصيحة المراجعة الطبية" : "Exam Tip"}</h4>
+                        </div>
+                        <p className="text-xs font-medium leading-relaxed text-slate-300">
+                          {isRtl 
+                            ? "يُنصح بحل نماذج الـ QCMs فور الانتهاء من مراجعة كل فصل تثبيتاً للمعلومات ودعماً للاستحضار السريع في الامتحانات."
+                            : "Solve QCM exam papers regularly after studying each topic to reinforce long-term recall."}
+                        </p>
+                      </div>
+
                     </div>
                   </aside>
                 )}
