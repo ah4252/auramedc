@@ -129,11 +129,11 @@ export default async function RootLayout({
             --medical-secondary: ${settings.secondaryColor || "#6366f1"};
             --dark-bg: ${settings.darkBg || "#0f172a"};
           }
-          .text-medical-600 { color: var(--medical-600) !important; }
-          .bg-medical-600 { background-color: var(--medical-600) !important; }
-          .border-medical-600 { border-color: var(--medical-600) !important; }
-          .dark body, .dark { background-color: var(--dark-bg) !important; }
-          .dark .bg-dark-bg { background-color: var(--dark-bg) !important; }
+          .text-medical-600 { color: var(--medical-600); }
+          .bg-medical-600 { background-color: var(--medical-600); }
+          .border-medical-600 { border-color: var(--medical-600); }
+          html.dark, body.dark { background-color: var(--dark-bg); }
+          .dark .bg-dark-bg { background-color: var(--dark-bg); }
         `}} />
       </head>
       <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>

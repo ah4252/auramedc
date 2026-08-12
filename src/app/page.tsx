@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, LayoutGrid, Calculator, Newspaper, Pill, Users, GraduationCap, Sparkles, ChevronLeft, Star, Zap, Clock, TrendingUp } from "lucide-react";
+import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, LayoutGrid, Calculator, Newspaper, Pill, Users, GraduationCap, Sparkles, ChevronLeft, Star, Zap, Clock, TrendingUp, HelpCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
@@ -22,6 +22,14 @@ export default async function Home() {
   try {
     const [lessonsResult, lessonCountResult, subjectCountResult, userCountResult] = await Promise.allSettled([
       prisma.lesson.findMany({
+        where: {
+          subject: {
+            category: {
+              slug: { not: "pharmacy" },
+              type: { not: "PHARMACY" },
+            },
+          },
+        },
         orderBy: { createdAt: "desc" },
         take: 3,
         include: { subject: { include: { category: true } }, resources: true }
@@ -211,6 +219,21 @@ export default async function Home() {
                 <h2 className="text-xl font-black text-slate-800 dark:text-white">{tServer("home_section_news_title", siteLang, "الأخبار")}</h2>
               </div>
             </Link>
+
+            {/* الاختبارات والأسئلة */}
+            <Link href="/qcms" className="group relative flex flex-col justify-between bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/25 dark:to-blue-900/20 border border-indigo-200 dark:border-indigo-800/50 p-6 rounded-3xl overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/15 transition-all duration-500 min-h-[160px]">
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1434455694511-401950fed9fe?w=800&q=60')] bg-cover bg-center opacity-[0.04] dark:opacity-[0.1] group-hover:opacity-[0.07] dark:group-hover:opacity-[0.15] transition-opacity duration-700" />
+              <div className="absolute top-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -translate-y-1/2 -translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center border border-indigo-200 dark:border-indigo-800/60 group-hover:scale-110 transition-transform duration-300">
+                  <HelpCircle className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+              </div>
+              <div className="relative z-10 text-right mt-auto">
+                <p className="text-indigo-500 text-xs font-medium mb-1">{tServer("home_section_qcms_description", siteLang, "اختبارات ذكية")}</p>
+                <h2 className="text-xl font-black text-slate-800 dark:text-white">{tServer("home_section_qcms_title", siteLang, "الاختبارات")}</h2>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -328,6 +351,17 @@ export default async function Home() {
                 iconColor: "text-rose-400",
                 badge: tServer("home_feature_news_badge", siteLang, "آخر المستجدات"),
                 badgeColor: "bg-rose-500/20 text-rose-300",
+              },
+              {
+                href: "/qcms",
+                icon: HelpCircle,
+                title: tServer("home_feature_qcms_title", siteLang, "اختبارات وأسئلة"),
+                desc: tServer("home_feature_qcms_desc", siteLang, "حل آلاف الأسئلة الطبية متعددة الخيارات والاختبارات التفاعلية لقياس فهمك."),
+                gradient: "from-indigo-600 to-blue-800",
+                iconBg: "bg-indigo-500/20",
+                iconColor: "text-indigo-400",
+                badge: tServer("home_feature_qcms_badge", siteLang, "تقييم ذكي"),
+                badgeColor: "bg-indigo-500/20 text-indigo-300",
               },
             ].map((item) => (
               <Link key={item.href} href={item.href} className={`group relative flex flex-col bg-slate-900 dark:bg-dark-card rounded-[2rem] overflow-hidden border border-slate-800 hover:border-slate-600 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500`}>
