@@ -314,7 +314,7 @@ export default function YearsClient({
                       )}
                     </div>
                   ) : (
-                    <div className="mt-10 grid gap-5 md:grid-cols-2">
+                    <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                       {(qcmsYears || []).map((year: any) => (
                         <button
                           key={year.id}
@@ -322,16 +322,19 @@ export default function YearsClient({
                             setSelectedQcmsYearId(year.id);
                             setSelectedQcmsSubjectId(null);
                           }}
-                          className="min-h-[220px] rounded-[2rem] bg-gradient-to-br from-violet-500/20 to-slate-900/60 p-8 text-right transition hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/25"
+                          className="min-h-[170px] rounded-[2rem] bg-gradient-to-br from-violet-500/20 to-slate-900/60 p-5 text-right transition hover:scale-[1.01] hover:shadow-2xl hover:shadow-violet-500/25 flex flex-col justify-between"
                         >
-                          <div className="mb-10 flex items-center justify-between">
-                            <span className="rounded-full border border-violet-400/45 bg-violet-500/10 px-4 py-2 text-[10px] font-black text-violet-200">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="rounded-full border border-violet-400/45 bg-violet-500/10 px-3 py-1.5 text-[10px] font-black text-violet-200">
                               {year.subjects?.length || 0} {t("qcms_subject_count_suffix", "subjects")}
                             </span>
-                            <NotebookPen className="h-8 w-8 text-violet-300" />
+                            <NotebookPen className="h-7 w-7 text-violet-300" />
                           </div>
-                          <h3 className="text-3xl font-black text-white">{year.name}</h3>
-                          <p className="mt-4 text-sm font-bold text-slate-300">{t("qcms_click_view_subjects", "Open subjects")}</p>
+
+                          <div className="mt-4">
+                            <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">{year.name}</h3>
+                            <p className="mt-3 text-sm font-bold text-slate-300">{t("qcms_click_view_subjects", "Open subjects")}</p>
+                          </div>
                         </button>
                       ))}
 
