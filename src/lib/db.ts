@@ -19,13 +19,18 @@ function createPrismaClient() {
     return new PrismaClient({ log: ["error"] });
   }
 
-  const pool = new Pool({ connectionString });
-  const adapter = new PrismaNeon(pool);
+  try {
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaNeon(pool);
 
-  return new PrismaClient({
-    adapter,
-    log: ["error"],
-  });
+    return new PrismaClient({
+      adapter,
+      log: ["error"],
+    });
+  } catch (e) {
+    console.warn("[DB] Neon adapter initialization failed, using standard PrismaClient:", e);
+    return new PrismaClient({ log: ["error"] });
+  }
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
