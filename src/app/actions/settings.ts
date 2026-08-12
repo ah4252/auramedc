@@ -20,7 +20,7 @@ export async function getSettings() {
     primaryColor: "#0ea5e9",
     secondaryColor: "#6366f1",
     darkBg: "#0f172a",
-    adminPassword: "admin",
+    adminPassword: "admin123",
     toolsPassword: "tools123",
     toolsProtectionEnabled: false,
     statLectures: "",
