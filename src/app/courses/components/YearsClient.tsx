@@ -254,7 +254,6 @@ export default function YearsClient({
                                 (selectedQcmsSubject.examLinks || []).map((link: any) => (
                                   <a key={link.id} href={link.url} target="_blank" rel="noreferrer" className="block min-w-0 overflow-hidden rounded-2xl bg-violet-500/10 px-4 py-3 transition hover:bg-violet-500/20">
                                     <span className="block break-words text-sm font-black text-violet-200">{link.label}</span>
-                                    <span className="mt-1 block max-w-full truncate text-[10px] font-bold text-slate-400">{link.url}</span>
                                   </a>
                                 ))
                               ) : (
@@ -287,7 +286,7 @@ export default function YearsClient({
                       </div>
 
                       {selectedQcmsYear.subjects?.length ? (
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                           {selectedQcmsYear.subjects.map((subject: any) => (
                             <button
                               key={subject.id}
