@@ -1,23 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Calendar, BookOpen, Layers, NotebookPen, Plus, Trash2, RefreshCw, Save, 
   CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createQcmsYear, deleteQcmsYear, createQcmsSubject, deleteQcmsSubject, createQcmsExamLink, deleteQcmsExamLink } from "@/app/actions/qcmsAdmin";
+import { 
+  createQcmsYear, deleteQcmsYear, 
+  createQcmsSubject, deleteQcmsSubject, 
+  createQcmsExamLink, deleteQcmsExamLink 
+} from "@/app/actions/qcmsAdmin";
 
 export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: any[] }) {
   const router = useRouter();
+  const [years, setYears] = useState<any[]>(initialYears);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // تحديث الحالة عند وصول بيانات جديدة من السيرفر
+  useEffect(() => {
+    setYears(initialYears);
+  }, [initialYears]);
 
   const [newYearName, setNewYearName] = useState("");
   const [newYearSlug, setNewYearSlug] = useState("");
 
   const [activeYearId, setActiveYearId] = useState<string | null>(initialYears[0]?.id || null);
+
+  // تعيين السنة النشطة افتراضياً في حال عدم اختيار أي سنة
+  useEffect(() => {
+    if (!activeYearId && years.length > 0) {
+      setActiveYearId(years[0].id);
+    }
+  }, [years, activeYearId]);
+
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectCode, setNewSubjectCode] = useState("");
   const [newSubjectOrder, setNewSubjectOrder] = useState<number>(0);
@@ -27,12 +45,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
   const [pendingLinks, setPendingLinks] = useState<{ label: string; url: string }[]>([{ label: "", url: "" }]);
   const [modalStatus, setModalStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  const activeYear = initialYears.find((y: any) => y.id === activeYearId) || null;
-  const modalSubject = (activeYear?.subjects || []).find((subject: any) => subject.id === modalSubjectId) || null;
+  const activeYear = years.find((y: any) => y.id === activeYearId) || null;
+  const modalSubject = years.flatMap((y: any) => y.subjects || []).find((s: any) => s.id === modalSubjectId) || null;
 
-  const handleAddYear = async () => {
+  // إضافة سنة دراسية
+  const handleAddYear = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!newYearName.trim() || !newYearSlug.trim()) {
-      setStatus({ type: "error", message: "أدخل اسم السنة ورابطها" });
+      setStatus({ type: "error", message: "أدخل اسم السنة ورابطها (Slug)" });
       return;
     }
 
@@ -43,13 +63,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     if ((res as any).success) {
       setNewYearName("");
       setNewYearSlug("");
-      setStatus({ type: "success", message: "تمت إضافة السنة الدراسية" });
+      setStatus({ type: "success", message: "تمت إضافة السنة الدراسية بنجاح" });
       router.refresh();
     } else {
-      setStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
+      setStatus({ type: "error", message: (res as any).error || "حدث خطأ أثناء إضافة السنة" });
     }
   };
 
+  // حذف سنة دراسية
   const handleDeleteYear = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف السنة وجميع موادها؟")) return;
 
@@ -60,15 +81,18 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     if ((res as any).success) {
       setStatus({ type: "success", message: "تم حذف السنة الدراسية" });
       if (activeYearId === id) setActiveYearId(null);
+      setYears((prev) => prev.filter((y) => y.id !== id));
       router.refresh();
     } else {
-      setStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
+      setStatus({ type: "error", message: (res as any).error || "حدث خطأ أثناء الحذف" });
     }
   };
 
-  const handleAddSubject = async () => {
+  // إضافة مادة دراسية
+  const handleAddSubject = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!activeYearId) {
-      setStatus({ type: "error", message: "اختر سنة أولاً" });
+      setStatus({ type: "error", message: "اختر سنة دراسية أولاً" });
       return;
     }
 
@@ -85,13 +109,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
       setNewSubjectName("");
       setNewSubjectCode("");
       setNewSubjectOrder(0);
-      setStatus({ type: "success", message: "تمت إضافة المادة الدراسية" });
+      setStatus({ type: "success", message: "تمت إضافة المادة الدراسية بنجاح" });
       router.refresh();
     } else {
-      setStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
+      setStatus({ type: "error", message: (res as any).error || "حدث خطأ أثناء إدراج المادة" });
     }
   };
 
+  // حذف مادة دراسية
   const handleDeleteSubject = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذه المادة؟")) return;
 
@@ -102,6 +127,12 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     if ((res as any).success) {
       setStatus({ type: "success", message: "تم حذف المادة الدراسية" });
       if (modalSubjectId === id) setModalSubjectId(null);
+      setYears((prevYears) =>
+        prevYears.map((year) => ({
+          ...year,
+          subjects: (year.subjects || []).filter((s: any) => s.id !== id)
+        }))
+      );
       router.refresh();
     } else {
       setStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
@@ -115,20 +146,23 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     setModalStatus(null);
   };
 
+  // إغلاق النافذة المنبثقة
   const closeLinksModal = () => {
     setModalSubjectId(null);
     setPendingLinks([{ label: "", url: "" }]);
     setModalStatus(null);
   };
 
-  // إضافة صف رابط جديد فارغ (إمكانية إضافة ما لا نهاية من الروابط)
+  // إضافة صف رابط جديد فارغ (إمكانية إضافة مالا نهاية من الروابط)
   const handleAddPendingRow = () => {
     setPendingLinks((prev) => [...prev, { label: "", url: "" }]);
   };
 
   // تحديث قيمة حقل في صف معين
   const handlePendingChange = (index: number, field: "label" | "url", value: string) => {
-    setPendingLinks((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+    setPendingLinks((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
   };
 
   // حذف صف من الروابط المعلّقة
@@ -136,39 +170,73 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     setPendingLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // حفظ جميع الروابط المعلّقة دفعة واحدة
+  // حفظ جميع الروابط المعلّقة دفعة واحدة مع تحديث فوري للحالة
   const handleSaveAllLinks = async () => {
     if (!modalSubjectId) return;
 
     const prepared = pendingLinks
-      .map((r) => ({
-        label: r.label.trim(),
-        url: r.url.trim() ? (r.url.trim().startsWith("http://") || r.url.trim().startsWith("https://") ? r.url.trim() : `https://${r.url.trim()}`) : ""
-      }))
+      .map((r) => {
+        const rawUrl = r.url.trim();
+        let formattedUrl = rawUrl;
+        if (rawUrl && !/^https?:\/\//i.test(rawUrl)) {
+          formattedUrl = `https://${rawUrl}`;
+        }
+        return {
+          label: r.label.trim(),
+          url: formattedUrl
+        };
+      })
       .filter((r) => r.label && r.url);
 
     if (prepared.length === 0) {
-      setModalStatus({ type: "error", message: "أدخل اسم ورابط صحيحين لواحد على الأقل" });
+      setModalStatus({ type: "error", message: "يرجى كتابة عنوان ورابط صحيح لواحد على الأقل" });
       return;
     }
 
     setLoading(true);
-    let saved = 0;
+    let savedCount = 0;
+    const newSavedLinks: any[] = [];
+
     for (const row of prepared) {
       const res = await createQcmsExamLink(modalSubjectId, row.label, row.url);
-      if ((res as any).success) saved++;
+      if ((res as any).success) {
+        savedCount++;
+        newSavedLinks.push({
+          id: (res as any).id || `temp-${Date.now()}-${Math.random()}`,
+          label: row.label,
+          url: row.url,
+          qcmsSubjectId: modalSubjectId
+        });
+      }
     }
     setLoading(false);
 
-    if (saved > 0) {
+    if (savedCount > 0) {
+      // تحديث الحالة المحلية فوراً حتى تظهر الروابط في الواجهة دون انتظر
+      setYears((prevYears) =>
+        prevYears.map((year) => ({
+          ...year,
+          subjects: (year.subjects || []).map((subj: any) => {
+            if (subj.id === modalSubjectId) {
+              return {
+                ...subj,
+                examLinks: [...(subj.examLinks || []), ...newSavedLinks]
+              };
+            }
+            return subj;
+          })
+        }))
+      );
+
       setPendingLinks([{ label: "", url: "" }]);
-      setModalStatus({ type: "success", message: `✓ تم حفظ ${saved} رابط بنجاح` });
+      setModalStatus({ type: "success", message: `✓ تم حفظ ${savedCount} رابط بنجاح!` });
       router.refresh();
     } else {
-      setModalStatus({ type: "error", message: "حدث خطأ أثناء حفظ الروابط" });
+      setModalStatus({ type: "error", message: "حدث خطأ أثناء ترحيل الروابط" });
     }
   };
 
+  // حذف رابط امتحان
   const handleDeleteExamLink = async (linkId: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا الرابط؟")) return;
 
@@ -177,10 +245,26 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     setLoading(false);
 
     if ((res as any).success) {
+      // تحديث فوري للحالة المحلية
+      setYears((prevYears) =>
+        prevYears.map((year) => ({
+          ...year,
+          subjects: (year.subjects || []).map((subj: any) => {
+            if (subj.id === modalSubjectId) {
+              return {
+                ...subj,
+                examLinks: (subj.examLinks || []).filter((l: any) => l.id !== linkId)
+              };
+            }
+            return subj;
+          })
+        }))
+      );
+
       setModalStatus({ type: "success", message: "تم حذف رابط الاختبار" });
       router.refresh();
     } else {
-      setModalStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
+      setModalStatus({ type: "error", message: (res as any).error || "حدث خطأ عند الحذف" });
     }
   };
 
@@ -203,7 +287,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
       {status && (
         <div className={`mb-6 flex items-center gap-3 rounded-2xl border px-5 py-4 ${status.type === "success" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-rose-500/30 bg-rose-500/10 text-rose-200"}`}>
-          {status.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {status.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
           <span className="font-black text-sm">{status.message}</span>
         </div>
       )}
@@ -225,7 +309,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
             </div>
 
             <div className="space-y-3">
-              {initialYears.map((year: any) => (
+              {years.map((year: any) => (
                 <div
                   key={year.id}
                   className={`group flex items-center justify-between rounded-2xl border p-4 transition cursor-pointer ${
@@ -240,6 +324,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                     <span className="font-black text-slate-100">{year.name}</span>
                   </div>
                   <button
+                    type="button"
                     className="rounded-xl p-2 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-500/10 hover:text-rose-300"
                     disabled={loading}
                     onClick={(e) => {
@@ -254,14 +339,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                 </div>
               ))}
 
-              {initialYears.length === 0 && (
+              {years.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-slate-600 p-6 text-center text-sm font-bold text-slate-500">
                   لا توجد سنوات مضافة
                 </div>
               )}
             </div>
 
-            <div className="mt-8 border-t border-slate-700/80 pt-6">
+            <form onSubmit={handleAddYear} className="mt-8 border-t border-slate-700/80 pt-6">
               <h3 className="mb-4 text-sm font-black text-slate-300">إضافة سنة دراسية جديدة</h3>
               <div className="space-y-3">
                 <input
@@ -278,15 +363,15 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                   placeholder="slug-year"
                 />
                 <button
+                  type="submit"
                   disabled={loading || !newYearName.trim() || !newYearSlug.trim()}
-                  onClick={handleAddYear}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 px-6 py-3 font-black text-white transition hover:bg-violet-500 disabled:opacity-50"
                 >
                   {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
                   إضافة السنة
                 </button>
               </div>
-            </div>
+            </form>
           </section>
         </aside>
 
@@ -329,16 +414,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                         return (
                           <tr
                             key={subject.id}
-                            className="hover:bg-slate-800/40 transition group"
+                            className="hover:bg-slate-800/40 transition group cursor-pointer"
+                            onClick={() => openLinksModal(subject)}
                           >
                             <td className="p-4">
-                              <button
-                                className="text-right font-black text-slate-100 transition hover:text-violet-300 flex items-center gap-2 group-hover:translate-x-1 duration-200"
-                                onClick={() => openLinksModal(subject)}
-                              >
+                              <div className="text-right font-black text-slate-100 transition group-hover:text-violet-300 flex items-center gap-2">
                                 <BookOpen className="w-4 h-4 text-violet-400 shrink-0" />
                                 <span>{subject.name}</span>
-                              </button>
+                              </div>
                             </td>
                             <td className="p-4 font-bold text-slate-400">
                               <span className="rounded-lg bg-slate-800 px-2.5 py-1 font-mono text-xs text-slate-300 border border-slate-700/50">
@@ -362,8 +445,12 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
                                 {/* زر إظهار النافذة المنبثقة لإضافة/إدارة الروابط */}
                                 <button
+                                  type="button"
                                   className="inline-flex items-center gap-1.5 rounded-xl border border-violet-500/40 bg-violet-500/10 px-3 py-1.5 text-xs font-black text-violet-200 transition hover:bg-violet-500/25 hover:border-violet-400"
-                                  onClick={() => openLinksModal(subject)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openLinksModal(subject);
+                                  }}
                                 >
                                   <Plus className="w-3.5 h-3.5 text-violet-300" />
                                   <span>إضافة / إدارة الروابط</span>
@@ -372,9 +459,13 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                             </td>
                             <td className="p-4 text-center">
                               <button
+                                type="button"
                                 className="rounded-xl p-2 text-slate-400 hover:bg-rose-500/10 hover:text-rose-300 transition"
                                 disabled={loading}
-                                onClick={() => handleDeleteSubject(subject.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSubject(subject.id);
+                                }}
                                 title="حذف المادة"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -395,7 +486,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                 </div>
 
                 {/* نموذج إضافة مادة جديدة */}
-                <div className="rounded-[2rem] border border-violet-500/30 bg-violet-500/5 p-6">
+                <form onSubmit={handleAddSubject} className="rounded-[2rem] border border-violet-500/30 bg-violet-500/5 p-6">
                   <div className="mb-4 flex items-center gap-3">
                     <div className="rounded-xl bg-violet-500/10 p-2 text-violet-200">
                       <Plus className="w-5 h-5" />
@@ -428,15 +519,15 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
                   <div className="mt-4">
                     <button
+                      type="submit"
                       disabled={loading || !newSubjectName.trim()}
-                      onClick={handleAddSubject}
                       className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 font-black text-white transition hover:bg-emerald-500 disabled:opacity-50"
                     >
                       {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                       حفظ المادة
                     </button>
                   </div>
-                </div>
+                </form>
               </>
             ) : (
               <div className="rounded-[2rem] border border-dashed border-slate-600 p-12 text-center">
@@ -487,6 +578,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                 </div>
 
                 <button
+                  type="button"
                   onClick={closeLinksModal}
                   className="rounded-2xl border border-slate-700 bg-slate-800/80 p-2.5 text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 transition"
                   title="إغلاق"
@@ -534,6 +626,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                           </a>
                         </div>
                         <button
+                          type="button"
                           className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/15 hover:text-rose-300 transition shrink-0"
                           onClick={() => handleDeleteExamLink(link.id)}
                           title="حذف الرابط"
@@ -551,7 +644,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                   </div>
                 </div>
 
-                {/* قسم إضافة روابط جديدة (إمكانية إضافة ما لا نهاية من الروابط) */}
+                {/* قسم إضافة روابط جديدة (إمكانية إضافة مالا نهاية من الروابط) */}
                 <div className="rounded-2xl border border-violet-500/30 bg-slate-950/80 p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -587,6 +680,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                         </div>
                         {pendingLinks.length > 1 && (
                           <button
+                            type="button"
                             className="mt-2 rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/15 hover:text-rose-400 shrink-0"
                             onClick={() => handleRemovePendingRow(idx)}
                             title="حذف هذا الصف"
