@@ -19,8 +19,8 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
   const [newSubjectOrder, setNewSubjectOrder] = useState<number>(0);
 
   const [newExamLinkSubjectId, setNewExamLinkSubjectId] = useState<string | null>(null);
-  const [newExamLinkLabel, setNewExamLinkLabel] = useState("");
-  const [newExamLinkUrl, setNewExamLinkUrl] = useState("");
+  // قائمة الروابط المعلّقة (قبل الحفظ)
+  const [pendingLinks, setPendingLinks] = useState<{ label: string; url: string }[]>([{ label: "", url: "" }]);
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
 
@@ -104,34 +104,49 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     }
   };
 
-  const handleAddExamLink = async () => {
+  // إضافة صف رابط جديد فارغ
+  const handleAddPendingRow = () => {
+    setPendingLinks((prev) => [...prev, { label: "", url: "" }]);
+  };
+
+  // تحديث قيمة حقل في صف معيّن
+  const handlePendingChange = (index: number, field: "label" | "url", value: string) => {
+    setPendingLinks((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
+
+  // حذف صف من القائمة
+  const handleRemovePendingRow = (index: number) => {
+    setPendingLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // حفظ كل الروابط المعلّقة دفعةً واحدة
+  const handleSaveAllLinks = async () => {
     if (!newExamLinkSubjectId) {
       setStatus({ type: "error", message: "اختر مادة أولاً" });
       return;
     }
 
-    if (!newExamLinkLabel.trim()) {
-      setStatus({ type: "error", message: "اسم الرابط مطلوب" });
-      return;
-    }
-
-    if (!newExamLinkUrl.trim() || !/^https?:\/\//i.test(newExamLinkUrl.trim())) {
-      setStatus({ type: "error", message: "أدخل رابطاً صحيحاً يبدأ بـ http أو https" });
+    const valid = pendingLinks.filter((r) => r.label.trim() && r.url.trim() && /^https?:\/\//i.test(r.url.trim()));
+    if (valid.length === 0) {
+      setStatus({ type: "error", message: "أدخل رابطاً واحداً صحيحاً على الأقل يبدأ بـ http أو https" });
       return;
     }
 
     setLoading(true);
-    const res = await createQcmsExamLink(newExamLinkSubjectId, newExamLinkLabel.trim(), newExamLinkUrl.trim());
+    let saved = 0;
+    for (const row of valid) {
+      const res = await createQcmsExamLink(newExamLinkSubjectId, row.label.trim(), row.url.trim());
+      if ((res as any).success) saved++;
+    }
     setLoading(false);
 
-    if ((res as any).success) {
-      setNewExamLinkLabel("");
-      setNewExamLinkUrl("");
+    if (saved > 0) {
+      setPendingLinks([{ label: "", url: "" }]);
       setNewExamLinkSubjectId(null);
-      setStatus({ type: "success", message: "تمت إضافة رابط الاختبار" });
+      setStatus({ type: "success", message: `✓ تم حفظ ${saved} رابط بنجاح` });
       router.refresh();
     } else {
-      setStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
+      setStatus({ type: "error", message: "حدث خطأ أثناء الحفظ" });
     }
   };
 
@@ -406,42 +421,78 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
                         {newExamLinkSubjectId === selectedSubject.id && (
                           <div className="rounded-xl border border-violet-500/45 bg-slate-900 p-4">
-                            <div className="mb-3 flex items-center justify-between">
-                              <span className="text-sm font-black text-violet-200">إضافة رابط جديد</span>
+                            {/* رأس النموذج */}
+                            <div className="mb-4 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-violet-200">إضافة روابط</span>
+                                <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-black text-violet-300">
+                                  {pendingLinks.length} {pendingLinks.length === 1 ? "رابط" : "روابط"}
+                                </span>
+                              </div>
                               <button
                                 className="rounded-full border border-slate-600 px-3 py-1 text-[10px] font-black text-slate-300 hover:bg-slate-700"
                                 onClick={() => {
                                   setNewExamLinkSubjectId(null);
-                                  setNewExamLinkLabel("");
-                                  setNewExamLinkUrl("");
+                                  setPendingLinks([{ label: "", url: "" }]);
                                 }}
                               >
                                 إلغاء
                               </button>
                             </div>
-                            <div className="grid grid-cols-1 gap-3">
-                              <input
-                                className="admin-input"
-                                placeholder="اسم الرابط"
-                                value={newExamLinkLabel}
-                                onChange={(e) => setNewExamLinkLabel(e.target.value)}
-                              />
-                              <input
-                                className="admin-input"
-                                dir="ltr"
-                                placeholder="https://exam.example.com"
-                                value={newExamLinkUrl}
-                                onChange={(e) => setNewExamLinkUrl(e.target.value)}
-                              />
-                              <button
-                                disabled={loading || !newExamLinkLabel.trim() || !newExamLinkUrl.trim()}
-                                onClick={handleAddExamLink}
-                                className="flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white transition hover:bg-violet-500 disabled:opacity-50"
-                              >
-                                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                حفظ الرابط
-                              </button>
+
+                            {/* صفوف الروابط */}
+                            <div className="space-y-3">
+                              {pendingLinks.map((row, idx) => (
+                                <div key={idx} className="group relative flex items-start gap-2 rounded-xl border border-slate-700/60 bg-slate-800/50 p-3">
+                                  <span className="mt-2.5 min-w-[1.25rem] text-center text-[11px] font-black text-slate-500">{idx + 1}</span>
+                                  <div className="flex flex-1 flex-col gap-2">
+                                    <input
+                                      className="admin-input"
+                                      placeholder="اسم الرابط"
+                                      value={row.label}
+                                      onChange={(e) => handlePendingChange(idx, "label", e.target.value)}
+                                    />
+                                    <input
+                                      className="admin-input"
+                                      dir="ltr"
+                                      placeholder="https://exam.example.com"
+                                      value={row.url}
+                                      onChange={(e) => handlePendingChange(idx, "url", e.target.value)}
+                                    />
+                                  </div>
+                                  {pendingLinks.length > 1 && (
+                                    <button
+                                      className="mt-2 rounded-lg p-1.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400"
+                                      onClick={() => handleRemovePendingRow(idx)}
+                                      title="حذف هذا الصف"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
                             </div>
+
+                            {/* زر إضافة صف جديد */}
+                            <button
+                              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-violet-500/40 py-2.5 text-sm font-black text-violet-300 transition hover:border-violet-400 hover:bg-violet-500/10"
+                              onClick={handleAddPendingRow}
+                            >
+                              <Plus className="w-4 h-4" />
+                              إضافة رابط آخر
+                            </button>
+
+                            {/* زر الحفظ الكلي */}
+                            <button
+                              disabled={loading || pendingLinks.every((r) => !r.label.trim() || !r.url.trim())}
+                              onClick={handleSaveAllLinks}
+                              className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white transition hover:bg-violet-500 disabled:opacity-50"
+                            >
+                              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                              حفظ {pendingLinks.filter((r) => r.label.trim() && r.url.trim()).length > 0
+                                ? `${pendingLinks.filter((r) => r.label.trim() && r.url.trim()).length} رابط`
+                                : "الروابط"}
+                            </button>
                           </div>
                         )}
                       </div>
