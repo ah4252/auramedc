@@ -495,7 +495,7 @@ export default function YearsClient({
                                 className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-slate-800 bg-gradient-to-br from-[#0c182b] via-[#0f1e35] to-[#091222] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
                               >
                                 {/* Giant Background Index Number */}
-                                <span className="pointer-events-none absolute -bottom-6 -left-2 text-8xl font-black tracking-tighter text-slate-800/40 transition-colors group-hover:text-violet-500/20 select-none">
+                                <span className="pointer-events-none absolute -bottom-10 -right-8 text-7xl font-black tracking-tighter text-slate-700/25 transition-colors group-hover:text-violet-500/15 select-none opacity-40">
                                   {indexStr}
                                 </span>
 

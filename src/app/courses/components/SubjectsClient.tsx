@@ -66,7 +66,7 @@ export default function SubjectsClient({ category }: { category: any }) {
                <X className="w-5 h-5" />
              </button>
            )}
-           <div className="absolute -bottom-6 right-2 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-0 group-focus-within:opacity-100 transition-opacity">
+           <div className="absolute -bottom-8 right-2 text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none">
               البحث الذكي في مواد {category.name}
            </div>
           </div>
