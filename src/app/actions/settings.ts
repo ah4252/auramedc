@@ -28,6 +28,7 @@ export async function getSettings() {
     statStudents: "",
     statSatisfaction: "99%",
     statPharmacy: "",
+    statQCMs: "",
     socialFacebook: "",
     socialInstagram: "",
     socialTelegram: "",
@@ -61,6 +62,7 @@ export async function getSettings() {
         statStudents: true,
         statSatisfaction: true,
         statPharmacy: true,
+        statQCMs: true,
         socialFacebook: true,
         socialInstagram: true,
         socialTelegram: true,
@@ -104,6 +106,7 @@ export async function updateSettings(data: any) {
     if (data.statStudents !== undefined) updateData.statStudents = data.statStudents;
     if (data.statSatisfaction !== undefined) updateData.statSatisfaction = data.statSatisfaction;
     if (data.statPharmacy !== undefined) updateData.statPharmacy = data.statPharmacy;
+    if (data.statQCMs !== undefined) updateData.statQCMs = data.statQCMs;
     
     if (data.socialFacebook !== undefined) updateData.socialFacebook = data.socialFacebook;
     if (data.socialInstagram !== undefined) updateData.socialInstagram = data.socialInstagram;

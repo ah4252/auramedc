@@ -40,6 +40,7 @@ export default function AdminSettingsPage() {
   const [statSpecialties, setStatSpecialties] = useState("");
   const [statStudents, setStatStudents] = useState("");
   const [statPharmacy, setStatPharmacy] = useState("");
+  const [statQCMs, setStatQCMs] = useState("");
   const [statSatisfaction, setStatSatisfaction] = useState("99%");
   const [statsMsg, setStatsMsg] = useState<{type: "success"|"error", text: string} | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -73,6 +74,7 @@ export default function AdminSettingsPage() {
       setStatSpecialties(s.statSpecialties || "");
       setStatStudents(s.statStudents || "");
       setStatPharmacy(s.statPharmacy || "");
+      setStatQCMs(s.statQCMs || "");
       setStatSatisfaction(s.statSatisfaction || "99%");
       setSocialFacebook(s.socialFacebook || "");
       setSocialInstagram(s.socialInstagram || "");
@@ -127,7 +129,7 @@ export default function AdminSettingsPage() {
 
   const handleSaveStats = async () => {
     setStatsLoading(true);
-    const res = await updateSettings({ statLectures, statSpecialties, statStudents, statPharmacy, statSatisfaction });
+    const res = await updateSettings({ statLectures, statSpecialties, statStudents, statPharmacy, statQCMs, statSatisfaction });
     if (res.success) {
       setStatsMsg({ type: "success", text: "تم حفظ إحصائيات الصفحة الرئيسية بنجاح! ✓" });
     } else {
@@ -354,6 +356,7 @@ export default function AdminSettingsPage() {
                       { value: statSpecialties || "+23", label: "تخصص مختلف", icon: Stethoscope, color: "text-indigo-400" },
                       { value: statStudents || "+1", label: "طالب طب", icon: Users, color: "text-amber-400" },
                       { value: statPharmacy || "+0", label: "الصيدلة", icon: Pill, color: "text-emerald-400" },
+                      { value: statQCMs || "+0", label: "اختبارات", icon: NotebookPen, color: "text-indigo-400" },
                       { value: statSatisfaction || "99%", label: "نسبة الرضا", icon: HeartPulse, color: "text-rose-400" },
                     ].map((s, i) => (
                       <div key={i} className="flex flex-col items-center text-center p-3">
@@ -420,6 +423,20 @@ export default function AdminSettingsPage() {
                         value={statPharmacy}
                         onChange={(e) => setStatPharmacy(e.target.value)}
                         className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold"
+                        dir="ltr"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-black text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <NotebookPen className="w-4 h-4 text-indigo-500" />
+                        الاختبارات
+                      </label>
+                      <input
+                        type="text" placeholder="مثال: 0+ (فارغ = من قاعدة البيانات)"
+                        value={statQCMs}
+                        onChange={(e) => setStatQCMs(e.target.value)}
+                        className="w-full p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold"
                         dir="ltr"
                       />
                     </div>

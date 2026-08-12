@@ -247,6 +247,7 @@ export default async function Home() {
               { value: settings.statSpecialties || (subjectCount > 0 ? `+${subjectCount}` : "+50"), label: tServer("home_stats_specialties", siteLang, "تخصص مختلف"), icon: Stethoscope, color: "violet" },
               { value: settings.statStudents || (userCount > 0 ? `${siteLang === "ar" ? userCount.toLocaleString('ar-EG') : userCount.toLocaleString('fr-FR')}+` : "10k+"), label: tServer("home_stats_students", siteLang, "طالب طب"), icon: GraduationCap, color: "amber" },
               { value: settings.statPharmacy || "+0", label: tServer("home_stats_pharmacy", siteLang, "الصيدلة"), icon: Pill, color: "emerald" },
+              { value: settings.statQCMs || "+0", label: tServer("home_stats_qcms", siteLang, "اختبارات"), icon: HelpCircle, color: "indigo" },
               { value: settings.statSatisfaction || "99%", label: tServer("home_stats_satisfaction", siteLang, "نسبة الرضا"), icon: HeartPulse, color: "emerald" },
             ].map((stat, idx) => {
               const colorMap: Record<string, string> = {
@@ -254,6 +255,7 @@ export default async function Home() {
                 violet: "bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400",
                 amber: "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400",
                 emerald: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400",
+                indigo: "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400",
               };
               return (
                 <div key={idx} className="flex flex-col items-center text-center space-y-3 p-6 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group border border-transparent hover:border-slate-100 dark:hover:border-slate-800">

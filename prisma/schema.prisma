@@ -166,6 +166,7 @@ model SiteSettings {
   statSpecialties        String?  @default("")
   statStudents           String?  @default("")
   statPharmacy           String?  @default("")
+  statQCMs               String?  @default("")
   maintenanceCourses     Boolean  @default(false)
   maintenanceGpa         Boolean  @default(false)
   maintenanceNews        Boolean  @default(false)
