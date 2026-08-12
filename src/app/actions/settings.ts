@@ -76,7 +76,8 @@ export async function getSettings() {
     }
 
     return { ...defaultSettings, ...settings };
-  } catch {
+  } catch (error) {
+    console.error("Error in getSettings:", error);
     return defaultSettings;
   }
 }
@@ -123,7 +124,8 @@ export async function updateSettings(data: any) {
     revalidatePath("/", "layout");
     revalidatePath("/admin/settings");
     return { success: true, settings: updated };
-  } catch {
+  } catch (error) {
+    console.error("Error in updateSettings:", error);
     return { error: "حدث خطأ أثناء تحديث الإعدادات في قاعدة البيانات" };
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Hammer, Clock, ShieldAlert } from "lucide-react";
+import { Hammer, Clock, ShieldAlert, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SectionMaintenanceGuard({
@@ -115,6 +115,18 @@ export default function SectionMaintenanceGuard({
                     className="px-6 py-3 rounded-xl bg-medical-600 hover:bg-medical-700 text-white text-xs sm:text-sm font-black transition-all shadow-md shadow-medical-600/20 active:scale-95 flex items-center gap-2"
                   >
                     العودة إلى السنوات الدراسية
+                  </a>
+                </div>
+              )}
+
+              {sectionName === "قسم QCMs" && (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="/courses"
+                    className="px-6 py-3 rounded-xl bg-medical-600 hover:bg-medical-700 text-white text-xs sm:text-sm font-black transition-all shadow-md shadow-medical-600/20 active:scale-95 flex items-center gap-2"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    <span>العودة إلى قسم الدروس</span>
                   </a>
                 </div>
               )}

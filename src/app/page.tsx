@@ -243,12 +243,12 @@ export default async function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
-              { value: settings.statLectures || (lessonCount > 0 ? `+${lessonCount}` : "+500"), label: tServer("home_stats_lectures", siteLang, "محاضرة طبية"), icon: PlayCircle, color: "medical" },
-              { value: settings.statSpecialties || (subjectCount > 0 ? `+${subjectCount}` : "+50"), label: tServer("home_stats_specialties", siteLang, "تخصص مختلف"), icon: Stethoscope, color: "violet" },
-              { value: settings.statStudents || (userCount > 0 ? `${siteLang === "ar" ? userCount.toLocaleString('ar-EG') : userCount.toLocaleString('fr-FR')}+` : "10k+"), label: tServer("home_stats_students", siteLang, "طالب طب"), icon: GraduationCap, color: "amber" },
-              { value: settings.statPharmacy || "+0", label: tServer("home_stats_pharmacy", siteLang, "الصيدلة"), icon: Pill, color: "emerald" },
-              { value: settings.statQCMs || "+0", label: tServer("home_stats_qcms", siteLang, "اختبارات"), icon: HelpCircle, color: "indigo" },
-              { value: settings.statSatisfaction || "99%", label: tServer("home_stats_satisfaction", siteLang, "نسبة الرضا"), icon: HeartPulse, color: "emerald" },
+              { value: (settings.statLectures && settings.statLectures.trim() !== "") ? settings.statLectures : (lessonCount > 0 ? `+${lessonCount}` : "+0"), label: tServer("home_stats_lectures", siteLang, "محاضرة طبية"), icon: PlayCircle, color: "medical" },
+              { value: (settings.statSpecialties && settings.statSpecialties.trim() !== "") ? settings.statSpecialties : (subjectCount > 0 ? `+${subjectCount}` : "+0"), label: tServer("home_stats_specialties", siteLang, "تخصص مختلف"), icon: Stethoscope, color: "violet" },
+              { value: (settings.statStudents && settings.statStudents.trim() !== "") ? settings.statStudents : (userCount > 0 ? `${siteLang === "ar" ? userCount.toLocaleString('ar-EG') : userCount.toLocaleString('fr-FR')}+` : "0+"), label: tServer("home_stats_students", siteLang, "طالب طب"), icon: GraduationCap, color: "amber" },
+              { value: (settings.statPharmacy && settings.statPharmacy.trim() !== "") ? settings.statPharmacy : "+0", label: tServer("home_stats_pharmacy", siteLang, "الصيدلة"), icon: Pill, color: "emerald" },
+              { value: (settings.statQCMs && settings.statQCMs.trim() !== "") ? settings.statQCMs : "+0", label: tServer("home_stats_qcms", siteLang, "اختبارات"), icon: HelpCircle, color: "indigo" },
+              { value: (settings.statSatisfaction && settings.statSatisfaction.trim() !== "") ? settings.statSatisfaction : "99%", label: tServer("home_stats_satisfaction", siteLang, "نسبة الرضا"), icon: HeartPulse, color: "emerald" },
             ].map((stat, idx) => {
               const colorMap: Record<string, string> = {
                 medical: "bg-medical-100 dark:bg-medical-900/40 text-medical-600 dark:text-medical-400",
