@@ -102,14 +102,43 @@ export default function AdminSettingsPage() {
   };
 
   const handleToggleSection = async (section: string, value: boolean) => {
+    // Update UI immediately
     switch (section) {
-      case 'courses': setMaintenanceCourses(value); await updateSettings({ maintenanceCourses: value }); break;
-      case 'subjects': setMaintenanceSubjects(value); await updateSettings({ maintenanceSubjects: value }); break;
-      case 'pharmacy': setMaintenancePharmacy(value); await updateSettings({ maintenancePharmacy: value }); break;
-      case 'timetable': setMaintenanceTimetable(value); await updateSettings({ maintenanceTimetable: value }); break;
-      case 'gpa': setMaintenanceGpa(value); await updateSettings({ maintenanceGpa: value }); break;
-      case 'news': setMaintenanceNews(value); await updateSettings({ maintenanceNews: value }); break;
-      case 'qcms': setMaintenanceQcms(value); await updateSettings({ maintenanceQcms: value }); break;
+      case 'courses': setMaintenanceCourses(value); break;
+      case 'subjects': setMaintenanceSubjects(value); break;
+      case 'pharmacy': setMaintenancePharmacy(value); break;
+      case 'timetable': setMaintenanceTimetable(value); break;
+      case 'gpa': setMaintenanceGpa(value); break;
+      case 'news': setMaintenanceNews(value); break;
+      case 'qcms': setMaintenanceQcms(value); break;
+    }
+
+    // Then save to database
+    const data: any = {};
+    switch (section) {
+      case 'courses': data.maintenanceCourses = value; break;
+      case 'subjects': data.maintenanceSubjects = value; break;
+      case 'pharmacy': data.maintenancePharmacy = value; break;
+      case 'timetable': data.maintenanceTimetable = value; break;
+      case 'gpa': data.maintenanceGpa = value; break;
+      case 'news': data.maintenanceNews = value; break;
+      case 'qcms': data.maintenanceQcms = value; break;
+    }
+
+    const result = await updateSettings(data);
+    
+    // If update failed, revert the state
+    if (result?.error) {
+      switch (section) {
+        case 'courses': setMaintenanceCourses(!value); break;
+        case 'subjects': setMaintenanceSubjects(!value); break;
+        case 'pharmacy': setMaintenancePharmacy(!value); break;
+        case 'timetable': setMaintenanceTimetable(!value); break;
+        case 'gpa': setMaintenanceGpa(!value); break;
+        case 'news': setMaintenanceNews(!value); break;
+        case 'qcms': setMaintenanceQcms(!value); break;
+      }
+      console.error(`خطأ في تحديث ${section}:`, result.error);
     }
   };
 
