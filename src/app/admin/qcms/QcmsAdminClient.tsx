@@ -285,7 +285,12 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                               className="text-right font-black text-slate-100 transition hover:text-violet-300"
                               onClick={() => {
                                 setSelectedSubjectId(subject.id);
-                                setNewExamLinkSubjectId(null);
+                                setNewExamLinkSubjectId(subject.id);
+                                setNewExamLinkLabel("");
+                                setNewExamLinkUrl("");
+                                setTimeout(() => {
+                                  document.getElementById("exam-link-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                }, 100);
                               }}
                             >
                               {subject.name}
@@ -321,9 +326,13 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                               <button
                                 className="mt-2 inline-flex items-center gap-2 rounded-xl border border-violet-500/40 px-3 py-2 text-[11px] font-black text-violet-200 transition hover:bg-violet-500/15"
                                 onClick={() => {
+                                  setSelectedSubjectId(subject.id);
                                   setNewExamLinkSubjectId(subject.id);
                                   setNewExamLinkLabel("");
                                   setNewExamLinkUrl("");
+                                  setTimeout(() => {
+                                    document.getElementById("exam-link-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  }, 100);
                                 }}
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -355,7 +364,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                 </div>
 
                 {selectedSubject && (
-                  <section className="mt-6 rounded-[2rem] border border-violet-500/30 bg-slate-950 p-6">
+                  <section id="exam-link-section" className="mt-6 rounded-[2rem] border border-violet-500/30 bg-slate-950 p-6">
                     <div className="mb-6 flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
