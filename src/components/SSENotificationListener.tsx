@@ -45,8 +45,6 @@ export default function SSENotificationListener() {
   };
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-
     async function checkForUpdates() {
       try {
         const res = await fetch("/api/latest-update", { cache: "no-store" });
@@ -55,13 +53,11 @@ export default function SSENotificationListener() {
 
         if (!data?.id) return;
 
-        // أول تحميل: سجّل فقط ولا تُظهر إشعاراً
         if (lastSeenIdRef.current === null) {
           lastSeenIdRef.current = data.id;
           return;
         }
 
-        // محتوى جديد؟
         if (data.id !== lastSeenIdRef.current) {
           lastSeenIdRef.current = data.id;
           addToast({ id: data.id, title: data.title, body: data.body, url: data.url });
@@ -69,12 +65,8 @@ export default function SSENotificationListener() {
       } catch {}
     }
 
-    // فحص فوري عند تحميل الصفحة
     checkForUpdates();
-
-    // ثم كل 20 ثانية
-    interval = setInterval(checkForUpdates, POLL_INTERVAL);
-
+    const interval = setInterval(checkForUpdates, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 

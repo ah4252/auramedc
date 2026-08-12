@@ -87,7 +87,8 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
  */
 class WebAuraDownloader implements Partial<AuraDownloaderPlugin> {
   async saveFile(options: { data: string; fileName: string; mimeType?: string }) {
-    let { data, mimeType } = options;
+    const { mimeType } = options;
+    let data = options.data;
     if (!data.startsWith('data:')) {
       data = `data:${mimeType || 'application/octet-stream'};base64,${data}`;
     }

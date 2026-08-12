@@ -14,7 +14,7 @@ export async function subscribeUser(vapidPublicKey: string) {
   try {
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      // @ts-ignore // PushManager expects BufferSource but VAPID key is Uint8Array
+      // @ts-expect-error // PushManager expects BufferSource but VAPID key is Uint8Array
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
     
