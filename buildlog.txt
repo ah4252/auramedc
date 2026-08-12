@@ -1,0 +1,44 @@
+   ▲ Next.js 15.5.18
+   - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/app/courses/components/YearsClient.tsx
+Error:   [31mx[0m Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+     ,-[[36;1;4mc:\Users\ahmed\Downloads\my-main\my-main\src\app\courses\components\YearsClient.tsx[0m:424:1]
+ [2m421[0m |               </div>
+ [2m422[0m |             </div>
+ [2m423[0m |           </motion.div>
+ [2m424[0m |         )}
+     : [35;1m         ^[0m
+ [2m425[0m | 
+ [2m426[0m |         {activeTab === "pharmacy" && (
+ [2m427[0m |           <motion.div
+     `----
+  [31mx[0m Expected '</', got 'jsx text (
+  [31m|[0m         )}
+  [31m|[0m
+  [31m|[0m         )'
+     ,-[[36;1;4mc:\Users\ahmed\Downloads\my-main\my-main\src\app\courses\components\YearsClient.tsx[0m:423:1]
+ [2m420[0m |                     )}
+ [2m421[0m |                   </div>
+ [2m422[0m |                 </div>
+ [2m423[0m | [35;1m,[0m[35;1m-[0m[35;1m>[0m           </motion.div>
+ [2m424[0m | [35;1m|[0m           )}
+ [2m425[0m | [35;1m|[0m   
+ [2m426[0m | [35;1m`[0m[35;1m-[0m[35;1m>[0m         {activeTab === "pharmacy" && (
+ [2m427[0m |               <motion.div
+ [2m428[0m |                 key="pharmacy"
+ [2m429[0m |                 initial={{ opacity: 0, y: 15 }}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/courses/components/YearsClient.tsx
+./src/app/courses/page.tsx
+
+
+> Build failed because of webpack errors
