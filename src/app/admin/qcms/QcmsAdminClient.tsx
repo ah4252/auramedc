@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, BookOpen, Layers, NotebookPen, Plus, Trash2, RefreshCw, Save, CheckCircle2, AlertCircle, Link as LinkIcon, ClipboardList } from "lucide-react";
 import { createQcmsYear, deleteQcmsYear, createQcmsSubject, deleteQcmsSubject, createQcmsExamLink, deleteQcmsExamLink } from "@/app/actions/qcmsAdmin";
@@ -26,6 +26,15 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
   const activeYear = initialYears.find((y: any) => y.id === activeYearId) || null;
   const selectedSubject = (activeYear?.subjects || []).find((subject: any) => subject.id === selectedSubjectId) || null;
+
+  // تمرير تلقائي عند اختيار مادة
+  useEffect(() => {
+    if (!selectedSubjectId) return;
+    const timer = setTimeout(() => {
+      document.getElementById("exam-link-section")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [selectedSubjectId]);
 
   const handleAddYear = async () => {
     if (!newYearName.trim() || !newYearSlug.trim()) {
@@ -294,18 +303,19 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                     </thead>
                     <tbody>
                       {(activeYear.subjects || []).map((subject: any) => (
-                        <tr key={subject.id} className={`border-t border-slate-800 hover:bg-slate-800/40 align-top ${selectedSubjectId === subject.id ? "bg-violet-500/10" : ""}`}>
-                          <td className="p-4 font-black text-slate-100">
+                        <tr
+                          key={subject.id}
+                          className={`border-t border-slate-800 hover:bg-slate-800/40 align-middle ${
+                            selectedSubjectId === subject.id ? "bg-violet-500/10" : ""
+                          }`}
+                        >
+                          <td className="p-4">
                             <button
                               className="text-right font-black text-slate-100 transition hover:text-violet-300"
                               onClick={() => {
                                 setSelectedSubjectId(subject.id);
                                 setNewExamLinkSubjectId(subject.id);
-                                setNewExamLinkLabel("");
-                                setNewExamLinkUrl("");
-                                setTimeout(() => {
-                                  document.getElementById("exam-link-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                                }, 100);
+                                setPendingLinks([{ label: "", url: "" }]);
                               }}
                             >
                               {subject.name}
@@ -314,44 +324,26 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                           <td className="p-4 font-bold text-slate-400">{subject.code || "—"}</td>
                           <td className="p-4 font-bold text-slate-400">{subject.order ?? 0}</td>
                           <td className="p-4">
-                            <div className="space-y-2">
-                              {(subject.examLinks || []).map((link: any) => (
-                                <div key={link.id} className="flex items-center justify-between gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-2">
-                                  <div className="min-w-0 flex-1">
-                                    <a href={link.url} target="_blank" rel="noreferrer" className="block truncate text-sm font-black text-violet-200 hover:text-white">
-                                      {link.label}
-                                    </a>
-                                    <span className="block truncate text-[10px] font-bold text-slate-500">{link.url}</span>
-                                  </div>
-                                  <button
-                                    className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
-                                    onClick={() => handleDeleteExamLink(link.id)}
-                                    disabled={loading}
-                                    title="حذف الرابط"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              ))}
-
-                              {(!subject.examLinks || subject.examLinks.length === 0) && (
-                                <span className="text-xs font-bold text-slate-500">لا توجد روابط</span>
-                              )}
-
+                            <div className="flex items-center gap-2">
+                              {/* عداد الروابط */}
+                              <span className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                                (subject.examLinks?.length || 0) > 0
+                                  ? "bg-violet-500/20 text-violet-200"
+                                  : "bg-slate-700/50 text-slate-500"
+                              }`}>
+                                {subject.examLinks?.length || 0} رابط
+                              </span>
+                              {/* زر الإدارة */}
                               <button
-                                className="mt-2 inline-flex items-center gap-2 rounded-xl border border-violet-500/40 px-3 py-2 text-[11px] font-black text-violet-200 transition hover:bg-violet-500/15"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-violet-500/40 px-3 py-1.5 text-[11px] font-black text-violet-300 transition hover:bg-violet-500/15"
                                 onClick={() => {
                                   setSelectedSubjectId(subject.id);
                                   setNewExamLinkSubjectId(subject.id);
-                                  setNewExamLinkLabel("");
-                                  setNewExamLinkUrl("");
-                                  setTimeout(() => {
-                                    document.getElementById("exam-link-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                                  }, 100);
+                                  setPendingLinks([{ label: "", url: "" }]);
                                 }}
                               >
-                                <Plus className="w-3.5 h-3.5" />
-                                إضافة رابط
+                                <Plus className="w-3 h-3" />
+                                إضافة
                               </button>
                             </div>
                           </td>
