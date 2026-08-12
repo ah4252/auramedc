@@ -281,7 +281,7 @@ export default function YearsClient({
                         </div>
 
                         <h2 className="mb-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl tracking-tight">
-                          {t("qcms_title", "اختر مرحلتك الأكاديمية")}
+                          {t("qcms_select_title", "اختر مرحلتك الأكاديمية")}
                         </h2>
                         
                         <p className="text-base leading-8 text-slate-300 font-medium">

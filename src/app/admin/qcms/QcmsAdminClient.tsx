@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { 
   Calendar, BookOpen, Layers, NotebookPen, Plus, Trash2, RefreshCw, Save, 
-  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X 
+  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X, TrendingUp 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -278,9 +279,18 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
             <h1 className="mt-3 text-3xl font-black text-white md:text-4xl">إدارة قسم QCMS</h1>
             <p className="mt-3 text-sm font-medium text-slate-400">إدارة السنوات الدراسية والمواد التعليمية الخاصة بالاختبارات</p>
           </div>
-          <div className="rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-violet-200 flex items-center gap-2">
-            <NotebookPen className="w-5 h-5 text-violet-300" />
-            <span>QCM Studio</span>
+          <div className="flex flex-col gap-2 sm:flex-row items-center">
+            <Link
+              href="/admin/qcms/stats"
+              className="rounded-full border border-cyan-400/25 bg-cyan-500/10 hover:bg-cyan-500/20 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-cyan-200 flex items-center gap-2 transition-all"
+            >
+              <TrendingUp className="w-4 h-4 text-cyan-300" />
+              <span>الإحصائيات</span>
+            </Link>
+            <div className="rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-violet-200 flex items-center gap-2">
+              <NotebookPen className="w-5 h-5 text-violet-300" />
+              <span>QCM Studio</span>
+            </div>
           </div>
         </div>
       </div>

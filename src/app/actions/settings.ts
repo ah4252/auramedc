@@ -29,6 +29,9 @@ export async function getSettings() {
     statSatisfaction: "99%",
     statPharmacy: "",
     statQCMs: "",
+    qcmsAccuracy: "100%",
+    qcmsExamCount: "500+",
+    qcmsSubjectCount: "20+",
     socialFacebook: "",
     socialInstagram: "",
     socialTelegram: "",
@@ -63,6 +66,9 @@ export async function getSettings() {
         statSatisfaction: true,
         statPharmacy: true,
         statQCMs: true,
+        qcmsAccuracy: true,
+        qcmsExamCount: true,
+        qcmsSubjectCount: true,
         socialFacebook: true,
         socialInstagram: true,
         socialTelegram: true,
@@ -108,6 +114,9 @@ export async function updateSettings(data: any) {
     if (data.statSatisfaction !== undefined) updateData.statSatisfaction = data.statSatisfaction;
     if (data.statPharmacy !== undefined) updateData.statPharmacy = data.statPharmacy;
     if (data.statQCMs !== undefined) updateData.statQCMs = data.statQCMs;
+    if (data.qcmsAccuracy !== undefined) updateData.qcmsAccuracy = data.qcmsAccuracy;
+    if (data.qcmsExamCount !== undefined) updateData.qcmsExamCount = data.qcmsExamCount;
+    if (data.qcmsSubjectCount !== undefined) updateData.qcmsSubjectCount = data.qcmsSubjectCount;
     
     if (data.socialFacebook !== undefined) updateData.socialFacebook = data.socialFacebook;
     if (data.socialInstagram !== undefined) updateData.socialInstagram = data.socialInstagram;

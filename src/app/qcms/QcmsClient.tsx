@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
@@ -23,15 +24,49 @@ import {
 } from "lucide-react";
 import { useLocale } from "@/context/LocaleProvider.client";
 
+interface SiteSettings {
+  qcmsAccuracy?: string;
+  qcmsExamCount?: string;
+  qcmsSubjectCount?: string;
+}
+
 export default function QcmsClient() {
   const { lang, t } = useLocale();
   const isRtl = lang === "ar";
+  const [settings, setSettings] = useState<SiteSettings>({
+    qcmsAccuracy: "100%",
+    qcmsExamCount: "500+",
+    qcmsSubjectCount: "20+",
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch("/api/admin/settings");
+        const data = await response.json();
+        if (data) {
+          setSettings({
+            qcmsAccuracy: data.qcmsAccuracy || "100%",
+            qcmsExamCount: data.qcmsExamCount || "500+",
+            qcmsSubjectCount: data.qcmsSubjectCount || "20+",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   const stats = [
-    { label: isRtl ? "المواد والتخصصات" : "Subjects", val: "+20", icon: BookOpen, color: "from-blue-500/20 to-cyan-500/20 text-cyan-400 border-cyan-500/30" },
-    { label: isRtl ? "نماذج الامتحانات" : "Exams Available", val: "+500", icon: FileText, color: "from-violet-500/20 to-purple-500/20 text-violet-400 border-violet-500/30" },
-    { label: isRtl ? "دقة المناهج" : "Accuracy Rate", val: "100%", icon: ShieldCheck, color: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30" },
-    { label: isRtl ? "نمط التقييم" : "Assessment Mode", val: isRtl ? "فوري وتفاعلي" : "Instant", icon: Zap, color: "from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30" },
+    { label: t("qcms_stat_subjects", "المواد والتخصصات"), val: settings.qcmsSubjectCount, icon: BookOpen, color: "from-blue-500/20 to-cyan-500/20 text-cyan-600 dark:text-cyan-400 border-cyan-500/30", borderClass: "border-cyan-200 dark:border-cyan-500/30" },
+    { label: t("qcms_stat_exams", "نماذج الامتحانات"), val: settings.qcmsExamCount, icon: FileText, color: "from-violet-500/20 to-purple-500/20 text-violet-600 dark:text-violet-400 border-violet-500/30", borderClass: "border-violet-200 dark:border-violet-500/30" },
+    { label: t("qcms_stat_accuracy", "دقة المناهج"), val: settings.qcmsAccuracy, icon: ShieldCheck, color: "from-emerald-500/20 to-teal-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30", borderClass: "border-emerald-200 dark:border-emerald-500/30" },
+    { label: t("qcms_stat_assessment", "نمط التقييم"), val: t("qcms_stat_assessment_val", "فوري وتفاعلي"), icon: Zap, color: "from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30", borderClass: "border-amber-200 dark:border-amber-500/30" },
   ];
 
   const features = [
@@ -56,11 +91,11 @@ export default function QcmsClient() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#060c17] text-white transition-colors duration-300 overflow-hidden font-sans" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#060c17] text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden font-sans" dir={isRtl ? "rtl" : "ltr"}>
       {/* Background Ambient Glow Effects */}
-      <div className="pointer-events-none absolute -top-48 right-0 w-[650px] h-[650px] bg-gradient-to-br from-violet-600/20 via-purple-600/10 to-transparent rounded-full blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 left-0 w-[700px] h-[700px] bg-gradient-to-tr from-cyan-600/15 via-emerald-600/10 to-transparent rounded-full blur-[140px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:32px_32px] opacity-25" />
+      <div className="pointer-events-none absolute -top-48 right-0 w-[650px] h-[650px] bg-gradient-to-br from-violet-600/10 dark:from-violet-600/20 via-purple-600/5 dark:via-purple-600/10 to-transparent rounded-full blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-0 left-0 w-[700px] h-[700px] bg-gradient-to-tr from-cyan-600/10 dark:from-cyan-600/15 via-emerald-600/5 dark:via-emerald-600/10 to-transparent rounded-full blur-[140px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:32px_32px] opacity-40 dark:opacity-25" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         
@@ -68,19 +103,19 @@ export default function QcmsClient() {
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-center justify-between gap-4 border-b border-slate-800/80 pb-5"
+          className="mb-8 flex items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-5"
         >
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-            <Link href="/courses" className="hover:text-white transition-colors">{isRtl ? "الرئيسية" : "Home"}</Link>
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+            <Link href="/courses" className="hover:text-slate-900 dark:hover:text-white transition-colors">{t("qcms_breadcrumb_home", "الرئيسية")}</Link>
             <ChevronRight className={`h-3.5 w-3.5 ${isRtl ? "rotate-180" : ""}`} />
-            <span className="text-violet-400 font-black">{isRtl ? "مركز QCMs الطبي" : "QCM Medical Center"}</span>
+            <span className="text-violet-600 dark:text-violet-400 font-black">{t("qcms_title", "مركـز اختـبارات QCMs الطبي الشامل")}</span>
           </div>
 
           <Link
             href="/courses?tab=qcms"
-            className="group inline-flex items-center gap-2.5 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-5 py-2.5 text-xs font-black text-violet-200 shadow-lg shadow-violet-500/10 backdrop-blur-md transition-all hover:border-violet-400 hover:bg-violet-500/20 hover:scale-[1.02]"
+            className="group inline-flex items-center gap-2.5 rounded-2xl border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-5 py-2.5 text-xs font-black text-violet-700 dark:text-violet-200 shadow-lg shadow-violet-500/5 dark:shadow-violet-500/10 backdrop-blur-md transition-all hover:border-violet-300 dark:hover:border-violet-400 hover:bg-violet-100 dark:hover:bg-violet-500/20 hover:scale-[1.02]"
           >
-            <span>{isRtl ? "دخول بنك الامتحانات والمواضيع" : "Enter Exam Hub"}</span>
+            <span>{t("qcms_enter_hub", "دخول بنك الامتحانات والمواضيع")}</span>
             {isRtl ? <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /> : <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
           </Link>
         </motion.div>
@@ -90,43 +125,42 @@ export default function QcmsClient() {
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-[3rem] border border-violet-500/20 bg-gradient-to-b from-[#0b172a]/95 via-[#0e1d35]/90 to-[#081222]/95 p-8 sm:p-12 lg:p-16 shadow-[0_0_80px_-20px_rgba(139,92,246,0.35)] backdrop-blur-2xl"
+          className="relative overflow-hidden rounded-[3rem] border border-violet-200 dark:border-violet-500/20 bg-white/80 dark:bg-gradient-to-b dark:from-[#0b172a]/95 dark:via-[#0e1d35]/90 dark:to-[#081222]/95 p-8 sm:p-12 lg:p-16 shadow-[0_0_40px_-20px_rgba(139,92,246,0.2)] dark:shadow-[0_0_80px_-20px_rgba(139,92,246,0.35)] backdrop-blur-2xl"
         >
           {/* Subtle Grid Accent */}
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-50 dark:opacity-30" />
 
           <div className="relative z-10 grid gap-12 lg:grid-cols-12 lg:items-center">
             
             {/* Right Column (RTL) / Left Column (LTR) */}
             <div className="lg:col-span-7">
-              <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-violet-400/30 bg-gradient-to-r from-violet-500/15 to-cyan-500/15 px-4 py-2 text-xs font-black tracking-wider text-violet-200 shadow-inner">
-                <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
+              <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-violet-200 dark:border-violet-400/30 bg-gradient-to-r from-violet-100 to-cyan-100 dark:from-violet-500/15 dark:to-cyan-500/15 px-4 py-2 text-xs font-black tracking-wider text-violet-700 dark:text-violet-200 shadow-inner">
+                <Activity className="h-4 w-4 text-cyan-600 dark:text-cyan-400 animate-pulse" />
                 <span>{t("qcms_badge", "منصة التقييم الطبي الأكاديمي | AuraMed Medical QCMs")}</span>
               </div>
 
-              <h1 className="mb-6 text-4xl font-black tracking-tight leading-[1.15] text-white sm:text-5xl lg:text-6xl">
-                {t("qcms_title", "مركـز اختـبارات")} <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-300 to-cyan-400">
-                  QCMs الطبي الشامل
+              <h1 className="mb-6 text-4xl font-black tracking-tight leading-[1.15] text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-500 to-cyan-600 dark:from-violet-400 dark:via-purple-300 dark:to-cyan-400">
+                  {t("qcms_title", "مركـز اختـبارات QCMs الطبي الشامل")}
                 </span>
               </h1>
 
-              <p className="mb-8 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg font-medium">
+              <p className="mb-8 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg font-medium">
                 {t("qcms_description", "بيئة أكاديمية متخصصة لطلاب الطب والصيدلة، تقدم بنك أسئلة ونماذج امتحانات منظمة بدقة متناهية لمساعدتك على مراجعة وتثبيت المعلومات قبل الامتحانات الرسمية.")}
               </p>
 
               {/* Tags & Highlights Strip */}
               <div className="mb-10 flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 rounded-2xl border border-violet-400/25 bg-violet-500/10 px-4 py-2.5 text-xs font-bold text-violet-200">
-                  <BrainCircuit className="h-4 w-4 text-violet-400" />
+                <span className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 dark:border-violet-400/25 bg-violet-50 dark:bg-violet-500/10 px-4 py-2.5 text-xs font-bold text-violet-700 dark:text-violet-200">
+                  <BrainCircuit className="h-4 w-4 text-violet-500 dark:text-violet-400" />
                   {t("qcms_multi_questions_tag", "أسئلة تفاعلية ومباشرة")}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-2xl border border-cyan-400/25 bg-cyan-500/10 px-4 py-2.5 text-xs font-bold text-cyan-200">
-                  <Stethoscope className="h-4 w-4 text-cyan-400" />
+                <span className="inline-flex items-center gap-2 rounded-2xl border border-cyan-200 dark:border-cyan-400/25 bg-cyan-50 dark:bg-cyan-500/10 px-4 py-2.5 text-xs font-bold text-cyan-700 dark:text-cyan-200">
+                  <Stethoscope className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
                   {t("qcms_finstant_tag", "تغطية المناهج الجامعية")}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-200">
-                  <FileCheck2 className="h-4 w-4 text-emerald-400" />
+                <span className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 dark:border-emerald-400/25 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-700 dark:text-emerald-200">
+                  <FileCheck2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                   {t("qcms_content_tag", "محتوى موثوق ومحين")}
                 </span>
               </div>
@@ -135,40 +169,40 @@ export default function QcmsClient() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="/courses?tab=qcms"
-                  className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 px-9 py-4.5 text-base font-black text-white shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all hover:scale-[1.03] hover:shadow-[0_0_50px_rgba(139,92,246,0.7)] active:scale-[0.98]"
+                  className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 px-9 py-4.5 text-base font-black text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] dark:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] dark:hover:shadow-[0_0_50px_rgba(139,92,246,0.7)] active:scale-[0.98]"
                 >
                   <GraduationCap className="h-6 w-6" />
-                  <span>{isRtl ? "تصفح امتحانات السنوات الدراسية" : "Explore Exams by Year"}</span>
+                  <span>{t("qcms_explore_exams", "تصفح امتحانات السنوات الدراسية")}</span>
                   <ChevronRight className={`h-5 w-5 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
                 </Link>
 
                 <Link
                   href="/courses"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/80 px-7 py-4 text-sm font-bold text-slate-300 transition-all hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-7 py-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                 >
                   <BookOpen className="h-4 w-4" />
-                  <span>{isRtl ? "مركز المواد والدروس" : "Courses Portal"}</span>
+                  <span>{t("qcms_courses_portal", "مركز المواد والدروس")}</span>
                 </Link>
               </div>
             </div>
 
             {/* Left Interactive 3D SaaS Card (RTL) */}
             <div className="lg:col-span-5">
-              <div className="relative overflow-hidden rounded-[2.5rem] border border-violet-500/30 bg-gradient-to-b from-[#0f2038] to-[#0a1526] p-8 shadow-2xl">
+              <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-200 dark:border-violet-500/30 bg-white dark:bg-gradient-to-b dark:from-[#0f2038] dark:to-[#0a1526] p-8 shadow-xl dark:shadow-2xl">
                 
                 {/* Header Badge */}
-                <div className="mb-6 flex items-center justify-between border-b border-slate-800 pb-5">
+                <div className="mb-6 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/20 text-violet-300">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-300">
                       <Award className="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 className="text-base font-black text-white">مركز QCMs المعتمد</h4>
-                      <p className="text-[11px] font-bold text-slate-400">Medical Exam Hub</p>
+                      <h4 className="text-base font-black text-slate-900 dark:text-white">{t("qcms_card_title", "مركز QCMs المعتمد")}</h4>
+                      <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Medical Exam Hub</p>
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-[10px] font-black tracking-widest text-emerald-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-500/15 px-3 py-1 text-[10px] font-black tracking-widest text-emerald-600 dark:text-emerald-300">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -178,25 +212,25 @@ export default function QcmsClient() {
                 </div>
 
                 {/* Simulated Exam Meter */}
-                <div className="mb-6 rounded-2xl border border-slate-800 bg-[#091322] p-5">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-2">
-                    <span>جاهزية بنك الأسئلة</span>
-                    <span className="text-cyan-400 font-black">100%</span>
+                <div className="mb-6 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#091322] p-5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">
+                    <span>{t("qcms_card_readiness", "جاهزية بنك الأسئلة")}</span>
+                    <span className="text-cyan-600 dark:text-cyan-400 font-black">100%</span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 rounded-full" style={{ width: "100%" }} />
                   </div>
                 </div>
 
                 {/* Quick Info Grid */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/60 p-3.5 text-xs">
-                    <span className="text-slate-400 font-bold">{isRtl ? "نظام الأسئلة" : "Format"}</span>
-                    <span className="font-black text-violet-300">QCM / QCS / QROC</span>
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/60 p-3.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">{t("qcms_card_format", "نظام الأسئلة")}</span>
+                    <span className="font-black text-violet-600 dark:text-violet-300">QCM / QCS / QROC</span>
                   </div>
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/60 p-3.5 text-xs">
-                    <span className="text-slate-400 font-bold">{isRtl ? "التنظيم الأكاديمي" : "Organization"}</span>
-                    <span className="font-black text-cyan-300">سنة ⬅️ مادة ⬅️ امتحانات</span>
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/60 p-3.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400 font-bold">{t("qcms_card_org", "التنظيم الأكاديمي")}</span>
+                    <span className="font-black text-cyan-600 dark:text-cyan-300">{t("qcms_card_org_val", "سنة ⬅️ مادة ⬅️ امتحانات")}</span>
                   </div>
                 </div>
               </div>
@@ -214,16 +248,16 @@ export default function QcmsClient() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * idx }}
-                className={`relative overflow-hidden rounded-3xl border ${s.color} bg-gradient-to-b from-[#0b172a] to-[#070e1b] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/50`}
+                className={`relative overflow-hidden rounded-3xl border bg-white dark:bg-gradient-to-b dark:from-[#0b172a] dark:to-[#070e1b] p-6 shadow-md dark:shadow-xl transition-all duration-300 hover:-translate-y-1 ${s.borderClass} dark:hover:border-violet-400/50`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${s.color}`}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <span className="text-xs font-black tracking-widest text-slate-500">METRIC</span>
+                  <span className="text-xs font-black tracking-widest text-slate-400 dark:text-slate-500">METRIC</span>
                 </div>
-                <p className="text-3xl font-black text-white tracking-tight">{s.val}</p>
-                <p className="mt-1 text-xs font-bold text-slate-400">{s.label}</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{s.val}</p>
+                <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">{s.label}</p>
               </motion.div>
             );
           })}
@@ -237,16 +271,16 @@ export default function QcmsClient() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * idx }}
-              className="group relative overflow-hidden rounded-[2.2rem] border border-slate-800 bg-gradient-to-b from-[#0c182b] to-[#070f1d] p-8 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-500/40 hover:shadow-2xl hover:shadow-violet-500/10"
+              className="group relative overflow-hidden rounded-[2.2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-gradient-to-b dark:from-[#0c182b] dark:to-[#070f1d] p-8 shadow-md dark:shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-violet-500/10"
             >
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 text-violet-300 shadow-inner group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-cyan-100 dark:from-violet-500/20 dark:to-cyan-500/20 text-violet-600 dark:text-violet-300 shadow-inner group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all duration-300">
                 <Icon className="h-7 w-7" />
               </div>
-              <span className="mb-3 inline-block rounded-xl border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[11px] font-black text-violet-300">
+              <span className="mb-3 inline-block rounded-xl border border-violet-200 dark:border-violet-500/20 bg-violet-50 dark:bg-violet-500/10 px-3 py-1 text-[11px] font-black text-violet-600 dark:text-violet-300">
                 {tag}
               </span>
-              <h2 className="mb-3 text-xl font-black text-white group-hover:text-violet-200 transition-colors">{title}</h2>
-              <p className="text-sm leading-7 text-slate-400 font-medium">{desc}</p>
+              <h2 className="mb-3 text-xl font-black text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-200 transition-colors">{title}</h2>
+              <p className="text-sm leading-7 text-slate-600 dark:text-slate-400 font-medium">{desc}</p>
             </motion.div>
           ))}
         </div>
@@ -256,21 +290,21 @@ export default function QcmsClient() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-14 rounded-[2.5rem] border border-violet-500/30 bg-gradient-to-r from-violet-900/40 via-purple-900/30 to-cyan-900/30 p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl"
+          className="mt-14 rounded-[2.5rem] border border-violet-200 dark:border-violet-500/30 bg-gradient-to-r from-violet-50 via-purple-50 to-cyan-50 dark:from-violet-900/40 dark:via-purple-900/30 dark:to-cyan-900/30 p-8 sm:p-12 text-center relative overflow-hidden shadow-xl dark:shadow-2xl"
         >
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h3 className="text-3xl sm:text-4xl font-black text-white mb-4">
-              {isRtl ? "جاهز لبدء الاختـبار؟" : "Ready to Start Testing?"}
+            <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-4">
+              {t("qcms_cta_title", "جاهز لبدء الاختـبار؟")}
             </h3>
-            <p className="text-sm sm:text-base text-slate-300 font-medium mb-8">
-              {isRtl ? "اختر سنتك الدراسية والمادة وابدأ في حل نماذج الـ QCMs مباشرة مع أفضل بنك أسئلة طبي." : "Choose your year and subject to access interactive QCM exams immediately."}
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 font-medium mb-8">
+              {t("qcms_cta_desc", "اختر سنتك الدراسية والمادة وابدأ في حل نماذج الـ QCMs مباشرة مع أفضل بنك أسئلة طبي.")}
             </p>
             <Link
               href="/courses?tab=qcms"
-              className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 px-9 py-4 text-base font-black text-white shadow-xl shadow-violet-600/40 transition-all hover:scale-105"
+              className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 px-9 py-4 text-base font-black text-white shadow-xl shadow-violet-600/30 dark:shadow-violet-600/40 transition-all hover:scale-105"
             >
               <GraduationCap className="h-5 w-5" />
-              <span>{isRtl ? "الانتقال لقسم QCMs الآن" : "Go to QCMs Center Now"}</span>
+              <span>{t("qcms_cta_btn", "الانتقال لقسم QCMs الآن")}</span>
               <ChevronRight className={`h-5 w-5 ${isRtl ? "rotate-180" : ""}`} />
             </Link>
           </div>
