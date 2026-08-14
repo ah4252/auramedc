@@ -24,6 +24,9 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwMsg, setPwMsg] = useState({ text: "", type: "" });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const filteredUsers = useMemo(() => {
     return initialUsers.filter(user => {
       const matchesSearch = 
@@ -35,6 +38,10 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       return matchesSearch && matchesRole && matchesStudyYear && matchesWilaya;
     });
   }, [searchQuery, roleFilter, studyYearFilter, wilayaFilter, initialUsers]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const validCurrentPage = Math.min(currentPage, Math.max(1, totalPages));
+  const paginatedUsers = filteredUsers.slice((validCurrentPage - 1) * itemsPerPage, validCurrentPage * itemsPerPage);
 
   const studyYears = useMemo(() => {
     const setYears = new Set<string>();
@@ -111,11 +118,15 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const element = document.createElement("div");
       element.dir = "rtl";
       element.style.position = "absolute";
-      element.style.left = "-9999px";
-      element.style.top = "-9999px";
+      element.style.left = "0";
+      element.style.top = "0";
+      element.style.zIndex = "-9999";
+      element.style.opacity = "0";
+      element.style.width = "1122px";
+      element.style.backgroundColor = "#ffffff";
       
       element.innerHTML = `
-        <div dir="rtl" style="padding: 0; font-family: 'Cairo', sans-serif; width: 1122px; background: #ffffff;">
+        <div dir="rtl" style="padding: 0; font-family: 'Cairo', sans-serif; width: 1122px; background: #ffffff; margin: 0 auto;">
           <!-- Top Navy Header Bar -->
           <div style="background: #0f172a; padding: 36px 50px; display: flex; justify-content: space-between; align-items: center;">
             <div>
@@ -126,7 +137,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
             <div style="text-align: left; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
               <div style="background: #0ea5e9; color: white; padding: 6px 16px; border-radius: 8px; font-size: 14px; font-weight: 800;">AuraMed Elite</div>
               <div style="font-size: 12px; color: #64748b;">تاريخ الإصدار: <span style="color: #94a3b8; font-family: monospace; font-weight: 700;">${new Date().toLocaleDateString('ar-EG')}</span></div>
-              <div style="font-size: 12px; color: #64748b;">إجمالي السجلات: <span style="color: #0ea5e9; font-weight: 800;">${filteredUsers.length}</span></div>
+              <div style="font-size: 12px; color: #64748b;">إجمالي السجلات: <span style="color: #0ea5e9; font-weight: 800;">${paginatedUsers.length} من ${filteredUsers.length}</span></div>
             </div>
           </div>
           <!-- Accent bar -->
@@ -135,15 +146,15 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
           <div style="display: flex; gap: 20px; padding: 30px 50px 20px 50px;">
             <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #0ea5e9;">
               <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">إجمالي الحسابات</div>
-              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.length}</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${paginatedUsers.length}</div>
             </div>
             <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #10b981;">
               <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">كلمات مرور مشفرة</div>
-              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.filter((u) => u.password && (u.password.startsWith('$2b$') || u.password.startsWith('$2a$'))).length}</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${paginatedUsers.filter((u) => u.password && (u.password.startsWith('$2b$') || u.password.startsWith('$2a$'))).length}</div>
             </div>
             <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; border-right: 4px solid #e11d48;">
               <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-bottom: 6px;">مديرون (ADMIN)</div>
-              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${filteredUsers.filter((u) => u.role === 'ADMIN').length}</div>
+              <div style="font-size: 28px; font-weight: 900; color: #0f172a;">${paginatedUsers.filter((u) => u.role === 'ADMIN').length}</div>
             </div>
           </div>
 
@@ -162,7 +173,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                 </tr>
               </thead>
               <tbody>
-                ${filteredUsers.map((user, index) => {
+                ${paginatedUsers.map((user, index) => {
                   const isEncrypted = user.password && (user.password.startsWith('$2b$') || user.password.startsWith('$2a$'));
                   const pwDisplay = isEncrypted ? 'مشفرة 🔒' : (user.password || '---');
                   const bgColor = index % 2 === 0 ? '#ffffff' : '#f8fafc';
@@ -229,10 +240,8 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const canvas = await html2canvas(element, { 
         scale: 2, 
         useCORS: true,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
+        width: 1122,
+        windowWidth: 1122,
         scrollY: 0,
         x: 0,
         y: 0
@@ -465,7 +474,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-              {filteredUsers.map((user) => {
+              {paginatedUsers.map((user) => {
                 const isSelected = selectedIds.has(user.id);
                 return (
                   <tr key={user.id} className={`group transition-all duration-300 ${isSelected ? "bg-medical-50/60 dark:bg-medical-900/10" : "hover:bg-slate-50/80 dark:hover:bg-slate-800/20"}`}>
@@ -566,7 +575,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
                 );
               })}
 
-              {filteredUsers.length === 0 && (
+              {paginatedUsers.length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-32 text-center">
                     <div className="flex flex-col items-center gap-6 opacity-30">
@@ -585,10 +594,24 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
 
         {/* Footer */}
         <div className="p-8 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800/50 flex justify-between items-center">
-           <p className="text-sm font-bold text-slate-400">عرض {filteredUsers.length} من {initialUsers.length} نتيجة</p>
+           <p className="text-sm font-bold text-slate-400">
+             عرض {paginatedUsers.length} من {filteredUsers.length} نتيجة (الصفحة {validCurrentPage} من {Math.max(1, totalPages)})
+           </p>
            <div className="flex gap-2">
-              <button disabled className="px-5 py-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-sm font-bold opacity-50">السابق</button>
-              <button disabled className="px-5 py-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-sm font-bold opacity-50">التالي</button>
+              <button 
+                disabled={validCurrentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="px-5 py-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+              >
+                السابق
+              </button>
+              <button 
+                disabled={validCurrentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="px-5 py-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+              >
+                التالي
+              </button>
            </div>
         </div>
       </div>
