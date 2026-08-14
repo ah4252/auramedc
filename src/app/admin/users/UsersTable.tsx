@@ -116,12 +116,12 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const { jsPDF } = await import('jspdf');
 
       const element = document.createElement("div");
-      element.dir = "ltr"; // Crucial: Outer must be LTR to prevent html2canvas RTL offset bug
-      element.style.position = "absolute";
-      element.style.left = "-9999px";
+      element.dir = "rtl";
+      element.style.position = "fixed";
+      element.style.right = "0";
       element.style.top = "0";
+      element.style.zIndex = "-9999";
       element.style.width = "1122px";
-      element.style.overflow = "hidden";
       element.style.backgroundColor = "#ffffff";
       
       element.innerHTML = `
