@@ -118,10 +118,8 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const element = document.createElement("div");
       element.dir = "rtl";
       element.style.position = "absolute";
-      element.style.left = "0";
+      element.style.left = "-9999px";
       element.style.top = "0";
-      element.style.zIndex = "-9999";
-      element.style.opacity = "0";
       element.style.width = "1122px";
       element.style.backgroundColor = "#ffffff";
       
