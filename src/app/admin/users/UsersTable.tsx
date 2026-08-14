@@ -116,15 +116,16 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       const { jsPDF } = await import('jspdf');
 
       const element = document.createElement("div");
-      element.dir = "rtl";
+      element.dir = "ltr"; // Crucial: Outer must be LTR to prevent html2canvas RTL offset bug
       element.style.position = "absolute";
       element.style.left = "-9999px";
       element.style.top = "0";
       element.style.width = "1122px";
+      element.style.overflow = "hidden";
       element.style.backgroundColor = "#ffffff";
       
       element.innerHTML = `
-        <div dir="rtl" style="padding: 0; font-family: 'Cairo', sans-serif; width: 1122px; background: #ffffff; margin: 0 auto;">
+        <div dir="rtl" style="padding: 0; font-family: 'Cairo', sans-serif; width: 1122px; background: #ffffff; margin: 0; box-sizing: border-box;">
           <!-- Top Navy Header Bar -->
           <div style="background: #0f172a; padding: 36px 50px; display: flex; justify-content: space-between; align-items: center;">
             <div>
