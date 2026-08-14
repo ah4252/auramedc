@@ -226,7 +226,17 @@ export default function UsersTable({ initialUsers }: { initialUsers: any[] }) {
       // Wait briefly for DOM to fully render the element
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const canvas = await html2canvas(element, { 
+        scale: 2, 
+        useCORS: true,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollY: 0,
+        x: 0,
+        y: 0
+      });
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
       
       // Calculate dynamic height to fit content perfectly on A4 landscape width
