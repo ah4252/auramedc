@@ -6,20 +6,38 @@ import { requireAdmin } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
 import { broadcast } from "@/lib/sse-store";
 
+function isDatabaseUnavailableError(error: any): boolean {
+  const message = error?.message || "";
+  return (
+    error?.code === "ECONNREFUSED" ||
+    error?.code === "ENOTFOUND" ||
+    error?.code === "ETIMEDOUT" ||
+    /can't reach database server|database server.*running|connection.*refused|timeout.*database/i.test(message)
+  );
+}
+
 // Helper to get or create Pharmacy category
 async function getOrCreatePharmacyCategory() {
-  return await prisma.category.upsert({
-    where: { slug: "pharmacy" },
-    update: {
-      type: "PHARMACY"
-    },
-    create: {
-      name: "الصيدلة",
-      slug: "pharmacy",
-      type: "PHARMACY",
-      description: "قسم الصيدلة والأدوية والمستندات الطبية"
+  try {
+    return await prisma.category.upsert({
+      where: { slug: "pharmacy" },
+      update: {
+        type: "PHARMACY"
+      },
+      create: {
+        name: "الصيدلة",
+        slug: "pharmacy",
+        type: "PHARMACY",
+        description: "قسم الصيدلة والأدوية والمستندات الطبية"
+      }
+    });
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      console.warn("Database unavailable while loading pharmacy category:", (error as any)?.message || error);
+      return null;
     }
-  });
+    throw error;
+  }
 }
 
 // --- Pharmacy Sections (Subjects) ---
@@ -27,6 +45,8 @@ async function getOrCreatePharmacyCategory() {
 export async function getPharmacySections() {
   try {
     const cat = await getOrCreatePharmacyCategory();
+    if (!cat) return [];
+
     const subjects = await prisma.subject.findMany({
       where: { categoryId: cat.id },
       include: {

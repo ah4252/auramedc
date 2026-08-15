@@ -117,47 +117,73 @@ export function isSubscriptionExemptEmail(email?: string | null): boolean {
   return (email ?? "").trim().toLowerCase() === "abendakfal07@gmail.com";
 }
 
+function isDatabaseUnavailableError(error: any): boolean {
+  const message = error?.message || "";
+  return (
+    error?.code === "ECONNREFUSED" ||
+    error?.code === "ENOTFOUND" ||
+    error?.code === "ETIMEDOUT" ||
+    /can't reach database server|database server.*running|connection.*refused|timeout.*database/i.test(message)
+  );
+}
+
 export async function canAccessPharmacy(): Promise<boolean> {
-  const userId = await getCurrentUserId();
-  if (!userId) return false;
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { studyYear: true },
-  });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { studyYear: true },
+    });
 
-  return isThirdYearStudyYear(user?.studyYear ?? null);
+    return isThirdYearStudyYear(user?.studyYear ?? null);
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      console.warn("Database unavailable while checking pharmacy access:", (error as any)?.message || error);
+      return false;
+    }
+    throw error;
+  }
 }
 
 export async function canAccessQcms(): Promise<boolean> {
-  const userId = await getCurrentUserId();
-  if (!userId) return false;
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true },
-  });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
 
-  if (isSubscriptionExemptEmail(user?.email ?? null)) return true;
+    if (isSubscriptionExemptEmail(user?.email ?? null)) return true;
 
-  const approved = await prisma.subscriptionRequest.findFirst({
-    where: {
-      userId,
-      status: "APPROVED",
-      OR: [
-        { transactionId: { startsWith: "QCM:" } },
-        { transactionId: { startsWith: "ALL:" } },
-        { transactionId: { not: { contains: ":" } } }
-      ]
-    },
-    orderBy: { createdAt: "desc" },
-  });
+    const approved = await prisma.subscriptionRequest.findFirst({
+      where: {
+        userId,
+        status: "APPROVED",
+        OR: [
+          { transactionId: { startsWith: "QCM:" } },
+          { transactionId: { startsWith: "ALL:" } },
+          { transactionId: { not: { contains: ":" } } }
+        ]
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-  if (!approved) return false;
+    if (!approved) return false;
 
-  const used = Number((approved as any).usedViews ?? 0);
-  const max = Number((approved as any).maxViews ?? 5);
-  return used < max;
+    const used = Number((approved as any).usedViews ?? 0);
+    const max = Number((approved as any).maxViews ?? 5);
+    return used < max;
+  } catch (error) {
+    if (isDatabaseUnavailableError(error)) {
+      console.warn("Database unavailable while checking QCM access:", (error as any)?.message || error);
+      return false;
+    }
+    throw error;
+  }
 }
 
 // ============================================================

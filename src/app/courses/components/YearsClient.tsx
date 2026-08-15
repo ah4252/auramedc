@@ -124,6 +124,11 @@ export default function YearsClient({
     window.history.pushState({ qcmsState: next }, "", `${url.pathname}${url.search}`);
   };
 
+  const scrollQcmToTop = () => {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const applyQcmNavigationState = (next: {
     devMode: boolean;
     selectedQcmsYearId: string | null;
@@ -137,6 +142,7 @@ export default function YearsClient({
     setSelectedDevYearId(next.selectedDevYearId);
     setSelectedDevSubjectId(next.selectedDevSubjectId);
     syncQcmHistory(next);
+    setTimeout(() => scrollQcmToTop(), 80);
   };
 
   useEffect(() => {
@@ -486,7 +492,7 @@ export default function YearsClient({
             className="w-full"
             style={{ touchAction: "auto", overscrollBehavior: "contain" }}
           >
-            <div className="mx-auto max-w-7xl overflow-visible rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
+            <div className="mx-auto max-w-7xl overflow-hidden rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
               <motion.div
                 key={qcmsViewKey}
                 initial={{ opacity: 0, x: isRtl ? 20 : -20, scale: 0.985 }}
@@ -498,7 +504,7 @@ export default function YearsClient({
                 
                 {/* Main Content Area */}
                 <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14" style={{ touchAction: "auto", overscrollBehavior: "contain" }}>
-                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.14),transparent_45%)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.09),transparent_42%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.08),transparent_40%)]" />
                   
                   <div className="relative z-10">
                     
@@ -781,6 +787,7 @@ export default function YearsClient({
                                 <div
                                   key={link.id}
                                   className="group relative flex flex-col justify-between rounded-3xl border border-amber-200 bg-gradient-to-b from-[#fffaf0] to-[#fef3c7] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400/60 hover:shadow-2xl hover:shadow-amber-500/20 dark:border-amber-500/30 dark:from-[#211603] dark:to-[#120c01]"
+                                  onClick={() => scrollQcmToTop()}
                                 >
                                   <div>
                                     <div className="mb-4 flex items-center justify-between">
@@ -1028,6 +1035,7 @@ export default function YearsClient({
                                   <div
                                     key={link.id}
                                     className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-[#102138] to-[#0c182b] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
+                                    onClick={() => scrollQcmToTop()}
                                   >
                                     {/* Top Paper Header */}
                                     <div>
@@ -1249,7 +1257,7 @@ export default function YearsClient({
                 {/* SIDEBAR DASHBOARD OVERVIEW PANEL (Visible when no subject selected) */}
                 {!selectedQcmsSubject && (
                   <aside className="relative overflow-visible border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10" style={{ touchAction: "auto", overscrollBehavior: "contain" }}>
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.18),transparent_60%)]" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.08),transparent_58%)]" />
                     <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
                       
                       <div>
