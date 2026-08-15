@@ -136,7 +136,7 @@ export default async function RootLayout({
           .dark .bg-dark-bg { background-color: var(--dark-bg); }
         `}} />
       </head>
-      <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50 transition-colors duration-300`}>
+      <body suppressHydrationWarning className={`${cairo.className} min-h-screen flex flex-col bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-slate-50`}>
         <AppLinkGuard />
         <SSENotificationListener />
         <LocaleProvider initialLang={siteLang as Locale}>

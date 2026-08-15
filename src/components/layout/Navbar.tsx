@@ -61,7 +61,6 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
 
   useEffect(() => {
     try {
-      document.documentElement.classList.toggle("dark", theme === "dark");
       window.localStorage.setItem("theme", theme);
     } catch (e) {}
   }, [theme]);
@@ -230,7 +229,11 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
             {/* Theme toggle — hidden on mobile, shown on desktop */}
             <button
               type="button"
-              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              onClick={() => {
+                const next = theme === "dark" ? "light" : "dark";
+                document.documentElement.classList.toggle("dark", next === "dark");
+                setTheme(next);
+              }}
               className="hidden lg:flex items-center justify-center h-10 w-10 rounded-2xl border border-white/20 bg-white/10 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 shadow-md shadow-slate-900/10 backdrop-blur-xl transition-all hover:scale-105"
               aria-label={theme === "dark" ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
               title={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
@@ -425,7 +428,11 @@ export default function Navbar({ isAdmin = false, isUser = false, userName = nul
                   {/* Theme toggle */}
                   <button
                     type="button"
-                    onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+                    onClick={() => {
+                      const next = theme === "dark" ? "light" : "dark";
+                      document.documentElement.classList.toggle("dark", next === "dark");
+                      setTheme(next);
+                    }}
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all"
                     aria-label={theme === "dark" ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
                   >

@@ -462,7 +462,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 400, delay: 0.65 }}
-                      className="bg-gradient-to-r from-blue-100 dark:from-medical-500/50 to-blue-200 dark:to-medical-600/50 text-blue-700 dark:text-medical-100 px-4 py-1.5 rounded-full text-sm font-black border border-blue-300 dark:border-medical-500/50 shadow-lg shadow-blue-500/20 dark:shadow-medical-500/20"
+                      className="bg-blue-100 dark:bg-medical-600 text-blue-700 dark:text-white px-4 py-1.5 rounded-full text-sm font-black border border-blue-300 dark:border-medical-500 shadow-lg shadow-blue-500/20 dark:shadow-medical-500/30"
                     >
                       {getCommentsCount(selectedNews)}
                     </motion.span>
