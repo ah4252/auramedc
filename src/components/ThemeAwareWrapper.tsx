@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
   children: React.ReactNode;
@@ -9,36 +9,40 @@ type Props = {
 };
 
 export default function ThemeAwareWrapper({ children, darkClass = "", lightClass = "" }: Props) {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [isMounted, setIsMounted] = useState(false);
+  const divRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem("theme");
-      const detectedTheme = stored ? (stored === "dark" ? "dark" : "light") : (document.documentElement.classList.contains("dark") ? "dark" : "light");
-      setTheme(detectedTheme);
-    } catch (e) {
-      setTheme("dark");
+  const applyTheme = () => {
+    if (!divRef.current) return;
+    const isDark = document.documentElement.classList.contains("dark");
+    // Remove all classes from both darkClass and lightClass first
+    const darkClasses = darkClass.split(" ").filter(Boolean);
+    const lightClasses = lightClass.split(" ").filter(Boolean);
+    divRef.current.classList.remove(...darkClasses, ...lightClasses);
+    if (isDark) {
+      divRef.current.classList.add(...darkClasses);
+    } else {
+      divRef.current.classList.add(...lightClasses);
     }
-    setIsMounted(true);
-  }, []);
+  };
 
   useEffect(() => {
-    if (!isMounted) return;
+    // Apply immediately on mount
+    applyTheme();
 
-    const handler = (e: any) => {
-      const t = e?.detail?.theme || window.localStorage.getItem("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
-      setTheme(t === "dark" ? "dark" : "light");
-    };
+    // Watch for class changes on <html> (e.g. dark class toggled)
+    const observer = new MutationObserver(() => {
+      applyTheme();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
-    window.addEventListener("theme-change", handler as EventListener);
-    window.addEventListener("storage", handler as EventListener);
-    return () => {
-      window.removeEventListener("theme-change", handler as EventListener);
-      window.removeEventListener("storage", handler as EventListener);
-    };
-  }, [isMounted]);
+    return () => observer.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [darkClass, lightClass]);
 
-  const cls = theme === "dark" ? darkClass : lightClass;
-  return <div className={cls}>{children}</div>;
+  // Render with the correct initial class using SSR-safe check
+  // We default to empty so it won't flash wrong color
+  return <div ref={divRef}>{children}</div>;
 }

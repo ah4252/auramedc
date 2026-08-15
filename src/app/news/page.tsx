@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 import { cookies } from "next/headers";
 import NewsClient from "./NewsClient";
 import NewsLoginRequired from "./NewsLoginRequired";
-import ThemeAwareWrapper from "@/components/ThemeAwareWrapper";
+
 import { prisma } from "@/lib/db";
 import { tServer } from "@/lib/i18n";
 
@@ -64,7 +64,7 @@ export default async function NewsPage() {
   const news = await getNews(true, userStudyYear); // Fetch only published news, filter by studyYear if applicable
 
   return (
-    <ThemeAwareWrapper darkClass="min-h-screen bg-[#0f172a] font-cairo text-white" lightClass="min-h-screen bg-white font-cairo text-slate-900">
+    <div className="min-h-screen bg-white dark:bg-[#0f172a] text-slate-900 dark:text-white font-cairo">
       {/* Header Section */}
       <div className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-medical-900/20" />
@@ -76,14 +76,14 @@ export default async function NewsPage() {
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-sky-600/20 rounded-full blur-[128px] pointer-events-none" />
         
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-medical-500/10 border border-medical-500/20 text-medical-400 mb-6 font-bold text-sm">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-medical-500/10 border border-medical-500/20 text-medical-600 dark:text-medical-400 mb-6 font-bold text-sm">
             <Sparkles className="w-4 h-4" />
             <span>{tServer("news_hero_badge", siteLang ?? "ar", siteLang === "fr" ? "Nous vous tenons informés" : "We keep you informed")}</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black mb-6">
             {tServer("news_title_prefix", siteLang ?? "ar", siteLang === "fr" ? "Actualités" : "News")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-400 to-medical-600">{tServer("news_title_highlight", siteLang ?? "ar", siteLang === "fr" ? "la plateforme" : "the platform")}</span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-bold leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-bold leading-relaxed">
             {tServer(
               "news_description",
               siteLang ?? "ar",
@@ -97,6 +97,6 @@ export default async function NewsPage() {
 
       {/* News Content */}
       <NewsClient news={news} userId={userId} isAdmin={isAdmin} />
-    </ThemeAwareWrapper>
+    </div>
   );
 }
