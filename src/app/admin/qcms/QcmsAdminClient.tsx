@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   Calendar, BookOpen, Layers, NotebookPen, Plus, Trash2, RefreshCw, Save, 
-  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X, TrendingUp, Star
+  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X, TrendingUp, Star, Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   createQcmsYear, deleteQcmsYear, 
   createQcmsSubject, deleteQcmsSubject, 
-  createQcmsExamLink, deleteQcmsExamLink,
+  createQcmsExamLink, deleteQcmsExamLink, updateQcmsExamLink,
   updateQcmsExamLinkFeatured
 } from "@/app/actions/qcmsAdmin";
 
@@ -46,6 +46,8 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
   const [modalSubjectId, setModalSubjectId] = useState<string | null>(null);
   const [pendingLinks, setPendingLinks] = useState<{ label: string; url: string; isFeatured?: boolean }[]>([{ label: "", url: "", isFeatured: false }]);
   const [modalStatus, setModalStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [editingLinkValues, setEditingLinkValues] = useState<{ label: string; url: string }>({ label: "", url: "" });
 
   const activeYear = years.find((y: any) => y.id === activeYearId) || null;
   const modalSubject = years.flatMap((y: any) => y.subjects || []).find((s: any) => s.id === modalSubjectId) || null;
@@ -153,6 +155,8 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     setModalSubjectId(null);
     setPendingLinks([{ label: "", url: "", isFeatured: false }]);
     setModalStatus(null);
+    setEditingLinkId(null);
+    setEditingLinkValues({ label: "", url: "" });
   };
 
   // إضافة صف رابط جديد فارغ (إمكانية إضافة مالا نهاية من الروابط)
@@ -308,6 +312,42 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     }
   };
 
+  const handleUpdateExamLink = async () => {
+    if (!editingLinkId) return;
+
+    const trimmedLabel = editingLinkValues.label.trim();
+    const trimmedUrl = editingLinkValues.url.trim();
+
+    if (!trimmedLabel || !trimmedUrl) {
+      setModalStatus({ type: "error", message: "اسم الرابط ورابطه مطلوبان" });
+      return;
+    }
+
+    setLoading(true);
+    const res = await updateQcmsExamLink(editingLinkId, trimmedLabel, trimmedUrl);
+    setLoading(false);
+
+    if ((res as any).success) {
+      setYears((prevYears) =>
+        prevYears.map((year) => ({
+          ...year,
+          subjects: (year.subjects || []).map((subj: any) => ({
+            ...subj,
+            examLinks: (subj.examLinks || []).map((l: any) =>
+              l.id === editingLinkId ? { ...l, label: trimmedLabel, url: trimmedUrl } : l
+            )
+          }))
+        }))
+      );
+      setEditingLinkId(null);
+      setEditingLinkValues({ label: "", url: "" });
+      setModalStatus({ type: "success", message: "تم تحديث اسم الرابط وعنوانه بنجاح" });
+      router.refresh();
+    } else {
+      setModalStatus({ type: "error", message: (res as any).error || "حدث خطأ أثناء التحديث" });
+    }
+  };
+
   // حذف رابط امتحان
   const handleDeleteExamLink = async (linkId: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا الرابط؟")) return;
@@ -332,6 +372,11 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
           })
         }))
       );
+
+      if (editingLinkId === linkId) {
+        setEditingLinkId(null);
+        setEditingLinkValues({ label: "", url: "" });
+      }
 
       setModalStatus({ type: "success", message: "تم حذف رابط الاختبار" });
       router.refresh();
@@ -693,52 +738,106 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                   </div>
 
                   <div className="space-y-2.5 max-h-48 overflow-y-auto pl-1">
-                    {(modalSubject.examLinks || []).map((link: any) => (
-                      <div key={link.id} className={`flex items-center justify-between rounded-xl border px-4 py-3 transition ${
-                        link.isFeatured
-                          ? "border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-yellow-500/5"
-                          : "border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10"
-                      }`}>
-                        <div className="min-w-0 flex-1 ml-3">
-                          <div className="flex items-center gap-2 truncate">
-                            {link.isFeatured && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />}
-                            <span className={`truncate text-sm font-black ${link.isFeatured ? "text-amber-200" : "text-violet-200"}`}>{link.label}</span>
-                          </div>
-                          <a
-                            href={link.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-0.5 inline-flex items-center gap-1 truncate text-xs font-bold text-slate-400 hover:text-white transition"
-                          >
-                            <ExternalLink className="w-3 h-3 shrink-0" />
-                            <span className="truncate">{link.url}</span>
-                          </a>
+                    {(modalSubject.examLinks || []).map((link: any) => {
+                      const isEditing = editingLinkId === link.id;
+
+                      return (
+                        <div key={link.id} className={`rounded-xl border px-4 py-3 transition ${
+                          link.isFeatured
+                            ? "border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-yellow-500/5"
+                            : "border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10"
+                        }`}>
+                          {isEditing ? (
+                            <div className="space-y-2">
+                              <input
+                                value={editingLinkValues.label}
+                                onChange={(e) => setEditingLinkValues((prev) => ({ ...prev, label: e.target.value }))}
+                                className="admin-input"
+                                placeholder="اسم الرابط"
+                              />
+                              <input
+                                value={editingLinkValues.url}
+                                onChange={(e) => setEditingLinkValues((prev) => ({ ...prev, url: e.target.value }))}
+                                dir="ltr"
+                                className="admin-input"
+                                placeholder="https://drive.google.com/..."
+                              />
+                              <div className="flex justify-end gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-black text-slate-300" 
+                                  onClick={() => {
+                                    setEditingLinkId(null);
+                                    setEditingLinkValues({ label: "", url: "" });
+                                  }}
+                                >
+                                  إلغاء
+                                </button>
+                                <button
+                                  type="button"
+                                  className="rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-black text-white"
+                                  onClick={handleUpdateExamLink}
+                                >
+                                  حفظ
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-1 ml-3">
+                                <div className="flex items-center gap-2 truncate">
+                                  {link.isFeatured && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />}
+                                  <span className={`truncate text-sm font-black ${link.isFeatured ? "text-amber-200" : "text-violet-200"}`}>{link.label}</span>
+                                </div>
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="mt-0.5 inline-flex items-center gap-1 truncate text-xs font-bold text-slate-400 hover:text-white transition"
+                                >
+                                  <ExternalLink className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{link.url}</span>
+                                </a>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  className="rounded-lg p-2 text-slate-300 hover:bg-violet-500/15 hover:text-violet-300 transition"
+                                  onClick={() => {
+                                    setEditingLinkId(link.id);
+                                    setEditingLinkValues({ label: link.label || "", url: link.url || "" });
+                                  }}
+                                  title="تعديل الاسم أو الرابط"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`rounded-lg p-2 transition ${
+                                    link.isFeatured
+                                      ? "text-amber-400 bg-amber-500/20 hover:bg-amber-500/30"
+                                      : "text-slate-500 hover:bg-amber-500/15 hover:text-amber-400"
+                                  }`}
+                                  onClick={() => handleToggleFeatured(link.id, link.isFeatured || false)}
+                                  title={link.isFeatured ? "إلغاء التمييز" : "تمييز كاختبار مطور"}
+                                  disabled={loading}
+                                >
+                                  <Star className={`w-4 h-4 ${link.isFeatured ? "fill-amber-400" : ""}`} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/15 hover:text-rose-300 transition"
+                                  onClick={() => handleDeleteExamLink(link.id)}
+                                  title="حذف الرابط"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            className={`rounded-lg p-2 transition ${
-                              link.isFeatured
-                                ? "text-amber-400 bg-amber-500/20 hover:bg-amber-500/30"
-                                : "text-slate-500 hover:bg-amber-500/15 hover:text-amber-400"
-                            }`}
-                            onClick={() => handleToggleFeatured(link.id, link.isFeatured || false)}
-                            title={link.isFeatured ? "إلغاء التمييز" : "تمييز كاختبار مطور"}
-                            disabled={loading}
-                          >
-                            <Star className={`w-4 h-4 ${link.isFeatured ? "fill-amber-400" : ""}`} />
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/15 hover:text-rose-300 transition"
-                            onClick={() => handleDeleteExamLink(link.id)}
-                            title="حذف الرابط"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {(!modalSubject.examLinks || modalSubject.examLinks.length === 0) && (
                       <div className="rounded-xl border border-dashed border-slate-700/80 p-4 text-center text-xs font-bold text-slate-500">

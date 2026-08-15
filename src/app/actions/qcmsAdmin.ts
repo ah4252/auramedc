@@ -30,7 +30,6 @@ export async function getQcmsYears() {
     if ((prisma as any).qcmsExamLink) {
       includeSubjects.include = {
         examLinks: {
-          where: { isFeatured: false },
           orderBy: { createdAt: "asc" }
         }
       };
@@ -204,6 +203,39 @@ export async function deleteQcmsExamLink(id: string) {
 
     console.error("Error deleting QCMS exam link:", error);
     return { error: "فشل في حذف رابط الاختبار" };
+  }
+}
+
+export async function updateQcmsExamLink(id: string, label: string, url: string) {
+  await requireAdmin();
+
+  if (!(prisma as any).qcmsExamLink) {
+    return { error: "نموذج Prisma رابط امتحان QCMS غير مُولَّد في العميل الحالي" };
+  }
+
+  const safeLabel = label.trim();
+  const safeUrl = url.trim();
+
+  if (!safeLabel || !safeUrl) {
+    return { error: "اسم الرابط ورابطه مطلوبان" };
+  }
+
+  try {
+    await (prisma as any).qcmsExamLink.update({
+      where: { id },
+      data: { label: safeLabel, url: safeUrl }
+    });
+    revalidatePath("/admin/qcms");
+    revalidatePath("/courses");
+    revalidatePath("/qcms");
+    return { success: true };
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      return { error: "جدول روابط QCMS غير موجود في قاعدة البيانات" };
+    }
+
+    console.error("Error updating QCMS exam link:", error);
+    return { error: "فشل في تحديث اسم الرابط أو عنوانه" };
   }
 }
 
