@@ -170,7 +170,7 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     key={item.id}
                     whileHover={{ y: -5 }}
                     onClick={() => { setSelectedNews(item); setReplyTo(null); }}
-                    className="bg-slate-800/40 backdrop-blur-md rounded-[2rem] border border-slate-700/50 overflow-hidden hover:border-medical-500/50 hover:shadow-[0_0_30px_-10px_rgba(14,165,233,0.3)] transition-all duration-300 cursor-pointer group flex flex-col h-full relative"
+                    className="bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-[2rem] border border-slate-200 dark:border-slate-700/50 overflow-hidden hover:border-medical-500/50 hover:shadow-[0_0_30px_-10px_rgba(14,165,233,0.3)] transition-all duration-300 cursor-pointer group flex flex-col h-full relative shadow-sm"
                   >
                     {/* Badges for Links/Videos */}
                     <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
@@ -206,31 +206,31 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                     
                     <div className="p-6 flex-1 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
-                          <span className="px-3 py-1 bg-medical-500/10 text-medical-400 text-[10px] font-black rounded-full border border-medical-500/20">
+                          <span className="px-3 py-1 bg-medical-500/10 text-medical-600 dark:text-medical-400 text-[10px] font-black rounded-full border border-medical-500/20">
                           {t("news_badge","Announcement")}
                         </span>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-bold">
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-bold">
                           <Calendar className="w-3.5 h-3.5" />
-                          <time dateTime={item.createdAt}>
+                          <time dateTime={typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString()}>
                             {new Date(item.createdAt).toLocaleDateString('ar-EG')}
                           </time>
                         </div>
                       </div>
                       
-                      <h2 className="text-xl font-black text-white mb-3 leading-tight group-hover:text-medical-400 transition-colors line-clamp-2">
+                      <h2 className="text-xl font-black text-slate-900 dark:text-white mb-3 leading-tight group-hover:text-medical-500 dark:group-hover:text-medical-400 transition-colors line-clamp-2">
                         {item.title}
                       </h2>
                       
-                      <div className="text-slate-400 font-bold text-sm leading-relaxed line-clamp-3 mb-6 flex-1">
+                      <div className="text-slate-600 dark:text-slate-400 font-bold text-sm leading-relaxed line-clamp-3 mb-6 flex-1">
                         {item.content}
                       </div>
 
-                      <div className="mt-auto flex items-center justify-between border-t border-slate-700/50 pt-4">
-                        <div className="flex items-center gap-2 text-medical-400 text-sm font-black group-hover:gap-3 transition-all">
+                      <div className="mt-auto flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 pt-4">
+                        <div className="flex items-center gap-2 text-medical-600 dark:text-medical-400 text-sm font-black group-hover:gap-3 transition-all">
                           <span>{t("news_details","Details")}</span>
                           <ChevronRight className="w-4 h-4 rotate-180" />
                         </div>
-                        <div className="flex items-center gap-1.5 text-slate-500 font-bold text-xs">
+                        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-500 font-bold text-xs">
                           <MessageCircle className="w-3.5 h-3.5" />
                           <span>{totalCommentsCount} {t("news_comment_label","Comment")}</span>
                         </div>
@@ -256,255 +256,404 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
               className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
             />
             
-                <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.92, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden bg-[#0f172a] rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border border-slate-700/50 flex flex-col"
+              exit={{ opacity: 0, scale: 0.92, y: 30 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="relative w-full max-w-5xl max-h-[95vh] overflow-hidden bg-gradient-to-b from-white via-slate-50 to-gray-100 dark:from-[#0f172a] dark:via-[#1a1f3a] dark:to-[#0b1220] rounded-[3rem] shadow-[0_25px_80px_-20px_rgba(0,0,0,0.1)] dark:shadow-[0_25px_80px_-20px_rgba(14,165,233,0.3)] border border-slate-200 dark:border-slate-700/60 flex flex-col"
             >
-              <div className="absolute top-4 right-4 z-20">
-                <button 
+              <div className="absolute top-6 right-6 z-20">
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedNews(null)}
-                  className="p-2.5 bg-black/40 hover:bg-red-500 text-white rounded-full backdrop-blur-md transition-all shadow-lg"
+                  className="p-3 bg-red-100 hover:bg-red-200 dark:bg-gradient-to-br dark:from-red-500/20 dark:to-red-600/20 dark:hover:from-red-500/40 dark:hover:to-red-600/40 text-red-600 dark:text-white rounded-full backdrop-blur-md transition-all shadow-lg border border-red-300 dark:border-red-500/30 hover:border-red-400 dark:hover:border-red-500/50"
                   title={t("close","Close")}
                 >
-                  <X className="w-5 h-5" />
-                </button>
+                  <X className="w-6 h-6" />
+                </motion.button>
               </div>
 
-              <div className="overflow-y-auto custom-scrollbar flex-1 relative flex flex-col lg:flex-row">
+              <div className="overflow-y-auto custom-scrollbar flex-1 relative flex flex-col">
                 
-                {/* News Details (Right Side) */}
-                <div className="flex-1 min-h-[50vh] border-b lg:border-b-0 lg:border-l border-slate-700/50">
+                {/* News Details (Top Section) */}
+                <div className="flex-none">
+                  {/* Media Section */}
                   {(() => {
                     const videos = parseUrls(selectedNews.videoUrl);
                     const validVideos = videos.filter((vid: string) => getYouTubeId(vid));
                     
                     if (validVideos.length > 0) {
                       return (
-                        <div className="w-full shrink-0 flex flex-col border-b border-slate-800">
+                        <motion.div 
+                          initial={{ opacity: 0, y: -30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.1 }}
+                          className="w-full shrink-0 flex flex-col border-b border-slate-300 dark:border-slate-700/50"
+                        >
                           {validVideos.map((vid: string, idx: number) => {
                             const ytId = getYouTubeId(vid);
                             return (
-                              <div key={idx} className={`w-full aspect-video relative bg-black shrink-0 ${idx > 0 ? 'border-t border-slate-800' : ''}`}>
+                              <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.5, delay: 0.15 + idx * 0.1 }}
+                                className={`w-full aspect-video relative bg-slate-900 dark:bg-slate-950 shrink-0 overflow-hidden ${idx > 0 ? 'border-t border-slate-300 dark:border-slate-700/50' : ''}`}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 to-transparent pointer-events-none z-10" />
                                 <iframe
                                   className="w-full h-full"
                                   src={`https://www.youtube.com/embed/${ytId}`}
                                   allowFullScreen
                                   title={`Video preview ${idx + 1}`}
                                 />
-                              </div>
+                              </motion.div>
                             );
                           })}
-                        </div>
+                        </motion.div>
                       );
                     } else if (selectedNews.image) {
                       return (
-                        <div className="w-full h-64 sm:h-80 relative shrink-0">
-                          <img 
+                        <motion.div 
+                          initial={{ opacity: 0, y: -40 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.1 }}
+                          className="w-full h-80 sm:h-96 relative shrink-0 overflow-hidden group"
+                        >
+                          <motion.img 
+                            initial={{ scale: 1.05, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.7, delay: 0.15 }}
+                            whileHover={{ scale: 1.02 }}
                             src={selectedNews.image} 
                             alt={selectedNews.title} 
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-cover transition-transform duration-700" 
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent" />
-                        </div>
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/50 to-transparent" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-blue-600/10 via-transparent to-transparent group-hover:from-blue-500/20 transition-all duration-700" />
+                        </motion.div>
                       );
                     }
                     return null;
                   })()}
                   
-                  <div className={`p-8 ${!selectedNews.image && parseUrls(selectedNews.videoUrl).length === 0 ? 'pt-16' : ''}`}>
-                    <div className="flex items-center gap-4 mb-6 flex-wrap">
-                      <span className="px-4 py-1.5 bg-medical-500/10 text-medical-400 text-xs font-black rounded-full border border-medical-500/20 shadow-sm">
+                  {/* Content Section */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.25 }}
+                      className="p-8 sm:p-12 bg-gradient-to-br from-white via-gray-50 to-transparent dark:from-slate-900/50 dark:via-slate-900/30 dark:to-transparent"
+                  >
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                      className="flex items-center gap-4 mb-8 flex-wrap"
+                    >
+                      <motion.span 
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 400, delay: 0.35 }}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-medical-500/20 dark:to-medical-600/20 text-blue-700 dark:text-medical-300 text-xs font-black rounded-full border border-blue-300 dark:border-medical-500/40 shadow-lg shadow-blue-500/10 dark:shadow-medical-500/10 hover:from-blue-200 hover:to-blue-300 dark:hover:from-medical-500/30 dark:hover:to-medical-600/30 transition-all"
+                      >
                         {t("news_important_announcement", "Important announcement")}
-                      </span>
-                      <div className="flex items-center gap-2 text-sm text-slate-400 font-bold">
-                        <Calendar className="w-4 h-4" />
-                        <time dateTime={selectedNews.createdAt}>
+                      </motion.span>
+                      <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.4 }}
+                        className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 font-bold bg-gray-100 dark:bg-slate-800/40 px-4 py-2 rounded-full border border-slate-300 dark:border-slate-700/50"
+                      >
+                        <Calendar className="w-4 h-4 text-medical-400" />
+                        <time dateTime={typeof selectedNews.createdAt === 'string' ? selectedNews.createdAt : new Date(selectedNews.createdAt).toISOString()}>
                           {new Date(selectedNews.createdAt).toLocaleDateString('ar-EG', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
                           })}
                         </time>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                     
-                    <h2 className="text-2xl sm:text-3xl font-black text-white mb-8 leading-tight">
+                    <motion.h2 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.35 }}
+                      className="text-3xl sm:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-600 dark:from-white dark:via-slate-100 dark:to-slate-400 mb-10 leading-tight"
+                    >
                       {selectedNews.title}
-                    </h2>
+                    </motion.h2>
                     
-                    <div className="text-slate-300 font-bold text-base leading-loose whitespace-pre-wrap opacity-95 mb-8">
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      className="text-slate-700 dark:text-slate-300 font-bold text-lg leading-loose whitespace-pre-wrap opacity-95 mb-10 border-l-4 border-blue-300 dark:border-medical-500/50 pl-6 py-4 bg-blue-50 dark:bg-slate-800/20 rounded-r-xl"
+                    >
                       {selectedNews.content}
-                    </div>
+                    </motion.div>
 
                     {(() => {
                       const files = parseUrls(selectedNews.fileUrl);
                       if (files.length > 0) {
                         return (
-                          <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-slate-800">
-                                {files.map((file, idx) => (
-                              <a 
+                          <motion.div 
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.45 }}
+                            className="flex flex-wrap gap-4 mt-10 pt-10 border-t border-slate-700/50"
+                          >
+                            {files.map((file, idx) => (
+                              <motion.a 
                                 key={idx}
+                                whileHover={{ y: -3, scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 href={file}
                                 target="_self"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-3 px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black transition-all border border-slate-700 shadow-lg flex-1 min-w-[200px]"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.4, delay: 0.5 + idx * 0.05 }}
+                                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-600/30 dark:to-blue-700/30 hover:from-blue-200 hover:to-blue-300 dark:hover:from-blue-600/50 dark:hover:to-blue-700/50 text-blue-700 dark:text-white rounded-2xl font-black transition-all border border-blue-300 dark:border-blue-500/40 hover:border-blue-400 dark:hover:border-blue-500/60 shadow-lg shadow-blue-500/20 dark:shadow-blue-500/20 hover:shadow-blue-500/40 dark:hover:shadow-blue-500/40 flex-1 min-w-[220px] group"
                               >
-                                <LinkIcon className="w-5 h-5 text-blue-400" />
-                                {files.length > 1 ? `${t("news_attachment_number","Attachment") } ${idx + 1}` : t("news_attachment_open","Open attachment / linked file")}
-                              </a>
+                                <LinkIcon className="w-5 h-5 text-blue-500 dark:text-blue-300 group-hover:scale-110 transition-transform" />
+                                <span>
+                                  {files.length > 1 ? `${t("news_attachment_number","Attachment") } ${idx + 1}` : t("news_attachment_open","Open attachment / linked file")}
+                                </span>
+                              </motion.a>
                             ))}
-                          </div>
+                          </motion.div>
                         );
                       }
                       return null;
                     })()}
-                  </div>
+                  </motion.div>
                 </div>
 
-                {/* Comments Section (Left Side) */}
-                <div className="w-full lg:w-96 bg-[#0B1120] flex flex-col h-[50vh] lg:h-auto shrink-0 relative">
-                  <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-                    <MessageCircle className="w-5 h-5 text-medical-500" />
-                    <h3 className="text-lg font-black text-white">{t("news_comments","Comments")}</h3>
-                    <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-lg text-xs font-bold">
+                {/* Comments Section (Bottom Section) */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.55 }}
+                  className="w-full bg-gradient-to-b from-gray-50 dark:from-slate-900/30 to-gray-100 dark:to-[#0B1120] flex flex-col flex-1 relative border-t border-slate-300 dark:border-slate-700/50"
+                >
+                  {/* Header */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: -15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.6 }}
+                    className="p-8 border-b border-slate-300 dark:border-slate-700/50 flex items-center gap-4 sticky top-0 bg-gradient-to-r from-gray-50 dark:from-[#0B1120]/95 to-gray-100 dark:to-[#0f172a]/95 backdrop-blur-xl z-10"
+                  >
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <MessageCircle className="w-6 h-6 text-medical-500" />
+                    </motion.div>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white">{t("news_comments","Comments")}</h3>
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, delay: 0.65 }}
+                      className="bg-gradient-to-r from-blue-100 dark:from-medical-500/50 to-blue-200 dark:to-medical-600/50 text-blue-700 dark:text-medical-100 px-4 py-1.5 rounded-full text-sm font-black border border-blue-300 dark:border-medical-500/50 shadow-lg shadow-blue-500/20 dark:shadow-medical-500/20"
+                    >
                       {getCommentsCount(selectedNews)}
-                    </span>
-                  </div>
+                    </motion.span>
+                  </motion.div>
 
-                  {/* Gorgeous Warning Banner for comment deletion */}
-                  <div className="mx-6 mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-2 text-xs text-amber-500 font-black">
-                    <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-500 animate-pulse" />
+                  {/* Warning Note */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.65 }}
+                    className="mx-8 mt-6 p-4 bg-gradient-to-r from-amber-100 dark:from-amber-500/15 to-amber-200 dark:to-amber-600/15 border border-amber-300 dark:border-amber-500/30 rounded-2xl flex items-start gap-3 text-sm text-amber-700 dark:text-amber-300 font-black shadow-lg shadow-amber-500/10 dark:shadow-amber-500/10"
+                  >
+                    <Clock className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400 animate-pulse" />
                     <p className="leading-relaxed">
                       {t("news_comments_retention_note","Note: Comments and replies are automatically deleted every 4 hours to boost interaction and protect privacy.")}
                     </p>
-                  </div>
+                  </motion.div>
 
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                  {/* Comments Container */}
+                  <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
                     {(!selectedNews.comments || selectedNews.comments.length === 0) ? (
-                      <div className="text-center py-10 opacity-50">
-                        <MessageCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-400 font-bold text-sm">{t("news_comments_empty","Be the first to share your opinion!")}</p>
-                      </div>
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4, delay: 0.7 }}
+                        className="text-center py-16 opacity-60"
+                      >
+                        <motion.div
+                          animate={{ y: [0, -10, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <MessageCircle className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4 opacity-40" />
+                        </motion.div>
+                        <p className="text-slate-600 dark:text-slate-400 font-black text-base">{t("news_comments_empty","Be the first to share your opinion!")}</p>
+                      </motion.div>
                     ) : (
                       <div className="space-y-6">
                         <AnimatePresence initial={false}>
-                          {selectedNews.comments.map((comment: any) => (
+                          {selectedNews.comments.map((comment: any, idx: number) => (
                             <motion.div 
                               key={comment.id}
-                              variants={commentAnimation}
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
+                              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 25, delay: idx * 0.05 }}
                               layout
-                              className="space-y-4"
+                              className="space-y-4 group"
                             >
                               {/* Main Comment */}
-                              <div className="flex gap-3 relative group">
-                                <div className="w-10 h-10 rounded-full bg-slate-800 shrink-0 overflow-hidden flex items-center justify-center border border-slate-700">
+                              <motion.div 
+                                whileHover={{ x: 4 }}
+                                className="flex gap-4 relative"
+                              >
+                                <motion.div 
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ type: "spring", stiffness: 400, delay: idx * 0.05 + 0.05 }}
+                                  className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-200 dark:from-medical-500/30 to-blue-300 dark:to-medical-600/30 shrink-0 overflow-hidden flex items-center justify-center border-2 border-blue-400 dark:border-medical-500/50 shadow-lg shadow-blue-500/20 dark:shadow-medical-500/20"
+                                >
                                   {comment.user?.image ? (
                                     <img src={comment.user.image} alt={comment.user.name} className="w-full h-full object-cover" />
                                   ) : (
-                                    <UserIcon className="w-5 h-5 text-slate-500" />
+                                    <UserIcon className="w-6 h-6 text-medical-300" />
                                   )}
-                                </div>
-                                <div className="flex-1 bg-slate-800/50 p-4 rounded-2xl rounded-tr-sm border border-slate-700/50 hover:border-slate-600 transition-colors relative">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="font-black text-sm text-slate-200">
-                                      {comment.user?.name || t("user_default","Unknown user")}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 font-bold">
-                                      {new Date(comment.createdAt).toLocaleDateString('ar-EG')}
-                                    </span>
-                                  </div>
-                                  <p className="text-slate-300 text-sm font-bold leading-relaxed">
-                                    {comment.content}
-                                  </p>
-                                  
-                                  {/* Actions: Reply and Delete */}
-                                  {(userId || isAdmin) && (
-                                    <div className="flex items-center gap-3 mt-3 border-t border-slate-700/30 pt-2">
-                                      {userId && (
-                                        <button 
-                                          onClick={() => setReplyTo({ id: comment.id, userName: comment.user?.name || t("user_default","Unknown user") })}
-                                          className="inline-flex items-center gap-1 text-[10px] font-black text-medical-400 hover:text-medical-300 transition-colors"
-                                        >
-                                          <CornerDownLeft className="w-3 h-3" />
-                                          <span>{t("reply","Reply")}</span>
-                                        </button>
-                                      )}
-                                      {(comment.userId === userId || isAdmin) && (
-                                        <button 
-                                          onClick={() => handleDeleteComment(comment.id)}
-                                          className="inline-flex items-center gap-1 text-[10px] font-black text-red-500 hover:text-red-400 transition-colors mr-auto"
-                                          title={t("news_delete_comment","Delete comment")}
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                          <span>{t("delete","Delete")}</span>
-                                        </button>
-                                      )}
+                                </motion.div>
+                                <motion.div 
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.3, delay: idx * 0.05 + 0.08 }}
+                                  className="flex-1 bg-gradient-to-br from-gray-100 dark:from-slate-800/60 to-gray-50 dark:to-slate-900/40 p-5 rounded-2xl rounded-tr-sm border border-slate-300 dark:border-slate-700/50 hover:border-blue-400 dark:hover:border-medical-500/30 transition-all shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-medical-500/20 relative overflow-hidden group"
+                                >
+                                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 dark:from-medical-500/0 via-blue-500/5 dark:via-medical-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="font-black text-base text-slate-900 dark:text-slate-100">
+                                        {comment.user?.name || t("user_default","Unknown user")}
+                                      </span>
+                                      <span className="text-xs text-slate-600 dark:text-slate-500 font-bold">
+                                        {new Date(comment.createdAt).toLocaleDateString('ar-EG')}
+                                      </span>
                                     </div>
-                                  )}
-                                </div>
-                              </div>
+                                    <p className="text-slate-700 dark:text-slate-300 text-sm font-bold leading-relaxed">
+                                      {comment.content}
+                                    </p>
+                                    
+                                    {/* Actions */}
+                                    {(userId || isAdmin) && (
+                                      <div className="flex items-center gap-4 mt-4 border-t border-slate-700/30 pt-3">
+                                        {userId && (
+                                          <motion.button 
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setReplyTo({ id: comment.id, userName: comment.user?.name || t("user_default","Unknown user") })}
+                                            className="inline-flex items-center gap-2 text-xs font-black text-blue-600 dark:text-medical-400 hover:text-blue-700 dark:hover:text-medical-300 hover:bg-blue-100 dark:hover:bg-medical-500/10 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-blue-300 dark:hover:border-medical-500/30"
+                                          >
+                                            <CornerDownLeft className="w-3.5 h-3.5" />
+                                            <span>{t("reply","Reply")}</span>
+                                          </motion.button>
+                                        )}
+                                        {(comment.userId === userId || isAdmin) && (
+                                          <motion.button 
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => handleDeleteComment(comment.id)}
+                                            className="inline-flex items-center gap-2 text-xs font-black text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-red-300 dark:hover:border-red-500/30 mr-auto"
+                                            title={t("news_delete_comment","Delete comment")}
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span>{t("delete","Delete")}</span>
+                                          </motion.button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              </motion.div>
 
                               {/* Replies Container */}
                               {comment.replies && comment.replies.length > 0 && (
-                                <div className="mr-6 pr-4 border-r-2 border-slate-800/80 space-y-4 relative">
+                                <motion.div 
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="mr-4 pl-8 border-l-2 border-gradient-to-b from-blue-400 dark:from-medical-500/50 to-slate-400 dark:to-slate-800/80 space-y-4 relative"
+                                >
                                   <AnimatePresence initial={false}>
-                                    {comment.replies.map((reply: any) => (
+                                    {comment.replies.map((reply: any, replyIdx: number) => (
                                       <motion.div 
                                         key={reply.id}
-                                        variants={commentAnimation}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="exit"
+                                        initial={{ opacity: 0, x: -15, scale: 0.95 }}
+                                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                                        exit={{ opacity: 0, x: -15, scale: 0.95 }}
+                                        transition={{ type: "spring", stiffness: 300, damping: 25, delay: replyIdx * 0.04 }}
                                         layout
-                                        className="flex gap-2 relative mt-2"
+                                        className="flex gap-3 relative mt-2 group/reply"
                                       >
-                                        {/* Nested branch line decoration */}
-                                        <div className="absolute -right-4 top-5 w-4 h-0.5 bg-slate-800/80" />
-
-                                        <div className="w-8 h-8 rounded-full bg-slate-800 shrink-0 overflow-hidden flex items-center justify-center border border-slate-700">
+                                        <motion.div 
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          transition={{ type: "spring", stiffness: 400, delay: replyIdx * 0.04 + 0.05 }}
+                                          className="w-9 h-9 rounded-full bg-slate-300 dark:bg-slate-800 shrink-0 overflow-hidden flex items-center justify-center border border-slate-400 dark:border-medical-500/30 shadow-md"
+                                        >
                                           {reply.user?.image ? (
                                             <img src={reply.user.image} alt={reply.user.name} className="w-full h-full object-cover" />
                                           ) : (
                                             <UserIcon className="w-4 h-4 text-slate-500" />
                                           )}
-                                        </div>
-                                        <div className="flex-1 bg-slate-800/30 p-3.5 rounded-2xl rounded-tr-sm border border-slate-800 relative">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <span className="font-black text-xs text-slate-300 flex items-center gap-1">
-                                              {reply.user?.name || t("user_default","Unknown user")}
-                                              <span className="px-1.5 py-0.5 bg-slate-800 text-slate-500 text-[8px] font-black rounded uppercase">{t("reply","Reply")}</span>
-                                            </span>
-                                            <span className="text-[9px] text-slate-500 font-bold">
-                                              {new Date(reply.createdAt).toLocaleDateString('ar-EG')}
-                                            </span>
-                                          </div>
-                                          <p className="text-slate-300 text-xs font-bold leading-relaxed">
-                                            {reply.content}
-                                          </p>
-
-                                          {/* Delete reply action */}
-                                          {(reply.userId === userId || isAdmin) && (
-                                            <div className="flex items-center justify-end mt-2 pt-1 border-t border-slate-800/50">
-                                              <button 
-                                                onClick={() => handleDeleteComment(reply.id, comment.id)}
-                                                className="inline-flex items-center gap-1 text-[9px] font-black text-red-500 hover:text-red-400 transition-colors"
-                                                title={t("news_delete_reply","Delete reply")}
-                                              >
-                                                <Trash2 className="w-2.5 h-2.5" />
-                                                <span>{t("delete","Delete")}</span>
-                                              </button>
+                                        </motion.div>
+                                        <motion.div 
+                                          initial={{ opacity: 0, x: -10 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          transition={{ duration: 0.3, delay: replyIdx * 0.04 + 0.08 }}
+                                          className="flex-1 bg-gray-100 dark:bg-slate-800/40 p-4 rounded-xl rounded-tr-sm border border-slate-300 dark:border-slate-800 hover:border-blue-400 dark:hover:border-medical-500/20 transition-all relative overflow-hidden group/reply"
+                                        >
+                                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 dark:from-medical-500/0 via-blue-500/3 dark:via-medical-500/3 to-transparent opacity-0 group-hover/reply:opacity-100 transition-opacity" />
+                                          <div className="relative z-10">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <span className="font-black text-xs text-slate-900 dark:text-slate-300 flex items-center gap-2">
+                                                {reply.user?.name || t("user_default","Unknown user")}
+                                                <span className="px-2 py-0.5 bg-blue-100 dark:bg-medical-500/20 text-blue-700 dark:text-medical-300 text-[7px] font-black rounded uppercase">{t("reply","Reply")}</span>
+                                              </span>
+                                              <span className="text-[8px] text-slate-600 dark:text-slate-500 font-bold">
+                                                {new Date(reply.createdAt).toLocaleDateString('ar-EG')}
+                                              </span>
                                             </div>
-                                          )}
-                                        </div>
+                                            <p className="text-slate-700 dark:text-slate-300 text-xs font-bold leading-relaxed">
+                                              {reply.content}
+                                            </p>
+
+                                            {/* Delete reply action */}
+                                            {(reply.userId === userId || isAdmin) && (
+                                              <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-800/50">
+                                                <motion.button 
+                                                  whileHover={{ scale: 1.05 }}
+                                                  whileTap={{ scale: 0.95 }}
+                                                  onClick={() => handleDeleteComment(reply.id, comment.id)}
+                                                  className="inline-flex items-center gap-1 text-[8px] font-black text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 px-2 py-1 rounded transition-all border border-transparent hover:border-red-300 dark:hover:border-red-500/30"
+                                                  title={t("news_delete_reply","Delete reply")}
+                                                >
+                                                  <Trash2 className="w-2.5 h-2.5" />
+                                                  <span>{t("delete","Delete")}</span>
+                                                </motion.button>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </motion.div>
                                       </motion.div>
                                     ))}
                                   </AnimatePresence>
-                                </div>
+                                </motion.div>
                               )}
                             </motion.div>
                           ))}
@@ -514,56 +663,86 @@ export default function NewsClient({ news, userId, isAdmin = false }: { news: an
                   </div>
 
                   {userId ? (
-                    <div className="p-4 border-t border-slate-800 bg-[#0f172a] space-y-3">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.8 }}
+                      className="p-6 border-t border-slate-300 dark:border-slate-700/50 bg-gradient-to-t from-gray-100 dark:from-[#0B1120] to-transparent dark:to-transparent space-y-4"
+                    >
                       {/* Active Reply Banner */}
                       <AnimatePresence>
                         {replyTo && (
-                              <motion.div 
+                          <motion.div 
                             initial={{ opacity: 0, height: 0, y: 10 }}
                             animate={{ opacity: 1, height: "auto", y: 0 }}
                             exit={{ opacity: 0, height: 0, y: 10 }}
-                            className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 flex items-center justify-between text-xs text-amber-400 font-bold overflow-hidden"
+                            transition={{ type: "spring", stiffness: 300 }}
+                            className="bg-gradient-to-r from-amber-100 dark:from-amber-500/15 to-amber-200 dark:to-amber-600/15 border border-amber-300 dark:border-amber-500/30 rounded-2xl px-4 py-3 flex items-center justify-between text-xs text-amber-700 dark:text-amber-300 font-black overflow-hidden shadow-lg shadow-amber-500/10 dark:shadow-amber-500/10"
                           >
-                            <span className="flex items-center gap-1.5">
-                              <Reply className="w-3.5 h-3.5 rotate-180" />
-                              <span>{t("news_replying_to_prefix","Replying to comment")} @{replyTo.userName}</span>
+                            <span className="flex items-center gap-2">
+                              <Reply className="w-4 h-4 rotate-180 text-amber-600 dark:text-amber-400" />
+                              <span>{t("news_replying_to_prefix","Replying to comment")} <span className="font-black text-amber-600 dark:text-amber-400">@{replyTo.userName}</span></span>
                             </span>
-                            <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-slate-800 rounded-md transition-colors" title="Cancel reply" aria-label="Cancel reply">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
+                            <motion.button 
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setReplyTo(null)} 
+                              className="p-1.5 hover:bg-amber-200 dark:hover:bg-amber-500/20 rounded-lg transition-all" 
+                              title="Cancel reply" 
+                              aria-label="Cancel reply"
+                            >
+                              <X className="w-4 h-4" />
+                            </motion.button>
                           </motion.div>
                         )}
                       </AnimatePresence>
 
-                      <form onSubmit={handleAddComment} className="flex gap-2">
-                        <input 
+                      <form onSubmit={handleAddComment} className="flex gap-3 group">
+                        <motion.input 
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.85 }}
                           type="text" 
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
-                          placeholder={replyTo ? `${t("news_reply_placeholder_prefix","Write your reply to")} ${replyTo.userName}...` : t("news_comment_input_placeholder","Write your comment here...")}
-                          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-white outline-none focus:border-medical-500 transition-colors"
+                          placeholder={replyTo ? `${t("news_reply_placeholder_prefix","Write your reply to")} ${replyTo.userName}...` : t("news_comment_input_placeholder","Share your thoughts...")}
+                          className="flex-1 bg-gradient-to-r from-gray-100 dark:from-slate-800/50 to-gray-50 dark:to-slate-900/50 border border-slate-300 dark:border-slate-700/50 focus:border-blue-400 dark:focus:border-medical-500/50 rounded-2xl px-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-medical-500/20 transition-all placeholder:text-slate-500 dark:placeholder:text-slate-500 shadow-lg focus:shadow-blue-500/20 dark:focus:shadow-medical-500/20"
                         />
-                        <button 
+                        <motion.button 
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.4, delay: 0.9 }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           type="submit"
                           disabled={!commentText.trim() || isSubmitting}
-                          className="bg-medical-600 hover:bg-medical-700 text-white p-3 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-medical-600 dark:to-medical-700 dark:hover:from-medical-500 dark:hover:to-medical-600 text-white px-6 py-4 rounded-2xl flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 dark:shadow-medical-500/30 hover:shadow-blue-500/50 dark:hover:shadow-medical-500/50 disabled:shadow-none border border-blue-400 dark:border-medical-500/30 hover:border-blue-500 dark:hover:border-medical-500/50 font-black"
                           title={t("news_send_comment","Send comment")}
                           aria-label={t("news_send_comment","Send comment")}
                         >
                           <Send className="w-5 h-5 rotate-180" />
-                        </button>
+                        </motion.button>
                       </form>
-                    </div>
+                    </motion.div>
                   ) : (
-                    <div className="p-6 border-t border-slate-800 bg-[#0f172a] text-center">
-                      <p className="text-sm text-slate-400 font-bold mb-3">{t("news_login_required","You must be logged in to add a comment")}</p>
-                      <a href="/login" className="inline-block bg-slate-800 hover:bg-slate-700 text-white text-sm font-black px-6 py-2 rounded-full transition-colors">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.8 }}
+                      className="p-8 border-t border-slate-300 dark:border-slate-700/50 bg-gradient-to-b from-transparent dark:from-transparent to-gray-50 dark:to-slate-900/30 text-center"
+                    >
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-bold mb-5">{t("news_login_required","You must be logged in to add a comment")}</p>
+                      <motion.a 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        href="/login" 
+                        className="inline-block bg-gradient-to-r from-blue-500 to-blue-600 dark:from-medical-600 dark:to-medical-700 hover:from-blue-600 hover:to-blue-700 dark:hover:from-medical-500 dark:hover:to-medical-600 text-white text-sm font-black px-8 py-3 rounded-2xl transition-all shadow-lg shadow-blue-500/30 dark:shadow-medical-500/30 hover:shadow-blue-500/50 dark:hover:shadow-medical-500/50 border border-blue-400 dark:border-medical-500/30 hover:border-blue-500 dark:hover:border-medical-500/50"
+                      >
                         {t("login","Login")}
-                      </a>
-                    </div>
+                      </motion.a>
+                    </motion.div>
                   )}
-                </div>
-
+                </motion.div>
               </div>
             </motion.div>
           </div>

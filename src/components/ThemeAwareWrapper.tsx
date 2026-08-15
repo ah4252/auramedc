@@ -9,18 +9,23 @@ type Props = {
 };
 
 export default function ThemeAwareWrapper({ children, darkClass = "", lightClass = "" }: Props) {
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    try {
-      if (typeof window === "undefined") return "dark";
-      const stored = window.localStorage.getItem("theme");
-      if (stored) return stored === "dark" ? "dark" : "light";
-      return document.documentElement.classList.contains("dark") ? "dark" : "light";
-    } catch (e) {
-      return "dark";
-    }
-  });
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("theme");
+      const detectedTheme = stored ? (stored === "dark" ? "dark" : "light") : (document.documentElement.classList.contains("dark") ? "dark" : "light");
+      setTheme(detectedTheme);
+    } catch (e) {
+      setTheme("dark");
+    }
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const handler = (e: any) => {
       const t = e?.detail?.theme || window.localStorage.getItem("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
       setTheme(t === "dark" ? "dark" : "light");
@@ -32,7 +37,7 @@ export default function ThemeAwareWrapper({ children, darkClass = "", lightClass
       window.removeEventListener("theme-change", handler as EventListener);
       window.removeEventListener("storage", handler as EventListener);
     };
-  }, []);
+  }, [isMounted]);
 
   const cls = theme === "dark" ? darkClass : lightClass;
   return <div className={cls}>{children}</div>;
