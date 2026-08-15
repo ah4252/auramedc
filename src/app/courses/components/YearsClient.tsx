@@ -809,7 +809,7 @@ export default function YearsClient({
                                       href={link.url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      onClick={handleExamLinkClick}
+                                      onClick={handleDeveloperExamLinkClick}
                                       className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 py-3.5 px-4 text-xs font-black text-slate-950 shadow-lg shadow-amber-600/30 transition-all hover:scale-[1.02] hover:shadow-amber-500/50 active:scale-[0.98]"
                                     >
                                       <span>{devStartNow}</span>
