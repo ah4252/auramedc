@@ -7,7 +7,7 @@ import YearsClient from "./components/YearsClient";
 
 export default async function CoursesPage() {
   const canViewPharmacy = await canAccessPharmacy();
-  const canViewQcms = await canAccessQcms();
+  const canViewDeveloperQcms = await canAccessQcms();
   const [yearCategories, pharmacyCategories, qcmsYears, devFeaturedYears] = await Promise.all([
     getCategories("YEAR"),
     canViewPharmacy ? getPharmacySections() : Promise.resolve([]),
@@ -23,7 +23,8 @@ export default async function CoursesPage() {
         qcmsYears={JSON.parse(JSON.stringify(qcmsYears))}
         devFeaturedYears={JSON.parse(JSON.stringify(devFeaturedYears))}
         canViewPharmacy={canViewPharmacy}
-        canViewQcms={canViewQcms}
+        canViewQcms={true}
+        canViewDeveloperQcms={canViewDeveloperQcms}
       />
     </Suspense>
   );

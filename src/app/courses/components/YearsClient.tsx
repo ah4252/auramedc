@@ -24,7 +24,8 @@ export default function YearsClient({
   qcmsYears = [],
   devFeaturedYears = [],
   canViewPharmacy = false,
-  canViewQcms = false,
+  canViewQcms = true,
+  canViewDeveloperQcms = false,
 }: { 
   yearCategories: any[]; 
   pharmacyCategories: PharmacySection[]; 
@@ -32,6 +33,7 @@ export default function YearsClient({
   devFeaturedYears?: any[];
   canViewPharmacy?: boolean;
   canViewQcms?: boolean;
+  canViewDeveloperQcms?: boolean;
 }) {
   const searchParams = useSearchParams();
   const { t, lang } = useLocale();
@@ -51,15 +53,18 @@ export default function YearsClient({
   const [selectedDevYearId, setSelectedDevYearId] = useState<string | null>(null);
   const [selectedDevSubjectId, setSelectedDevSubjectId] = useState<string | null>(null);
 
+  const yearsContentKey = `${devMode ? "dev" : "qcm"}-${selectedDevYearId ?? "none"}-${selectedDevSubjectId ?? "none"}-${selectedQcmsYearId ?? "none"}-${selectedQcmsSubjectId ?? "none"}`;
+  const qcmsViewKey = `${devMode ? "dev" : "qcm"}-${selectedDevYearId ?? "none"}-${selectedDevSubjectId ?? "none"}-${selectedQcmsYearId ?? "none"}-${selectedQcmsSubjectId ?? "none"}`;
+
   useEffect(() => {
-    if (!canViewQcms) return;
+    if (!canViewDeveloperQcms) return;
 
     getQcmRemainingViews().then((result) => {
       if (typeof result?.remaining === "number") {
         setQcmRemaining(result.remaining);
       }
     });
-  }, [canViewQcms]);
+  }, [canViewDeveloperQcms]);
 
   const filteredPharmacy = pharmacyCategories.filter(s =>
     s.name.toLowerCase().includes(pharmacySearch.toLowerCase()) ||
@@ -73,6 +78,92 @@ export default function YearsClient({
   const selectedDevSubject = selectedDevYear?.subjects?.find((s: any) => s.id === selectedDevSubjectId) || null;
 
   const localeText = (ar: string, fr: string, en: string) => (lang === "ar" ? ar : lang === "fr" ? fr : en);
+
+  const syncQcmHistory = (next: {
+    devMode: boolean;
+    selectedQcmsYearId: string | null;
+    selectedQcmsSubjectId: string | null;
+    selectedDevYearId: string | null;
+    selectedDevSubjectId: string | null;
+  }) => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", "qcms");
+
+    if (next.devMode) {
+      url.searchParams.set("devMode", "1");
+    } else {
+      url.searchParams.delete("devMode");
+    }
+
+    if (next.selectedQcmsYearId) {
+      url.searchParams.set("qcmsYearId", next.selectedQcmsYearId);
+    } else {
+      url.searchParams.delete("qcmsYearId");
+    }
+
+    if (next.selectedQcmsSubjectId) {
+      url.searchParams.set("qcmsSubjectId", next.selectedQcmsSubjectId);
+    } else {
+      url.searchParams.delete("qcmsSubjectId");
+    }
+
+    if (next.selectedDevYearId) {
+      url.searchParams.set("devYearId", next.selectedDevYearId);
+    } else {
+      url.searchParams.delete("devYearId");
+    }
+
+    if (next.selectedDevSubjectId) {
+      url.searchParams.set("devSubjectId", next.selectedDevSubjectId);
+    } else {
+      url.searchParams.delete("devSubjectId");
+    }
+
+    window.history.pushState({ qcmsState: next }, "", `${url.pathname}${url.search}`);
+  };
+
+  const applyQcmNavigationState = (next: {
+    devMode: boolean;
+    selectedQcmsYearId: string | null;
+    selectedQcmsSubjectId: string | null;
+    selectedDevYearId: string | null;
+    selectedDevSubjectId: string | null;
+  }) => {
+    setDevMode(next.devMode);
+    setSelectedQcmsYearId(next.selectedQcmsYearId);
+    setSelectedQcmsSubjectId(next.selectedQcmsSubjectId);
+    setSelectedDevYearId(next.selectedDevYearId);
+    setSelectedDevSubjectId(next.selectedDevSubjectId);
+    syncQcmHistory(next);
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const restoreQcmStateFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hasDevMode = params.get("devMode") === "1";
+      const nextQcmsYearId = params.get("qcmsYearId");
+      const nextQcmsSubjectId = params.get("qcmsSubjectId");
+      const nextDevYearId = params.get("devYearId");
+      const nextDevSubjectId = params.get("devSubjectId");
+
+      setDevMode(hasDevMode);
+      setSelectedQcmsYearId(nextQcmsYearId);
+      setSelectedQcmsSubjectId(nextQcmsSubjectId);
+      setSelectedDevYearId(nextDevYearId);
+      setSelectedDevSubjectId(nextDevSubjectId);
+    };
+
+    restoreQcmStateFromUrl();
+    window.addEventListener("popstate", restoreQcmStateFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", restoreQcmStateFromUrl);
+    };
+  }, []);
 
   const devHeroBadge = localeText("اختبارات المطور المميزة", "Tests du développeur", "Developer-created tests");
   const devHeroTitle = localeText("اختبارات أنشأها المطور", "Tests créés par le développeur", "Developer-created tests");
@@ -117,8 +208,52 @@ export default function YearsClient({
   const devNoYearsYet = localeText("لا توجد اختبارات منشأة من المطور مميزة بعد.", "Aucun test créé par le développeur n'a encore été marqué.", "No developer-created tests have been marked yet.");
   const devNoYearsHint = localeText("يمكن تمييز الاختبارات بنجمة ⭐ في لوحة التحكم ليظهر هذا القسم فوراً.", "Vous pouvez marquer les tests avec l'étoile ⭐ dans le panneau d'administration pour les afficher ici immédiatement.", "You can mark tests with the star icon in the admin panel to display them here immediately.");
 
-  const handleExamLinkClick = async (event: any) => {
-    if (!canViewQcms) {
+  const normalizeDrivePreviewUrl = (rawUrl: string | null | undefined) => {
+    const value = (rawUrl || "").trim();
+    if (!value) return "";
+
+    const clean = value.replace(/&amp;/g, "&");
+    const directFileMatch = clean.match(/\/file\/d\/([^\/\?]+)/i);
+    if (directFileMatch?.[1]) {
+      return `https://drive.google.com/file/d/${directFileMatch[1]}/preview`;
+    }
+
+    const idMatch = clean.match(/[?&]id=([^&]+)/i);
+    if (idMatch?.[1]) {
+      return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+    }
+
+    return clean;
+  };
+
+  const getFriendlyLinkLabel = (label?: string | null, url?: string | null) => {
+    const rawLabel = (label || "").trim();
+    const safeUrl = normalizeDrivePreviewUrl(url);
+
+    if (rawLabel && !/^https?:\/\//i.test(rawLabel)) {
+      return rawLabel;
+    }
+
+    if (!safeUrl) {
+      return localeText("رابط الامتحان", "Lien d'examen", "Exam link");
+    }
+
+    try {
+      const parsed = new URL(safeUrl);
+      if (parsed.hostname.includes("drive.google.com")) return "Google Drive File";
+      return parsed.hostname.replace(/^www\./i, "");
+    } catch {
+      return localeText("رابط الامتحان", "Lien d'examen", "Exam link");
+    }
+  };
+
+  const handleStandardExamLinkClick = async (event: any) => {
+    event.preventDefault();
+    window.open(event.currentTarget.href, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDeveloperExamLinkClick = async (event: any) => {
+    if (!canViewDeveloperQcms) {
       event.preventDefault();
       setQcmLimitReached(false);
       setShowQcmLockModal(true);
@@ -348,13 +483,21 @@ export default function YearsClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
-            className="w-full"
+            className="w-full touch-pan-y overscroll-contain"
+            style={{ touchAction: "pan-y" }}
           >
-            <div className="mx-auto max-w-7xl overflow-hidden rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
-              <div className={`grid gap-0 ${selectedQcmsSubject ? "lg:grid-cols-1" : "lg:grid-cols-[1.18fr_0.82fr]"}`}>
+            <div className="mx-auto max-w-7xl overflow-x-hidden rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
+              <motion.div
+                key={qcmsViewKey}
+                initial={{ opacity: 0, x: isRtl ? 20 : -20, scale: 0.985 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: isRtl ? -18 : 18, scale: 0.985 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className={`grid gap-0 ${selectedQcmsSubject ? "lg:grid-cols-1" : "lg:grid-cols-[1.18fr_0.82fr]"}`}
+              >
                 
                 {/* Main Content Area */}
-                <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14">
+                <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14 touch-pan-y overscroll-contain">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.14),transparent_45%)]" />
                   
                   <div className="relative z-10">
@@ -365,12 +508,21 @@ export default function YearsClient({
                         <button
                           onClick={() => {
                             if (devMode) {
-                              setDevMode(false);
-                              setSelectedDevYearId(null);
-                              setSelectedDevSubjectId(null);
+                              applyQcmNavigationState({
+                                devMode: false,
+                                selectedQcmsYearId: null,
+                                selectedQcmsSubjectId: null,
+                                selectedDevYearId: null,
+                                selectedDevSubjectId: null,
+                              });
                             } else {
-                              setSelectedQcmsYearId(null);
-                              setSelectedQcmsSubjectId(null);
+                              applyQcmNavigationState({
+                                devMode: false,
+                                selectedQcmsYearId: null,
+                                selectedQcmsSubjectId: null,
+                                selectedDevYearId: null,
+                                selectedDevSubjectId: null,
+                              });
                             }
                           }}
                           className="flex items-center gap-1.5 hover:text-violet-300 transition-colors"
@@ -384,8 +536,13 @@ export default function YearsClient({
                             <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <button
                               onClick={() => {
-                                setSelectedDevYearId(null);
-                                setSelectedDevSubjectId(null);
+                                applyQcmNavigationState({
+                                  devMode: true,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                });
                               }}
                               className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1"
                             >
@@ -399,7 +556,15 @@ export default function YearsClient({
                           <>
                             <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <button
-                              onClick={() => setSelectedDevSubjectId(null)}
+                              onClick={() =>
+                                applyQcmNavigationState({
+                                  devMode: true,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: selectedDevYearId,
+                                  selectedDevSubjectId: null,
+                                })
+                              }
                               className="text-amber-300 hover:text-white transition-colors"
                             >
                               {selectedDevYear.name}
@@ -418,7 +583,15 @@ export default function YearsClient({
                           <>
                             <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <button
-                              onClick={() => setSelectedQcmsSubjectId(null)}
+                              onClick={() =>
+                                applyQcmNavigationState({
+                                  devMode: false,
+                                  selectedQcmsYearId: selectedQcmsYearId,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                })
+                              }
                               className="text-violet-300 hover:text-white transition-colors"
                             >
                               {selectedQcmsYear.name}
@@ -440,17 +613,47 @@ export default function YearsClient({
                           onClick={() => {
                             if (devMode) {
                               if (selectedDevSubject) {
-                                setSelectedDevSubjectId(null);
+                                applyQcmNavigationState({
+                                  devMode: true,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: selectedDevYearId,
+                                  selectedDevSubjectId: null,
+                                });
                               } else if (selectedDevYear) {
-                                setSelectedDevYearId(null);
+                                applyQcmNavigationState({
+                                  devMode: true,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                });
                               } else {
-                                setDevMode(false);
+                                applyQcmNavigationState({
+                                  devMode: false,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                });
                               }
                             } else {
                               if (selectedQcmsSubject) {
-                                setSelectedQcmsSubjectId(null);
+                                applyQcmNavigationState({
+                                  devMode: false,
+                                  selectedQcmsYearId: selectedQcmsYearId,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                });
                               } else {
-                                setSelectedQcmsYearId(null);
+                                applyQcmNavigationState({
+                                  devMode: false,
+                                  selectedQcmsYearId: null,
+                                  selectedQcmsSubjectId: null,
+                                  selectedDevYearId: null,
+                                  selectedDevSubjectId: null,
+                                });
                               }
                             }
                           }}
@@ -656,7 +859,15 @@ export default function YearsClient({
                               {selectedDevYear.subjects.map((subject: any) => (
                                 <button
                                   key={subject.id}
-                                  onClick={() => setSelectedDevSubjectId(subject.id)}
+                                  onClick={() =>
+                                    applyQcmNavigationState({
+                                      devMode: true,
+                                      selectedQcmsYearId: null,
+                                      selectedQcmsSubjectId: null,
+                                      selectedDevYearId: selectedDevYearId,
+                                      selectedDevSubjectId: subject.id,
+                                    })
+                                  }
                                   className="group relative flex flex-col justify-between rounded-3xl border border-amber-200 bg-[#fffaf3] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400 hover:bg-[#fff1d6] hover:shadow-2xl hover:shadow-amber-500/20 dark:border-amber-500/30 dark:bg-[#160f02] dark:hover:bg-[#201503]"
                                 >
                                   <div>
@@ -717,8 +928,13 @@ export default function YearsClient({
                               <button
                                 key={year.id}
                                 onClick={() => {
-                                  setSelectedDevYearId(year.id);
-                                  setSelectedDevSubjectId(null);
+                                  applyQcmNavigationState({
+                                    devMode: true,
+                                    selectedQcmsYearId: null,
+                                    selectedQcmsSubjectId: null,
+                                    selectedDevYearId: year.id,
+                                    selectedDevSubjectId: null,
+                                  });
                                 }}
                                 className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-amber-300 bg-gradient-to-br from-[#fffaf0] via-[#fff1d6] to-[#fef3c7] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/30 dark:border-amber-500/40 dark:from-[#1a1202] dark:via-[#241804] dark:to-[#120c01]"
                               >
@@ -804,42 +1020,47 @@ export default function YearsClient({
 
                           {(selectedQcmsSubject.examLinks || []).length > 0 ? (
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                              {(selectedQcmsSubject.examLinks || []).map((link: any, idx: number) => (
-                                <div
-                                  key={link.id}
-                                  className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-[#102138] to-[#0c182b] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
-                                >
-                                  {/* Top Paper Header */}
-                                  <div>
-                                    <div className="mb-4 flex items-center justify-between">
-                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 text-violet-300 group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all">
-                                        <NotebookPen className="h-5.5 w-5.5" />
+                              {(selectedQcmsSubject.examLinks || []).map((link: any, idx: number) => {
+                                const safeUrl = normalizeDrivePreviewUrl(link?.url);
+                                const displayLabel = getFriendlyLinkLabel(link?.label, safeUrl);
+
+                                return (
+                                  <div
+                                    key={link.id}
+                                    className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-[#102138] to-[#0c182b] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
+                                  >
+                                    {/* Top Paper Header */}
+                                    <div>
+                                      <div className="mb-4 flex items-center justify-between">
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 text-violet-300 group-hover:scale-110 group-hover:from-violet-500 group-hover:to-cyan-500 group-hover:text-white transition-all">
+                                          <NotebookPen className="h-5.5 w-5.5" />
+                                        </div>
+                                        <span className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-violet-300 transition-colors">
+                                          PAPER #{idx + 1}
+                                        </span>
                                       </div>
-                                      <span className="rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-violet-300 transition-colors">
-                                        PAPER #{idx + 1}
-                                      </span>
+
+                                      <h5 className="my-3 text-lg font-black leading-snug text-white group-hover:text-violet-200 transition-colors">
+                                        {displayLabel}
+                                      </h5>
                                     </div>
 
-                                    <h5 className="my-3 text-lg font-black leading-snug text-white group-hover:text-violet-200 transition-colors">
-                                      {link.label}
-                                    </h5>
+                                    {/* Bottom Action CTA Button */}
+                                    <div className="mt-6 pt-4 border-t border-slate-800/80">
+                                      <a
+                                        href={safeUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        onClick={handleStandardExamLinkClick}
+                                        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3.5 px-4 text-xs font-black text-white shadow-lg shadow-violet-600/30 transition-all hover:scale-[1.02] hover:shadow-violet-600/50 active:scale-[0.98]"
+                                      >
+                                        <span>{localeText("بدء الامتحان الآن", "Commencer l'examen maintenant", "Start Exam Now")}</span>
+                                        <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+                                      </a>
+                                    </div>
                                   </div>
-
-                                  {/* Bottom Action CTA Button */}
-                                  <div className="mt-6 pt-4 border-t border-slate-800/80">
-                                    <a
-                                      href={link.url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      onClick={handleExamLinkClick}
-                                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3.5 px-4 text-xs font-black text-white shadow-lg shadow-violet-600/30 transition-all hover:scale-[1.02] hover:shadow-violet-600/50 active:scale-[0.98]"
-                                    >
-                                      <span>{localeText("بدء الامتحان الآن", "Commencer l'examen maintenant", "Start Exam Now")}</span>
-                                      <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           ) : (
                             /* Empty Exam Links State */
@@ -895,7 +1116,15 @@ export default function YearsClient({
                               {selectedQcmsYear.subjects.map((subject: any) => (
                                 <button
                                   key={subject.id}
-                                  onClick={() => setSelectedQcmsSubjectId(subject.id)}
+                                  onClick={() =>
+                                    applyQcmNavigationState({
+                                      devMode: false,
+                                      selectedQcmsYearId: selectedQcmsYearId,
+                                      selectedQcmsSubjectId: subject.id,
+                                      selectedDevYearId: null,
+                                      selectedDevSubjectId: null,
+                                    })
+                                  }
                                   className="group relative flex flex-col justify-between rounded-3xl border border-slate-800 bg-[#0c182b] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-400/50 hover:bg-[#11223b] hover:shadow-2xl hover:shadow-cyan-500/15"
                                 >
                                   <div>
@@ -957,8 +1186,13 @@ export default function YearsClient({
                               <button
                                 key={year.id}
                                 onClick={() => {
-                                  setSelectedQcmsYearId(year.id);
-                                  setSelectedQcmsSubjectId(null);
+                                  applyQcmNavigationState({
+                                    devMode: false,
+                                    selectedQcmsYearId: year.id,
+                                    selectedQcmsSubjectId: null,
+                                    selectedDevYearId: null,
+                                    selectedDevSubjectId: null,
+                                  });
                                 }}
                                 className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-slate-800 bg-gradient-to-br from-[#0c182b] via-[#0f1e35] to-[#091222] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-violet-400/50 hover:shadow-2xl hover:shadow-violet-500/20"
                               >
@@ -1014,7 +1248,7 @@ export default function YearsClient({
 
                 {/* SIDEBAR DASHBOARD OVERVIEW PANEL (Visible when no subject selected) */}
                 {!selectedQcmsSubject && (
-                  <aside className="relative overflow-hidden border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+                  <aside className="relative overflow-x-hidden border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10 touch-pan-y overscroll-contain">
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.18),transparent_60%)]" />
                     <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
                       
@@ -1085,13 +1319,17 @@ export default function YearsClient({
                             <div className="mt-4">
                               <button
                                 onClick={() => {
-                                  if (!canViewQcms) {
+                                  if (!canViewDeveloperQcms) {
                                     setShowQcmLockModal(true);
                                     return;
                                   }
-                                  setDevMode(true);
-                                  setSelectedDevYearId(null);
-                                  setSelectedDevSubjectId(null);
+                                  applyQcmNavigationState({
+                                    devMode: true,
+                                    selectedQcmsYearId: null,
+                                    selectedQcmsSubjectId: null,
+                                    selectedDevYearId: null,
+                                    selectedDevSubjectId: null,
+                                  });
                                 }}
                                 className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl p-4 text-start shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/20"
                                 style={{
@@ -1147,7 +1385,7 @@ export default function YearsClient({
                     </div>
                   </aside>
                 )}
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         )}

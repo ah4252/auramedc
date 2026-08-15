@@ -172,6 +172,43 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     setPendingLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const normalizeDrivePreviewUrl = (rawUrl: string) => {
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return "";
+
+    if (trimmed.includes("drive.google.com")) {
+      const directFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([^\/\?]+)/i);
+      if (directFileMatch?.[1]) {
+        return `https://drive.google.com/file/d/${directFileMatch[1]}/preview`;
+      }
+
+      const idMatch = trimmed.match(/[?&]id=([^&]+)/i);
+      if (idMatch?.[1]) {
+        return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+      }
+    }
+
+    return trimmed;
+  };
+
+  const inferLinkLabel = (rawUrl: string, fallbackLabel?: string) => {
+    const trimmedFallback = (fallbackLabel || "").trim();
+    if (trimmedFallback) return trimmedFallback;
+
+    const cleanUrl = rawUrl.trim();
+    if (!cleanUrl) return "Exam link";
+
+    try {
+      const parsed = new URL(cleanUrl);
+      if (parsed.hostname.includes("drive.google.com")) {
+        return "Google Drive File";
+      }
+      return parsed.hostname.replace(/^www\./i, "");
+    } catch {
+      return "Exam link";
+    }
+  };
+
   // حفظ جميع الروابط المعلّقة دفعة واحدة مع تحديث فوري للحالة
   const handleSaveAllLinks = async () => {
     if (!modalSubjectId) return;
@@ -183,9 +220,10 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
         if (rawUrl && !/^https?:\/\//i.test(rawUrl)) {
           formattedUrl = `https://${rawUrl}`;
         }
+        const finalUrl = normalizeDrivePreviewUrl(formattedUrl);
         return {
-          label: r.label.trim(),
-          url: formattedUrl,
+          label: inferLinkLabel(finalUrl, r.label),
+          url: finalUrl,
           isFeatured: !!r.isFeatured
         };
       })
