@@ -8,6 +8,10 @@ function isMissingTableError(error: any) {
   return error?.code === "P2021" || /does not exist in the current database|table .* does not exist/i.test(error?.message || "");
 }
 
+function isDatabaseUnavailableError(error: any) {
+  return error?.code === "P1001" || /Can't reach database server|connection.*refused|ECONNREFUSED|database server.*running|timeout/i.test(error?.message || "");
+}
+
 function isQcmsClientReady() {
   return Boolean((prisma as any).qcmsYear && (prisma as any).qcmsSubject);
 }
@@ -39,8 +43,8 @@ export async function getQcmsYears() {
       orderBy: { createdAt: "asc" }
     });
   } catch (error) {
-    if (isMissingTableError(error)) {
-      console.warn("QCMS table is not available in database yet:", (error as any).message);
+    if (isMissingTableError(error) || isDatabaseUnavailableError(error)) {
+      console.warn("QCMS database is unavailable or table is missing:", (error as any)?.message || error);
       return [];
     }
 
@@ -249,6 +253,11 @@ export async function getDevFeaturedYears() {
 
     return years;
   } catch (error) {
+    if (isMissingTableError(error) || isDatabaseUnavailableError(error)) {
+      console.warn("Dev featured QCMS years unavailable:", (error as any)?.message || error);
+      return [];
+    }
+
     console.error("Error fetching dev featured years:", error);
     return [];
   }

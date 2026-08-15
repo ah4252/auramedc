@@ -127,6 +127,16 @@ function isDatabaseUnavailableError(error: any): boolean {
   );
 }
 
+function isQcmSubscriptionTransactionId(transactionId: string | null | undefined): boolean {
+  const value = String(transactionId ?? "").trim();
+  if (!value) return false;
+
+  if (/^(QCM|ALL)(:|$)/i.test(value)) return true;
+  if (/^(GPA|TIMETABLE|SUPPORT)(:|$)/i.test(value)) return false;
+
+  return !value.includes(":");
+}
+
 export async function canAccessPharmacy(): Promise<boolean> {
   try {
     const userId = await getCurrentUserId();
@@ -159,18 +169,15 @@ export async function canAccessQcms(): Promise<boolean> {
 
     if (isSubscriptionExemptEmail(user?.email ?? null)) return true;
 
-    const approved = await prisma.subscriptionRequest.findFirst({
+    const approvedRequests = await prisma.subscriptionRequest.findMany({
       where: {
         userId,
         status: "APPROVED",
-        OR: [
-          { transactionId: { startsWith: "QCM:" } },
-          { transactionId: { startsWith: "ALL:" } },
-          { transactionId: { not: { contains: ":" } } }
-        ]
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const approved = approvedRequests.find((request: any) => isQcmSubscriptionTransactionId(request?.transactionId)) ?? null;
 
     if (!approved) return false;
 

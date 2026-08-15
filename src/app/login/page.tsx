@@ -77,7 +77,7 @@ export default function LoginPage() {
     setTimeout(() => {
       router.push(redirectPath);
       router.refresh();
-    }, 1400);
+    }, 700);
   };
 
   // Forgot password modal state
@@ -193,10 +193,10 @@ export default function LoginPage() {
             className="fixed inset-0 z-50 flex items-center justify-center bg-[#020817]/90 backdrop-blur-xl"
           >
             <motion.div
-              initial={{ scale: 0.88, opacity: 0, y: 20 }}
+              initial={{ scale: 0.96, opacity: 0, y: 6 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.96, opacity: 0, y: 10 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              exit={{ scale: 0.98, opacity: 0, y: 4 }}
+              transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col items-center justify-center gap-6 px-8"
             >
               <div className="relative flex items-center justify-center">
@@ -224,9 +224,9 @@ export default function LoginPage() {
       </AnimatePresence>
 
       <motion.div 
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        initial={{ opacity: 0, y: 8, scale: 0.99 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[480px] relative z-10"
       >
         <div className={`${theme === 'dark' ? 'bg-[#0f172a]/70 text-white border-white/5' : 'bg-white/90 text-slate-900 border-slate-300'} backdrop-blur-2xl rounded-[3rem] shadow-[0_0_80px_-20px_rgba(14,165,233,0.25)] border p-8 md:p-12 relative overflow-hidden`}>
@@ -249,10 +249,10 @@ export default function LoginPage() {
               <AnimatePresence>
                 {showLangMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: -8 }}
+                    initial={{ opacity: 0, y: -3 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.1, ease: [0.22, 1, 0.36, 1] }}
                     className={`mt-2 w-48 rounded-[1.5rem] border border-white/10 bg-slate-950/95 shadow-2xl shadow-slate-900/40 overflow-hidden backdrop-blur-3xl ${isRtl ? "left-0" : "right-0"}`}
                     style={{ transformOrigin: isRtl ? "left top" : "right top" }}
                   >
@@ -307,6 +307,7 @@ export default function LoginPage() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
                 className="overflow-hidden mb-6"
               >
                 <div className={`p-4 rounded-2xl text-sm font-black text-center border flex items-center justify-center gap-2 ${error ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-medical-500/10 text-medical-300 border-medical-500/20'}`}>
@@ -411,10 +412,10 @@ export default function LoginPage() {
               className="absolute inset-0 bg-black/70 backdrop-blur-md"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", damping: 25 }}
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="relative w-full max-w-md bg-[#0f172a] rounded-[2.5rem] border border-slate-700/50 shadow-[0_0_80px_-10px_rgba(14,165,233,0.3)] overflow-hidden"
             >
               {/* Top accent line */}
@@ -558,10 +559,10 @@ export default function LoginPage() {
               className="absolute inset-0 bg-black/75 backdrop-blur-md"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", damping: 25 }}
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
               className="relative w-full max-w-md bg-[#0f172a] rounded-[2.5rem] border border-slate-700/50 shadow-[0_0_80px_-10px_rgba(16,185,129,0.3)] overflow-hidden"
             >
               {/* Top accent line */}

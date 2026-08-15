@@ -2,7 +2,17 @@
 
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
-import { isAdmin as checkIsAdmin } from "@/lib/auth-helpers";
+import { isAdmin as checkIsAdmin, isSubscriptionExemptEmail } from "@/lib/auth-helpers";
+
+function isQcmSubscriptionTransactionId(transactionId: string | null | undefined): boolean {
+  const value = String(transactionId ?? "").trim();
+  if (!value) return false;
+
+  if (/^(QCM|ALL)(:|$)/i.test(value)) return true;
+  if (/^(GPA|TIMETABLE|SUPPORT)(:|$)/i.test(value)) return false;
+
+  return !value.includes(":");
+}
 
 export async function submitSubscriptionRequest(transactionId: string, paymentDate: string, receiptUrl?: string) {
   try {
@@ -46,15 +56,13 @@ export async function updateSubscriptionStatus(requestId: string, newStatus: str
       where: { id: requestId },
     });
 
+    const isQcmRequest = isQcmSubscriptionTransactionId(request?.transactionId);
+
     await (prisma as any).subscriptionRequest.update({
       where: { id: requestId },
       data: {
         status: newStatus,
-        ...(newStatus === "APPROVED" && (
-          String(request?.transactionId || "").startsWith("QCM:") ||
-          String(request?.transactionId || "").startsWith("ALL:") ||
-          !String(request?.transactionId || "").includes(":")
-        ) ? { usedViews: 0, maxViews: 5 } : {}),
+        ...(newStatus === "APPROVED" && isQcmRequest ? { usedViews: 0, maxViews: 5 } : {}),
       }
     });
 
@@ -74,18 +82,24 @@ export async function getQcmRemainingViews() {
       return { allowed: false, remaining: 0, maxViews: 5 };
     }
 
-    const request = await (prisma as any).subscriptionRequest.findFirst({
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    if (isSubscriptionExemptEmail(user?.email ?? null)) {
+      return { allowed: true, remaining: 5, maxViews: 5 };
+    }
+
+    const requests = await (prisma as any).subscriptionRequest.findMany({
       where: {
         userId,
         status: "APPROVED",
-        OR: [
-          { transactionId: { startsWith: "QCM:" } },
-          { transactionId: { startsWith: "ALL:" } },
-          { transactionId: { not: { contains: ":" } } },
-        ],
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const request = requests.find((item: any) => isQcmSubscriptionTransactionId(item?.transactionId)) ?? null;
 
     if (!request) {
       return { allowed: false, remaining: 0, maxViews: 5 };
@@ -115,18 +129,24 @@ export async function consumeQcmView() {
       return { allowed: false, remaining: 0, message: "login" };
     }
 
-    const request = await (prisma as any).subscriptionRequest.findFirst({
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    if (isSubscriptionExemptEmail(user?.email ?? null)) {
+      return { allowed: true, remaining: 5, message: "ok" };
+    }
+
+    const requests = await (prisma as any).subscriptionRequest.findMany({
       where: {
         userId,
         status: "APPROVED",
-        OR: [
-          { transactionId: { startsWith: "QCM:" } },
-          { transactionId: { startsWith: "ALL:" } },
-          { transactionId: { not: { contains: ":" } } },
-        ],
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const request = requests.find((item: any) => isQcmSubscriptionTransactionId(item?.transactionId)) ?? null;
 
     if (!request) {
       return { allowed: false, remaining: 0, message: "missing" };
