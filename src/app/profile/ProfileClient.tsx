@@ -26,13 +26,24 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [subscriptionType, setSubscriptionType] = useState(searchParams.get("subscriptionType") === "QCM" ? "QCM" : "TIMETABLE");
+  const [subscriptionType, setSubscriptionType] = useState(() => {
+    const type = searchParams.get("subscriptionType");
+    if (type === "GPA") return "GPA";
+    if (type === "QCM") return "QCM";
+    if (type === "TIMETABLE") return "TIMETABLE";
+    return "TIMETABLE";
+  });
   const [receiptBase64, setReceiptBase64] = useState("");
 
   useEffect(() => {
-    const qcmParam = searchParams.get("subscriptionType");
-    if (qcmParam === "QCM") {
-      setSubscriptionType("QCM");
+    const type = searchParams.get("subscriptionType");
+    const requestedTab = searchParams.get("tab");
+
+    if (type === "GPA" || type === "QCM" || type === "TIMETABLE") {
+      setSubscriptionType(type);
+    }
+
+    if (requestedTab === "subscription" || type === "GPA" || type === "QCM" || type === "TIMETABLE") {
       setActiveTab("subscription");
     }
   }, [searchParams]);

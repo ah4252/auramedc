@@ -27,6 +27,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
   const [exportLoading, setExportLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showUsageModal, setShowUsageModal] = useState(false);
   const [didRedirect, setDidRedirect] = useState(false);
   const [reportId, setReportId] = useState("MP-00000");
 
@@ -238,6 +239,17 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
           </motion.div>
           <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4">{t("gpa_page_title")}</h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg">{t("gpa_page_description")}</p>
+
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowUsageModal(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] hover:shadow-amber-600/40 active:scale-95"
+            >
+              <Info className="h-4 w-4" />
+              دليل الاستخدام
+            </button>
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -601,6 +613,94 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
           </div>
         </div>
       </div>
+
+      {/* Usage Guide Modal */}
+      <AnimatePresence>
+        {showUsageModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUsageModal(false)}
+              className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 18 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 18 }}
+              className="relative z-10 w-[min(92vw,42rem)] max-h-[85vh] overflow-hidden rounded-[1.75rem] border border-amber-400/30 bg-[#111827] text-white shadow-[0_0_60px_rgba(251,146,60,0.2)]"
+              dir="rtl"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 px-4 py-4 sm:px-6 sm:py-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 sm:h-11 sm:w-11">
+                      <Info className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-100/80 sm:text-xs">Guide</p>
+                      <h3 className="text-lg font-black sm:text-2xl">دليل الاستخدام</h3>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowUsageModal(false)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg font-black transition hover:bg-white/20 sm:h-10 sm:w-10"
+                    aria-label="إغلاق"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className="gpa-guide-scroll max-h-[calc(85vh-96px)] min-h-0 space-y-4 overflow-y-auto p-4 pr-3 text-sm leading-7 text-slate-200 sm:p-6 sm:pr-5"
+                style={{
+                  WebkitOverflowScrolling: "touch",
+                  overflowY: "auto",
+                }}
+              >
+                <div className="rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5">
+                  <h4 className="mb-2 text-base font-black text-amber-300">كيف تستخدم الحاسبة؟</h4>
+                  <p>
+                    اختر السنة الدراسية أولاً، ثم أدخل علامة كل مادة في الخانة المخصصة لها. الحاسبة تجمع العلامات مع معامل المادة تلقائيًا وتظهر لك المعدل النهائي فوراً.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5">
+                  <h4 className="mb-2 text-base font-black text-amber-300">الحد المسموح به</h4>
+                  <p>
+                    الحد المسموح للتنزيل أو التصدير هو <span className="font-black text-white">2 تنزيلات</span> لكل سنة إذا لم يكن لديك اشتراك فعّال. إذا كان لديك اشتراك، يضاف إلى الحد عدد إضافي بحسب عدد الاشتراكات الفعالة.
+                  </p>
+                  <p className="mt-2 text-amber-200">
+                    مثال: بدون اشتراك = 2 تنزيلات، مع اشتراك = 2 + 5 × عدد الاشتراكات.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5">
+                  <h4 className="mb-2 text-base font-black text-amber-300">كيفية الاشتراك</h4>
+                  <p>
+                    يمكنك الاشتراك من صفحة الملف الشخصي داخل قسم الاشتراكات، ثم اختيار نوع اشتراك المعدل المناسب. بعد الموافقة، ستتمكن من استخدام ميزات إضافية مثل التنزيلات المتعددة وحفظ النتيجات.
+                  </p>
+                </div>
+
+                <div className="pt-1">
+                  <Link
+                    href="/profile?tab=subscription&subscriptionType=GPA"
+                    onClick={() => setShowUsageModal(false)}
+                    className="block w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-center font-black text-white shadow-lg shadow-amber-600/20 transition hover:brightness-110"
+                  >
+                    الاشتراك الآن
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Payment Modal */}
       <AnimatePresence>
