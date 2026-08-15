@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   Calendar, BookOpen, Layers, NotebookPen, Plus, Trash2, RefreshCw, Save, 
-  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X, TrendingUp 
+  CheckCircle2, AlertCircle, Link as LinkIcon, ExternalLink, X, TrendingUp, Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   createQcmsYear, deleteQcmsYear, 
   createQcmsSubject, deleteQcmsSubject, 
-  createQcmsExamLink, deleteQcmsExamLink 
+  createQcmsExamLink, deleteQcmsExamLink,
+  updateQcmsExamLinkFeatured
 } from "@/app/actions/qcmsAdmin";
 
 export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: any[] }) {
@@ -43,7 +44,7 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
   // حالة النافذة المنبثقة (Modal) لإدارة وروابط المادة
   const [modalSubjectId, setModalSubjectId] = useState<string | null>(null);
-  const [pendingLinks, setPendingLinks] = useState<{ label: string; url: string }[]>([{ label: "", url: "" }]);
+  const [pendingLinks, setPendingLinks] = useState<{ label: string; url: string; isFeatured?: boolean }[]>([{ label: "", url: "", isFeatured: false }]);
   const [modalStatus, setModalStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const activeYear = years.find((y: any) => y.id === activeYearId) || null;
@@ -143,24 +144,24 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
   // فتح النافذة المنبثقة لإدارة روابط مادة معينة
   const openLinksModal = (subject: any) => {
     setModalSubjectId(subject.id);
-    setPendingLinks([{ label: "", url: "" }]);
+    setPendingLinks([{ label: "", url: "", isFeatured: false }]);
     setModalStatus(null);
   };
 
   // إغلاق النافذة المنبثقة
   const closeLinksModal = () => {
     setModalSubjectId(null);
-    setPendingLinks([{ label: "", url: "" }]);
+    setPendingLinks([{ label: "", url: "", isFeatured: false }]);
     setModalStatus(null);
   };
 
   // إضافة صف رابط جديد فارغ (إمكانية إضافة مالا نهاية من الروابط)
   const handleAddPendingRow = () => {
-    setPendingLinks((prev) => [...prev, { label: "", url: "" }]);
+    setPendingLinks((prev) => [...prev, { label: "", url: "", isFeatured: false }]);
   };
 
   // تحديث قيمة حقل في صف معين
-  const handlePendingChange = (index: number, field: "label" | "url", value: string) => {
+  const handlePendingChange = (index: number, field: "label" | "url" | "isFeatured", value: string | boolean) => {
     setPendingLinks((prev) =>
       prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
     );
@@ -184,7 +185,8 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
         }
         return {
           label: r.label.trim(),
-          url: formattedUrl
+          url: formattedUrl,
+          isFeatured: !!r.isFeatured
         };
       })
       .filter((r) => r.label && r.url);
@@ -199,13 +201,14 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
     const newSavedLinks: any[] = [];
 
     for (const row of prepared) {
-      const res = await createQcmsExamLink(modalSubjectId, row.label, row.url);
+      const res = await createQcmsExamLink(modalSubjectId, row.label, row.url, row.isFeatured);
       if ((res as any).success) {
         savedCount++;
         newSavedLinks.push({
           id: (res as any).id || `temp-${Date.now()}-${Math.random()}`,
           label: row.label,
           url: row.url,
+          isFeatured: row.isFeatured,
           qcmsSubjectId: modalSubjectId
         });
       }
@@ -229,11 +232,41 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
         }))
       );
 
-      setPendingLinks([{ label: "", url: "" }]);
+      setPendingLinks([{ label: "", url: "", isFeatured: false }]);
       setModalStatus({ type: "success", message: `✓ تم حفظ ${savedCount} رابط بنجاح!` });
       router.refresh();
     } else {
       setModalStatus({ type: "error", message: "حدث خطأ أثناء ترحيل الروابط" });
+    }
+  };
+
+  // تبديل حالة التمييز (نجمة) لرابط امتحان
+  const handleToggleFeatured = async (linkId: string, currentFeatured: boolean) => {
+    setLoading(true);
+    const res = await updateQcmsExamLinkFeatured(linkId, !currentFeatured);
+    setLoading(false);
+
+    if ((res as any).success) {
+      setYears((prevYears) =>
+        prevYears.map((year) => ({
+          ...year,
+          subjects: (year.subjects || []).map((subj: any) => {
+            if (subj.id === modalSubjectId) {
+              return {
+                ...subj,
+                examLinks: (subj.examLinks || []).map((l: any) =>
+                  l.id === linkId ? { ...l, isFeatured: !currentFeatured } : l
+                )
+              };
+            }
+            return subj;
+          })
+        }))
+      );
+      setModalStatus({ type: "success", message: !currentFeatured ? "⭐ تم تحديد الرابط كاختبار مطور!" : "تم إلغاء تمييز الرابط" });
+      router.refresh();
+    } else {
+      setModalStatus({ type: "error", message: (res as any).error || "حدث خطأ" });
     }
   };
 
@@ -623,9 +656,16 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
 
                   <div className="space-y-2.5 max-h-48 overflow-y-auto pl-1">
                     {(modalSubject.examLinks || []).map((link: any) => (
-                      <div key={link.id} className="flex items-center justify-between rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3 transition hover:bg-violet-500/10">
+                      <div key={link.id} className={`flex items-center justify-between rounded-xl border px-4 py-3 transition ${
+                        link.isFeatured
+                          ? "border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-yellow-500/5"
+                          : "border-violet-500/20 bg-violet-500/5 hover:bg-violet-500/10"
+                      }`}>
                         <div className="min-w-0 flex-1 ml-3">
-                          <div className="truncate text-sm font-black text-violet-200">{link.label}</div>
+                          <div className="flex items-center gap-2 truncate">
+                            {link.isFeatured && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />}
+                            <span className={`truncate text-sm font-black ${link.isFeatured ? "text-amber-200" : "text-violet-200"}`}>{link.label}</span>
+                          </div>
                           <a
                             href={link.url}
                             target="_blank"
@@ -636,14 +676,29 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                             <span className="truncate">{link.url}</span>
                           </a>
                         </div>
-                        <button
-                          type="button"
-                          className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/15 hover:text-rose-300 transition shrink-0"
-                          onClick={() => handleDeleteExamLink(link.id)}
-                          title="حذف الرابط"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            className={`rounded-lg p-2 transition ${
+                              link.isFeatured
+                                ? "text-amber-400 bg-amber-500/20 hover:bg-amber-500/30"
+                                : "text-slate-500 hover:bg-amber-500/15 hover:text-amber-400"
+                            }`}
+                            onClick={() => handleToggleFeatured(link.id, link.isFeatured || false)}
+                            title={link.isFeatured ? "إلغاء التمييز" : "تمييز كاختبار مطور"}
+                            disabled={loading}
+                          >
+                            <Star className={`w-4 h-4 ${link.isFeatured ? "fill-amber-400" : ""}`} />
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/15 hover:text-rose-300 transition"
+                            onClick={() => handleDeleteExamLink(link.id)}
+                            title="حذف الرابط"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
 
@@ -681,13 +736,27 @@ export default function QcmsAdminClient({ initialYears = [] }: { initialYears?: 
                             value={row.label}
                             onChange={(e) => handlePendingChange(idx, "label", e.target.value)}
                           />
-                          <input
-                            className="admin-input"
-                            dir="ltr"
-                            placeholder="https://drive.google.com/..."
-                            value={row.url}
-                            onChange={(e) => handlePendingChange(idx, "url", e.target.value)}
-                          />
+                          <div className="flex gap-2">
+                            <input
+                              className="admin-input flex-1"
+                              dir="ltr"
+                              placeholder="https://drive.google.com/..."
+                              value={row.url}
+                              onChange={(e) => handlePendingChange(idx, "url", e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handlePendingChange(idx, "isFeatured", !row.isFeatured)}
+                              className={`flex items-center justify-center rounded-xl border p-2.5 transition shrink-0 ${
+                                row.isFeatured 
+                                  ? "border-amber-500/50 bg-amber-500/10 text-amber-400" 
+                                  : "border-slate-700 bg-slate-800 text-slate-500 hover:bg-slate-700"
+                              }`}
+                              title={row.isFeatured ? "إزالة من اختبارات المطور" : "إضافة إلى اختبارات المطور"}
+                            >
+                              <Star className={`w-4 h-4 ${row.isFeatured ? "fill-amber-400" : ""}`} />
+                            </button>
+                          </div>
                         </div>
                         {pendingLinks.length > 1 && (
                           <button

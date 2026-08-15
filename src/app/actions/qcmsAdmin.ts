@@ -26,6 +26,7 @@ export async function getQcmsYears() {
     if ((prisma as any).qcmsExamLink) {
       includeSubjects.include = {
         examLinks: {
+          where: { isFeatured: false },
           orderBy: { createdAt: "asc" }
         }
       };
@@ -149,7 +150,7 @@ export async function deleteQcmsSubject(id: string) {
   }
 }
 
-export async function createQcmsExamLink(qcmsSubjectId: string, label: string, url: string) {
+export async function createQcmsExamLink(qcmsSubjectId: string, label: string, url: string, isFeatured: boolean = false) {
   await requireAdmin();
 
   if (!(prisma as any).qcmsExamLink) {
@@ -161,7 +162,8 @@ export async function createQcmsExamLink(qcmsSubjectId: string, label: string, u
       data: {
         qcmsSubjectId,
         label: label.trim(),
-        url: url.trim()
+        url: url.trim(),
+        isFeatured
       }
     });
     revalidatePath("/admin/qcms");
@@ -201,3 +203,55 @@ export async function deleteQcmsExamLink(id: string) {
   }
 }
 
+export async function updateQcmsExamLinkFeatured(id: string, isFeatured: boolean) {
+  await requireAdmin();
+
+  if (!(prisma as any).qcmsExamLink) {
+    return { error: "نموذج Prisma رابط امتحان QCMS غير مُولَّد في العميل الحالي" };
+  }
+
+  try {
+    await (prisma as any).qcmsExamLink.update({
+      where: { id },
+      data: { isFeatured }
+    });
+    revalidatePath("/admin/qcms");
+    revalidatePath("/courses");
+    revalidatePath("/qcms");
+    return { success: true };
+  } catch (error) {
+    if (isMissingTableError(error)) {
+      return { error: "جدول روابط QCMS غير موجود في قاعدة البيانات" };
+    }
+    console.error("Error updating QCMS exam link featured status:", error);
+    return { error: "فشل في تحديث حالة الرابط" };
+  }
+}
+
+export async function getDevFeaturedYears() {
+  try {
+    if (!(prisma as any).qcmsYear) return [];
+
+    const years = await (prisma as any).qcmsYear.findMany({
+      include: {
+        subjects: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            examLinks: {
+              where: { isFeatured: true },
+              orderBy: { createdAt: "asc" }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: "asc" }
+    });
+
+    return years.filter((y: any) =>
+      (y.subjects || []).some((s: any) => (s.examLinks || []).length > 0)
+    );
+  } catch (error) {
+    console.error("Error fetching dev featured years:", error);
+    return [];
+  }
+}

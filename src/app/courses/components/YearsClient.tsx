@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, ArrowRight, NotebookPen } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, ArrowRight, NotebookPen, Star, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
 
@@ -21,11 +21,13 @@ export default function YearsClient({
   yearCategories, 
   pharmacyCategories,
   qcmsYears = [],
+  devFeaturedYears = [],
   canViewPharmacy = false,
 }: { 
   yearCategories: any[]; 
   pharmacyCategories: PharmacySection[]; 
   qcmsYears?: any[];
+  devFeaturedYears?: any[];
   canViewPharmacy?: boolean;
 }) {
   const searchParams = useSearchParams();
@@ -38,6 +40,11 @@ export default function YearsClient({
   const [selectedQcmsYearId, setSelectedQcmsYearId] = useState<string | null>(null);
   const [selectedQcmsSubjectId, setSelectedQcmsSubjectId] = useState<string | null>(null);
 
+  // Developer mode state
+  const [devMode, setDevMode] = useState(false);
+  const [selectedDevYearId, setSelectedDevYearId] = useState<string | null>(null);
+  const [selectedDevSubjectId, setSelectedDevSubjectId] = useState<string | null>(null);
+
   const filteredPharmacy = pharmacyCategories.filter(s =>
     s.name.toLowerCase().includes(pharmacySearch.toLowerCase()) ||
     (s.description || "").toLowerCase().includes(pharmacySearch.toLowerCase())
@@ -45,6 +52,9 @@ export default function YearsClient({
 
   const selectedQcmsYear = qcmsYears.find((y: any) => y.id === selectedQcmsYearId) || null;
   const selectedQcmsSubject = selectedQcmsYear?.subjects?.find((s: any) => s.id === selectedQcmsSubjectId) || null;
+
+  const selectedDevYear = devFeaturedYears.find((y: any) => y.id === selectedDevYearId) || null;
+  const selectedDevSubject = selectedDevYear?.subjects?.find((s: any) => s.id === selectedDevSubjectId) || null;
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-16" dir={isRtl ? "rtl" : "ltr"}>
@@ -217,8 +227,14 @@ export default function YearsClient({
                       <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-400">
                         <button
                           onClick={() => {
-                            setSelectedQcmsYearId(null);
-                            setSelectedQcmsSubjectId(null);
+                            if (devMode) {
+                              setDevMode(false);
+                              setSelectedDevYearId(null);
+                              setSelectedDevSubjectId(null);
+                            } else {
+                              setSelectedQcmsYearId(null);
+                              setSelectedQcmsSubjectId(null);
+                            }
                           }}
                           className="flex items-center gap-1.5 hover:text-violet-300 transition-colors"
                         >
@@ -226,7 +242,42 @@ export default function YearsClient({
                           <span>{isRtl ? "مركز QCMs الطبي" : "QCM Center"}</span>
                         </button>
 
-                        {selectedQcmsYear && (
+                        {devMode && (
+                          <>
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
+                            <button
+                              onClick={() => {
+                                setSelectedDevYearId(null);
+                                setSelectedDevSubjectId(null);
+                              }}
+                              className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1"
+                            >
+                              <Star className="w-3 h-3 fill-amber-400" />
+                              <span>اختبارات أنشأها المطور</span>
+                            </button>
+                          </>
+                        )}
+
+                        {devMode && selectedDevYear && (
+                          <>
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
+                            <button
+                              onClick={() => setSelectedDevSubjectId(null)}
+                              className="text-amber-300 hover:text-white transition-colors"
+                            >
+                              {selectedDevYear.name}
+                            </button>
+                          </>
+                        )}
+
+                        {devMode && selectedDevSubject && (
+                          <>
+                            <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
+                            <span className="text-yellow-300 font-black">{selectedDevSubject.name}</span>
+                          </>
+                        )}
+
+                        {!devMode && selectedQcmsYear && (
                           <>
                             <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <button
@@ -238,7 +289,7 @@ export default function YearsClient({
                           </>
                         )}
 
-                        {selectedQcmsSubject && (
+                        {!devMode && selectedQcmsSubject && (
                           <>
                             <ChevronRight className={`h-3.5 w-3.5 text-slate-600 ${isRtl ? "rotate-180" : ""}`} />
                             <span className="text-cyan-300 font-black">{selectedQcmsSubject.name}</span>
@@ -247,33 +298,47 @@ export default function YearsClient({
                       </div>
 
                       {/* Back Navigation Action Button */}
-                      {(selectedQcmsYear || selectedQcmsSubject) && (
+                      {(devMode || selectedQcmsYear || selectedQcmsSubject) && (
                         <button
                           onClick={() => {
-                            if (selectedQcmsSubject) {
-                              setSelectedQcmsSubjectId(null);
+                            if (devMode) {
+                              if (selectedDevSubject) {
+                                setSelectedDevSubjectId(null);
+                              } else if (selectedDevYear) {
+                                setSelectedDevYearId(null);
+                              } else {
+                                setDevMode(false);
+                              }
                             } else {
-                              setSelectedQcmsYearId(null);
+                              if (selectedQcmsSubject) {
+                                setSelectedQcmsSubjectId(null);
+                              } else {
+                                setSelectedQcmsYearId(null);
+                              }
                             }
                           }}
-                          className="group inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-800/90 px-4 py-2 text-xs font-black text-slate-200 shadow-md transition-all hover:border-violet-400 hover:bg-slate-800"
+                          className={`group inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-xs font-black shadow-md transition-all ${
+                            devMode 
+                              ? "border-amber-500/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 hover:border-amber-400" 
+                              : "border-slate-700 bg-slate-800/90 text-slate-200 hover:border-violet-400 hover:bg-slate-800"
+                          }`}
                         >
                           {isRtl ? (
-                            <ArrowRight className="h-3.5 w-3.5 text-violet-400 transition-transform group-hover:translate-x-1" />
+                            <ArrowRight className={`h-3.5 w-3.5 ${devMode ? "text-amber-400" : "text-violet-400"} transition-transform group-hover:translate-x-1`} />
                           ) : (
-                            <ArrowLeft className="h-3.5 w-3.5 text-violet-400 transition-transform group-hover:-translate-x-1" />
+                            <ArrowLeft className={`h-3.5 w-3.5 ${devMode ? "text-amber-400" : "text-violet-400"} transition-transform group-hover:-translate-x-1`} />
                           )}
                           <span>
-                            {selectedQcmsSubject
-                              ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects")
-                              : (isRtl ? "العودة للسنوات الدراسية" : "Back to Years")}
+                            {devMode
+                              ? (selectedDevSubject ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects") : selectedDevYear ? (isRtl ? "العودة للسنوات" : "Back to Years") : (isRtl ? "العودة للمركز" : "Back to Hub"))
+                              : (selectedQcmsSubject ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects") : (isRtl ? "العودة للسنوات الدراسية" : "Back to Years"))}
                           </span>
                         </button>
                       )}
                     </div>
 
-                    {/* HERO OVERVIEW (Displayed when no year/subject selected) */}
-                    {!selectedQcmsYear && !selectedQcmsSubject && (
+                    {/* HERO OVERVIEW (Displayed when no year/subject selected and NOT in devMode) */}
+                    {!devMode && !selectedQcmsYear && !selectedQcmsSubject && (
                       <div className="mb-10 max-w-2xl">
                         <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/15 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-violet-200 shadow-inner">
                           <NotebookPen className="h-4 w-4 text-violet-400" />
@@ -299,10 +364,265 @@ export default function YearsClient({
                       </div>
                     )}
 
+                    {/* HERO OVERVIEW FOR DEVELOPER MODE */}
+                    {devMode && !selectedDevYear && !selectedDevSubject && (
+                      <div className="mb-10 max-w-2xl">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-amber-300 shadow-inner">
+                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                          <span>AuraMed Developer Exclusive Hub</span>
+                        </div>
+
+                        <h2 className="mb-4 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500">
+                          اختبارات أنشأها المطور
+                        </h2>
+                        
+                        <p className="text-base leading-8 text-amber-100/80 font-medium">
+                          مجموعة حصرية من الاختبارات ونماذج التقييم الطبي المُعدة خصيصاً من قِبل مطوري المنصة لتقديم محتوى نوعي ومميز.
+                        </p>
+
+                        <div className="mt-6 flex flex-wrap gap-2.5">
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300">
+                            <Crown className="w-4 h-4 text-amber-400" />
+                            محتوى خاص ومعتمد
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-4 py-2 text-xs font-bold text-yellow-300">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            تغطية مخصصة للسنوات
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* ========================================================================= */}
-                    {/* LEVEL 3: EXAM DASHBOARD VIEW (Selected Subject)                           */}
+                    {/* DEV MODE LEVEL 3: EXAM DASHBOARD VIEW (Selected Dev Subject)              */}
                     {/* ========================================================================= */}
-                    {selectedQcmsSubject ? (
+                    {devMode && selectedDevSubject ? (
+                      <div className="rounded-[2.5rem] border border-amber-500/30 bg-[#140e02]/95 p-6 sm:p-10 shadow-2xl shadow-amber-950/30">
+                        {/* Subject Header Banner */}
+                        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between border-b border-amber-500/20 pb-6">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-2">
+                              <span>{selectedDevYear?.name}</span>
+                              <ChevronRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
+                              <span>اختبارات المطور</span>
+                            </div>
+                            <h3 className="text-3xl font-black text-amber-100 sm:text-4xl">{selectedDevSubject.name}</h3>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            <span className="rounded-2xl border border-amber-400/30 bg-amber-500/15 px-4 py-2 text-xs font-black text-amber-200">
+                              {selectedDevSubject.code || "DEV-QCM"}
+                            </span>
+                            <span className="rounded-2xl border border-yellow-400/30 bg-yellow-500/15 px-4 py-2 text-xs font-black text-yellow-300 flex items-center gap-1.5">
+                              <Star className="w-3.5 h-3.5 fill-yellow-400" />
+                              {(selectedDevSubject.examLinks || []).length} {isRtl ? "اختبار مطور" : "Dev Exams"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Exam Cards Grid */}
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xl font-black text-amber-200 flex items-center gap-2.5">
+                              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                              <span>{isRtl ? "نماذج الاختبارات المخصصة للمادة" : "Available Developer Exams"}</span>
+                            </h4>
+                          </div>
+
+                          {(selectedDevSubject.examLinks || []).length > 0 ? (
+                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                              {(selectedDevSubject.examLinks || []).map((link: any, idx: number) => (
+                                <div
+                                  key={link.id}
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-500/30 bg-gradient-to-b from-[#211603] to-[#120c01] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400/60 hover:shadow-2xl hover:shadow-amber-500/20"
+                                >
+                                  <div>
+                                    <div className="mb-4 flex items-center justify-between">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 text-amber-300 group-hover:scale-110 transition-all border border-amber-500/30">
+                                        <Star className="h-5.5 w-5.5 fill-amber-400 text-amber-400" />
+                                      </div>
+                                      <span className="rounded-xl border border-amber-500/30 bg-amber-950/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-300">
+                                        DEV #{idx + 1}
+                                      </span>
+                                    </div>
+
+                                    <h5 className="my-3 text-lg font-black leading-snug text-amber-100 group-hover:text-yellow-200 transition-colors">
+                                      {link.label}
+                                    </h5>
+                                  </div>
+
+                                  <div className="mt-6 pt-4 border-t border-amber-500/20">
+                                    <a
+                                      href={link.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 py-3.5 px-4 text-xs font-black text-slate-950 shadow-lg shadow-amber-600/30 transition-all hover:scale-[1.02] hover:shadow-amber-500/50 active:scale-[0.98]"
+                                    >
+                                      <span>{isRtl ? "بدء اختبار المطور الآن" : "Start Dev Exam"}</span>
+                                      <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+                                    </a>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/30 p-12 text-center">
+                              <Star className="h-14 w-14 text-amber-600 mx-auto mb-4" />
+                              <h5 className="text-lg font-black text-amber-200">
+                                لا توجد اختبارات منشأة من المطور لهذه المادة حالياً
+                              </h5>
+                              <p className="text-xs text-amber-400/60 mt-2 font-medium">
+                                سيتم إدراج النماذج الحصرية تباعاً فور نشرها من لوحة التحكم.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                    ) : devMode && selectedDevYear ? (
+                      /* ========================================================================= */
+                      /* DEV MODE LEVEL 2: SUBJECT EXPLORER VIEW (Selected Dev Year)               */
+                      /* ========================================================================= */
+                      <div className="mt-4">
+                        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-[#201402] via-[#2c1b03] to-[#180f01] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6 shadow-xl">
+                          <div>
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-1">
+                              <Crown className="h-4 w-4" />
+                              <span>اختبارات المطور — {selectedDevYear.name}</span>
+                            </div>
+                            <h3 className="text-3xl font-black text-amber-100 sm:text-4xl">{selectedDevYear.name}</h3>
+                            <p className="mt-1 text-xs font-bold text-amber-200/70">
+                              اختر المادة التعليمية لحل اختباراتها المنشأة خصيصاً من المطور.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="rounded-2xl border border-amber-500/40 bg-amber-950/80 px-5 py-3 text-center">
+                              <p className="text-2xl font-black text-amber-300">{selectedDevYear.subjects?.length || 0}</p>
+                              <p className="text-[10px] font-bold text-amber-400/80">مواد باختبارات مميزة</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h4 className="text-lg font-black text-amber-200 flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-amber-400" />
+                            <span>المواد الدراسية المتوفرة</span>
+                          </h4>
+
+                          {selectedDevYear.subjects?.length ? (
+                            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                              {selectedDevYear.subjects.map((subject: any) => (
+                                <button
+                                  key={subject.id}
+                                  onClick={() => setSelectedDevSubjectId(subject.id)}
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-500/30 bg-[#160f02] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400 hover:bg-[#201503] hover:shadow-2xl hover:shadow-amber-500/20"
+                                >
+                                  <div>
+                                    <div className="mb-5 flex items-center justify-between">
+                                      <span className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-3 py-1 text-[11px] font-black text-amber-300">
+                                        {subject.code || "DEV"}
+                                      </span>
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
+                                        <Star className="h-5 w-5 fill-current" />
+                                      </div>
+                                    </div>
+
+                                    <h4 className="text-xl font-black text-amber-100 group-hover:text-yellow-200 transition-colors leading-tight">
+                                      {subject.name}
+                                    </h4>
+                                  </div>
+
+                                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-amber-500/20">
+                                    <span className="text-xs font-bold text-amber-300/80">
+                                      {(subject.examLinks || []).length} اختبار مطور
+                                    </span>
+                                    <span className="text-xs font-black text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                      <span>فتح الاختبارات</span>
+                                      <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+                                    </span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/30 p-12 text-center text-amber-400/70">
+                              <BookOpen className="h-14 w-14 text-amber-600 mx-auto mb-3" />
+                              <p className="text-base font-bold">لم تتوفر مواد باختبارات مطور بعد لهذه السنة.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                    ) : devMode ? (
+                      /* ========================================================================= */
+                      /* DEV MODE LEVEL 1: ACADEMIC YEARS GRID VIEW                                */
+                      /* ========================================================================= */
+                      <div className="mt-4">
+                        <div className="mb-6 flex items-center justify-between">
+                          <h3 className="text-xl font-black text-amber-200 flex items-center gap-2.5">
+                            <Crown className="h-5.5 w-5.5 text-amber-400" />
+                            <span>السنوات الدراسية التي تتوفر بها اختبارات المطور</span>
+                          </h3>
+                          <span className="text-xs font-bold text-amber-400/80">
+                            {(devFeaturedYears || []).length} سنوات متاحة
+                          </span>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                          {(devFeaturedYears || []).map((year: any, idx: number) => {
+                            const totalDevExams = (year.subjects || []).reduce((acc: number, s: any) => acc + (s.examLinks || []).length, 0);
+                            return (
+                              <button
+                                key={year.id}
+                                onClick={() => {
+                                  setSelectedDevYearId(year.id);
+                                  setSelectedDevSubjectId(null);
+                                }}
+                                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-amber-500/40 bg-gradient-to-br from-[#1a1202] via-[#241804] to-[#120c01] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/30"
+                              >
+                                <div className="relative z-10 flex items-center justify-between gap-3">
+                                  <span className="rounded-xl border border-amber-500/30 bg-amber-500/15 px-3.5 py-1.5 text-xs font-black text-amber-300 flex items-center gap-1.5">
+                                    <Star className="w-3.5 h-3.5 fill-amber-400" />
+                                    {totalDevExams} اختبار مطور
+                                  </span>
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 text-amber-300 border border-amber-500/30 shadow-inner group-hover:scale-110 transition-all">
+                                    <Crown className="h-6 w-6" />
+                                  </div>
+                                </div>
+
+                                <div className="relative z-10 mt-6">
+                                  <h4 className="text-2xl font-black leading-tight text-amber-100 group-hover:text-yellow-200 transition-colors">
+                                    {year.name}
+                                  </h4>
+                                  <p className="mt-2 text-xs font-bold text-amber-400/70">
+                                    {year.subjects?.length || 0} مواد تحتوي اختبارات حصرية
+                                  </p>
+                                </div>
+
+                                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-amber-500/20">
+                                  <span className="text-xs font-black text-amber-400 group-hover:text-yellow-300 transition-colors">
+                                    استعراض المواد والاختبارات
+                                  </span>
+                                  <ChevronRight className={`h-4 w-4 text-amber-400 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} />
+                                </div>
+                              </button>
+                            );
+                          })}
+
+                          {(!devFeaturedYears || devFeaturedYears.length === 0) && (
+                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/20 p-12 text-center text-amber-400 md:col-span-2">
+                              <Star className="h-14 w-14 text-amber-600 mx-auto mb-3" />
+                              <p className="text-base font-bold">لم يتم تمييز أي اختبارات منشأة من المطور بعد.</p>
+                              <p className="text-xs text-amber-400/60 mt-2">
+                                يمكنك تمييز الاختبارات بوضع النجمة ⭐ عليها في لوحة التحكم لتظهر هنا فوراً.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                    ) : selectedQcmsSubject ? (
                       <div className="rounded-[2.5rem] border border-violet-500/25 bg-[#0b172a]/95 p-6 sm:p-10 shadow-2xl">
                         
                         {/* Subject Header Banner */}
@@ -536,6 +856,77 @@ export default function YearsClient({
                               <p className="text-base font-bold">{t("qcms_no_years_for_now", "لم يتم إضافة سنوات دراسية لـ QCMs بعد.")}</p>
                             </div>
                           )}
+
+                          {/* ===== GOLDEN DEVELOPER CARD ===== */}
+                          <button
+                            onClick={() => {
+                              setDevMode(true);
+                              setSelectedDevYearId(null);
+                              setSelectedDevSubjectId(null);
+                            }}
+                            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] p-7 text-start shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-amber-500/40"
+                            style={{
+                              background: "linear-gradient(135deg, #1a1200 0%, #2d1f00 35%, #1a1200 70%, #0d0a00 100%)",
+                              border: "1.5px solid rgba(245,158,11,0.5)",
+                              boxShadow: "0 0 30px -10px rgba(245,158,11,0.25), inset 0 1px 0 rgba(255,215,0,0.15)"
+                            }}
+                          >
+                            {/* Shimmer effect */}
+                            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                              style={{
+                                background: "linear-gradient(105deg, transparent 30%, rgba(255,215,0,0.08) 50%, transparent 70%)",
+                                backgroundSize: "200% 100%",
+                                animation: "shimmer 2s infinite"
+                              }}
+                            />
+                            {/* Glow corners */}
+                            <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px]" style={{ background: "rgba(245,158,11,0.15)" }} />
+                            <div className="pointer-events-none absolute bottom-0 left-0 w-24 h-24 rounded-full blur-[50px]" style={{ background: "rgba(251,191,36,0.12)" }} />
+
+                            {/* Giant background number */}
+                            <Crown className="pointer-events-none absolute -bottom-4 -right-4 w-32 h-32 opacity-5 text-amber-400" />
+
+                            {/* Header */}
+                            <div className="relative z-10 flex items-center justify-between gap-3">
+                              <span className="rounded-xl px-3.5 py-1.5 text-xs font-black"
+                                style={{
+                                  background: "rgba(245,158,11,0.15)",
+                                  border: "1px solid rgba(245,158,11,0.35)",
+                                  color: "#fbbf24"
+                                }}
+                              >
+                                {devFeaturedYears.reduce((acc: number, y: any) =>
+                                  acc + (y.subjects || []).reduce((a: number, s: any) =>
+                                    a + (s.examLinks || []).length, 0), 0)} اختبار متاح
+                              </span>
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-all duration-300"
+                                style={{
+                                  background: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.15))",
+                                  border: "1px solid rgba(245,158,11,0.4)"
+                                }}
+                              >
+                                <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                              </div>
+                            </div>
+
+                            {/* Body */}
+                            <div className="relative z-10 mt-6">
+                              <h4 className="text-2xl font-black leading-tight transition-colors" style={{ color: "#fde68a" }}>
+                                اختبارات أنشأها المطور
+                              </h4>
+                              <p className="mt-2 text-xs font-bold" style={{ color: "rgba(251,191,36,0.6)" }}>
+                                محتوى حصري ومميز من لدن فريق AuraMed
+                              </p>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="relative z-10 mt-6 flex items-center justify-between pt-4" style={{ borderTop: "1px solid rgba(245,158,11,0.2)" }}>
+                              <span className="text-xs font-black transition-colors" style={{ color: "#f59e0b" }}>
+                                تصفح الاختبارات المميزة
+                              </span>
+                              <ChevronRight className={`h-4 w-4 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} style={{ color: "#f59e0b" }} />
+                            </div>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -561,30 +952,52 @@ export default function YearsClient({
 
                         {/* Metric Cards */}
                         <div className="space-y-4">
-                          <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-5 shadow-inner">
+                          <div className={`rounded-2xl border p-5 shadow-inner ${
+                            devMode 
+                              ? "border-amber-500/30 bg-[#160e02]" 
+                              : "border-slate-800 bg-[#0a1628]"
+                          }`}>
                             <div className="flex items-center justify-between gap-3">
                               <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "السنوات الدراسية" : "Academic Years"}</p>
-                                <p className="mt-1 text-3xl font-black text-white">{qcmsYears.length || 0}</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                                  {devMode ? "سنوات اختبارات المطور" : (isRtl ? "السنوات الدراسية" : "Academic Years")}
+                                </p>
+                                <p className="mt-1 text-3xl font-black text-white">
+                                  {devMode ? (devFeaturedYears.length || 0) : (qcmsYears.length || 0)}
+                                </p>
                               </div>
-                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300">
-                                <Sparkles className="h-6 w-6" />
+                              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
+                                devMode ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-violet-500/15 text-violet-300"
+                              }`}>
+                                {devMode ? <Crown className="h-6 w-6" /> : <Sparkles className="h-6 w-6" />}
                               </div>
                             </div>
                           </div>
 
                           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                            <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-4">
-                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "إجمالي المواد" : "Total Subjects"}</p>
-                              <p className="mt-1 text-2xl font-black text-violet-300">
-                                {qcmsYears.reduce((total, year: any) => total + (year.subjects?.length || 0), 0) || 0}
+                            <div className={`rounded-2xl border p-4 ${
+                              devMode ? "border-amber-500/30 bg-[#160e02]" : "border-slate-800 bg-[#0a1628]"
+                            }`}>
+                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                                {devMode ? "مواد تحتوي نماذج مطور" : (isRtl ? "إجمالي المواد" : "Total Subjects")}
+                              </p>
+                              <p className={`mt-1 text-2xl font-black ${devMode ? "text-amber-300" : "text-violet-300"}`}>
+                                {devMode
+                                  ? (devFeaturedYears.reduce((total, year: any) => total + (year.subjects?.length || 0), 0) || 0)
+                                  : (qcmsYears.reduce((total, year: any) => total + (year.subjects?.length || 0), 0) || 0)}
                               </p>
                             </div>
 
-                            <div className="rounded-2xl border border-slate-800 bg-[#0a1628] p-4">
-                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{isRtl ? "نماذج الامتحانات" : "Exam Papers"}</p>
-                              <p className="mt-1 text-2xl font-black text-cyan-300">
-                                {qcmsYears.reduce((total, year: any) => total + (year.subjects?.reduce((sum: number, subject: any) => sum + (subject.examLinks?.length || 0), 0) || 0), 0) || 0}
+                            <div className={`rounded-2xl border p-4 ${
+                              devMode ? "border-amber-500/30 bg-[#160e02]" : "border-slate-800 bg-[#0a1628]"
+                            }`}>
+                              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                                {devMode ? "اختبارات منشأة من المطور" : (isRtl ? "نماذج الامتحانات" : "Exam Papers")}
+                              </p>
+                              <p className={`mt-1 text-2xl font-black ${devMode ? "text-yellow-300" : "text-cyan-300"}`}>
+                                {devMode
+                                  ? (devFeaturedYears.reduce((total, year: any) => total + (year.subjects?.reduce((sum: number, subject: any) => sum + (subject.examLinks?.length || 0), 0) || 0), 0) || 0)
+                                  : (qcmsYears.reduce((total, year: any) => total + (year.subjects?.reduce((sum: number, subject: any) => sum + (subject.examLinks?.length || 0), 0) || 0), 0) || 0)}
                               </p>
                             </div>
                           </div>
