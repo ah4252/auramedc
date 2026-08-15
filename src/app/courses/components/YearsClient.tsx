@@ -483,10 +483,10 @@ export default function YearsClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
-            className="w-full touch-pan-y overscroll-contain"
-            style={{ touchAction: "pan-y" }}
+            className="w-full"
+            style={{ touchAction: "auto", overscrollBehavior: "contain" }}
           >
-            <div className="mx-auto max-w-7xl overflow-x-hidden rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
+            <div className="mx-auto max-w-7xl overflow-visible rounded-[3rem] border border-violet-500/25 bg-gradient-to-b from-[#08111e] via-[#0a1628] to-[#060c16] text-white shadow-[0_0_80px_-20px_rgba(139,92,246,0.3)] backdrop-blur-2xl">
               <motion.div
                 key={qcmsViewKey}
                 initial={{ opacity: 0, x: isRtl ? 20 : -20, scale: 0.985 }}
@@ -497,7 +497,7 @@ export default function YearsClient({
               >
                 
                 {/* Main Content Area */}
-                <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14 touch-pan-y overscroll-contain">
+                <div className="relative p-6 sm:p-10 lg:p-12 xl:p-14" style={{ touchAction: "auto", overscrollBehavior: "contain" }}>
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(168,85,247,0.18),transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(34,211,238,0.14),transparent_45%)]" />
                   
                   <div className="relative z-10">
@@ -1248,7 +1248,7 @@ export default function YearsClient({
 
                 {/* SIDEBAR DASHBOARD OVERVIEW PANEL (Visible when no subject selected) */}
                 {!selectedQcmsSubject && (
-                  <aside className="relative overflow-x-hidden border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10 touch-pan-y overscroll-contain">
+                  <aside className="relative overflow-visible border-t border-slate-800 bg-[#060e19] p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10" style={{ touchAction: "auto", overscrollBehavior: "contain" }}>
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(139,92,246,0.18),transparent_60%)]" />
                     <div className="relative z-10 flex flex-col justify-between h-full space-y-8">
                       
