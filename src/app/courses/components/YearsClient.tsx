@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, ArrowRight, NotebookPen, Star, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
+import { consumeQcmView, getQcmRemainingViews } from "@/app/actions/payment";
 
 import { useSearchParams } from "next/navigation";
 
@@ -23,12 +24,14 @@ export default function YearsClient({
   qcmsYears = [],
   devFeaturedYears = [],
   canViewPharmacy = false,
+  canViewQcms = false,
 }: { 
   yearCategories: any[]; 
   pharmacyCategories: PharmacySection[]; 
   qcmsYears?: any[];
   devFeaturedYears?: any[];
   canViewPharmacy?: boolean;
+  canViewQcms?: boolean;
 }) {
   const searchParams = useSearchParams();
   const { t, lang } = useLocale();
@@ -36,14 +39,27 @@ export default function YearsClient({
   const rawTab = searchParams.get("tab");
   const initialTab = rawTab === "pharmacy" && canViewPharmacy ? "pharmacy" : rawTab === "qcms" ? "qcms" : "years";
   const [activeTab, setActiveTab] = useState<"years" | "pharmacy" | "qcms">(initialTab);
+  const [showQcmLockModal, setShowQcmLockModal] = useState(false);
+  const [qcmLimitReached, setQcmLimitReached] = useState(false);
   const [pharmacySearch, setPharmacySearch] = useState("");
   const [selectedQcmsYearId, setSelectedQcmsYearId] = useState<string | null>(null);
   const [selectedQcmsSubjectId, setSelectedQcmsSubjectId] = useState<string | null>(null);
+  const [qcmRemaining, setQcmRemaining] = useState<number | null>(null);
 
   // Developer mode state
   const [devMode, setDevMode] = useState(false);
   const [selectedDevYearId, setSelectedDevYearId] = useState<string | null>(null);
   const [selectedDevSubjectId, setSelectedDevSubjectId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!canViewQcms) return;
+
+    getQcmRemainingViews().then((result) => {
+      if (typeof result?.remaining === "number") {
+        setQcmRemaining(result.remaining);
+      }
+    });
+  }, [canViewQcms]);
 
   const filteredPharmacy = pharmacyCategories.filter(s =>
     s.name.toLowerCase().includes(pharmacySearch.toLowerCase()) ||
@@ -55,6 +71,70 @@ export default function YearsClient({
 
   const selectedDevYear = devFeaturedYears.find((y: any) => y.id === selectedDevYearId) || null;
   const selectedDevSubject = selectedDevYear?.subjects?.find((s: any) => s.id === selectedDevSubjectId) || null;
+
+  const localeText = (ar: string, fr: string, en: string) => (lang === "ar" ? ar : lang === "fr" ? fr : en);
+
+  const devHeroBadge = localeText("اختبارات المطور المميزة", "Tests du développeur", "Developer-created tests");
+  const devHeroTitle = localeText("اختبارات أنشأها المطور", "Tests créés par le développeur", "Developer-created tests");
+  const devHeroDescription = localeText("مجموعة مختارة من الاختبارات ونماذج التقييم الطبي التي أعدها مطورو المنصة.", "Collection sélectionnée de tests et de modèles d'évaluation médicale préparés par les développeurs de la plateforme.", "A curated collection of medical tests and assessment models prepared by the platform developers.");
+  const devExclusiveLabel = localeText("محتوى خاص ومعتمد", "Contenu exclusif approuvé", "Exclusive approved content");
+  const devYearCoverageLabel = localeText("تغطية مخصصة للسنوات", "Couverture adaptée aux années d'étude", "Coverage tailored to study years");
+  const devSectionLabel = localeText("اختبارات المطور", "Tests du développeur", "Developer tests");
+
+  const devRemainingText = (remaining: number) => localeText(
+    `تبقى لك ${remaining} ملف${remaining === 1 ? "" : "ات"} من 5`,
+    `Il reste ${remaining} fichier${remaining === 1 ? "" : "s"} sur 5`,
+    `${remaining} files remaining out of 5`
+  );
+
+  const qcmLockTitle = qcmLimitReached
+    ? localeText("تم الوصول إلى الحد المسموح", "Vous avez atteint la limite autorisée", "Limit reached")
+    : localeText("اشتراك QCM مميز", "Abonnement QCM premium", "Premium QCM subscription");
+
+  const qcmLockDescription = qcmLimitReached
+    ? localeText("تم الوصول إلى الحد المسموح — يرجى تجديد الاشتراك.", "Vous avez atteint la limite autorisée — veuillez renouveler votre abonnement.", "You have reached the allowed limit — please renew your subscription.")
+    : localeText("هذا القسم محجوب حتى يتم الموافقة على اشتراكك. سعر الاشتراك هو ", "Cette section est verrouillée jusqu'à validation de votre abonnement. Le prix est de ", "This section is locked until your subscription is approved. The price is ");
+
+  const qcmLockPriceText = localeText("إعادة الاشتراك 50 دج", "Renouvellement 50 DZD", "Renewal 50 DZD");
+  const qcmCloseLabel = localeText("إغلاق", "Fermer", "Close");
+  const qcmRequestLabel = localeText("طلب الاشتراك", "Demander l'abonnement", "Request subscription");
+  const devBreadcrumbLabel = localeText("اختبارات أنشأها المطور", "Tests créés par le développeur", "Developer-created tests");
+  const devBrowseLabel = localeText("تصفح الاختبارات المميزة", "Parcourir les tests premium", "Browse premium tests");
+  const devSubjectStream = localeText("نماذج الاختبارات المتاحة", "Modèles d'examens disponibles", "Available developer exam models");
+  const devStartNow = localeText("ابدأ الاختبار الآن", "Commencer l'examen maintenant", "Start developer exam now");
+  const devEmptySubject = localeText("لا توجد اختبارات منشأة من المطور لهذه المادة بعد.", "Aucun test créé par le développeur n'est disponible pour cette matière pour le moment.", "No developer-created tests are available for this subject yet.");
+  const devEmptySubjectDesc = localeText("سيتم إضافة النماذج الحصرية فور نشرها من لوحة التحكم.", "Les modèles exclusifs seront ajoutés dès leur publication depuis le panneau d'administration.", "Exclusive models will be added as soon as they are published from the admin panel.");
+  const devSelectSubjectText = localeText("اختر المادة للوصول إلى الاختبارات التي أنشأها المطور.", "Choisissez la matière pour accéder aux tests créés par le développeur.", "Choose the subject to access the developer-created tests.");
+  const devAvailableSubjects = localeText("المواد المتاحة", "Matières disponibles", "Available subjects");
+  const devTestCount = localeText("اختبارات المطور", "Tests du développeur", "Developer tests");
+  const devOpenTests = localeText("فتح الاختبارات", "Ouvrir les tests", "Open tests");
+  const devNoSubjectsYear = localeText("لا توجد مواد ذات اختبارات مطور لهذه السنة بعد.", "Aucune matière avec tests du développeur n'est disponible pour cette année pour le moment.", "No subjects with developer tests are available for this year yet.");
+  const devYearsTitle = localeText("سنوات الدراسة التي تحتوي على اختبارات المطور", "Années d'étude avec tests du développeur", "Study years with developer tests");
+  const devYearsCount = localeText("سنوات متاحة", "années disponibles", "available years");
+  const devYearBadge = localeText("اختبارات المطور", "Tests du développeur", "Developer tests");
+  const devSubjectsCount = localeText("مواد ذات اختبارات حصرية", "matières avec tests exclusifs", "Subjects with exclusive tests");
+  const devViewMaterials = localeText("استعراض المواد والاختبارات", "Parcourir les matières et les tests", "Browse subjects and tests");
+  const devNoYearsYet = localeText("لا توجد اختبارات منشأة من المطور مميزة بعد.", "Aucun test créé par le développeur n'a encore été marqué.", "No developer-created tests have been marked yet.");
+  const devNoYearsHint = localeText("يمكن تمييز الاختبارات بنجمة ⭐ في لوحة التحكم ليظهر هذا القسم فوراً.", "Vous pouvez marquer les tests avec l'étoile ⭐ dans le panneau d'administration pour les afficher ici immédiatement.", "You can mark tests with the star icon in the admin panel to display them here immediately.");
+
+  const handleExamLinkClick = async (event: any) => {
+    if (!canViewQcms) {
+      event.preventDefault();
+      setQcmLimitReached(false);
+      setShowQcmLockModal(true);
+      return;
+    }
+
+    const result = await consumeQcmView();
+    if (!result?.allowed) {
+      event.preventDefault();
+      setQcmLimitReached(true);
+      setShowQcmLockModal(true);
+      return;
+    }
+
+    setQcmRemaining(typeof result.remaining === "number" ? result.remaining : qcmRemaining);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-16" dir={isRtl ? "rtl" : "ltr"}>
@@ -145,6 +225,63 @@ export default function YearsClient({
           QCMs
         </Link>
       </div>
+
+      <AnimatePresence>
+        {showQcmLockModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              className="w-full max-w-md rounded-[2rem] border border-violet-500/30 bg-[#0b1220] p-8 text-center shadow-[0_0_50px_rgba(167,139,250,0.25)]"
+              dir="rtl"
+            >
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300">
+                <Sparkles className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-black text-white">{qcmLockTitle}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-300">
+                {qcmLimitReached ? (
+                  qcmLockDescription
+                ) : (
+                  <>
+                    {qcmLockDescription}<span className="font-black text-violet-300">50 دج</span>{lang === "fr" ? "" : lang === "en" ? "" : ""}
+                  </>
+                )}
+              </p>
+              <div className="mt-6 rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 text-violet-200 font-black text-xl">
+                {qcmLockPriceText}
+              </div>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={() => {
+                    setShowQcmLockModal(false);
+                    setQcmLimitReached(false);
+                  }}
+                  className="flex-1 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-black text-slate-200 transition hover:bg-slate-800"
+                >
+                  {qcmCloseLabel}
+                </button>
+                <Link
+                  href="/profile?tab=subscription&subscriptionType=QCM"
+                  onClick={() => {
+                    setShowQcmLockModal(false);
+                    setQcmLimitReached(false);
+                  }}
+                  className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-black text-white transition hover:from-violet-500 hover:to-indigo-500"
+                >
+                  {qcmRequestLabel}
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ===== YEARS TAB CONTENT ===== */}
       <AnimatePresence mode="wait">
@@ -239,7 +376,7 @@ export default function YearsClient({
                           className="flex items-center gap-1.5 hover:text-violet-300 transition-colors"
                         >
                           <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                          <span>{isRtl ? "مركز QCMs الطبي" : "QCM Center"}</span>
+                          <span>{localeText("مركز QCMs الطبي", "Centre QCM médical", "QCM Center")}</span>
                         </button>
 
                         {devMode && (
@@ -253,7 +390,7 @@ export default function YearsClient({
                               className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-1"
                             >
                               <Star className="w-3 h-3 fill-amber-400" />
-                              <span>اختبارات أنشأها المطور</span>
+                              <span>{devBreadcrumbLabel}</span>
                             </button>
                           </>
                         )}
@@ -330,8 +467,8 @@ export default function YearsClient({
                           )}
                           <span>
                             {devMode
-                              ? (selectedDevSubject ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects") : selectedDevYear ? (isRtl ? "العودة للسنوات" : "Back to Years") : (isRtl ? "العودة للمركز" : "Back to Hub"))
-                              : (selectedQcmsSubject ? (isRtl ? "العودة لمواد السنة" : "Back to Subjects") : (isRtl ? "العودة للسنوات الدراسية" : "Back to Years"))}
+                              ? (selectedDevSubject ? localeText("العودة لمواد السنة", "Retour aux matières", "Back to Subjects") : selectedDevYear ? localeText("العودة للسنوات", "Retour aux années", "Back to Years") : localeText("العودة للمركز", "Retour au centre", "Back to Hub"))
+                              : (selectedQcmsSubject ? localeText("العودة لمواد السنة", "Retour aux matières", "Back to Subjects") : localeText("العودة للسنوات الدراسية", "Retour aux années", "Back to Years"))}
                           </span>
                         </button>
                       )}
@@ -367,27 +504,27 @@ export default function YearsClient({
                     {/* HERO OVERVIEW FOR DEVELOPER MODE */}
                     {devMode && !selectedDevYear && !selectedDevSubject && (
                       <div className="mb-10 max-w-2xl">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-amber-300 shadow-inner">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-50 text-amber-700 shadow-inner dark:bg-amber-500/15 dark:text-amber-300 px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em]">
                           <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span>AuraMed Developer Exclusive Hub</span>
+                          <span>{devHeroBadge}</span>
                         </div>
 
-                        <h2 className="mb-4 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500">
-                          اختبارات أنشأها المطور
+                        <h2 className="mb-4 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-500 dark:from-amber-300 dark:via-yellow-200 dark:to-amber-500">
+                          {devHeroTitle}
                         </h2>
                         
-                        <p className="text-base leading-8 text-amber-100/80 font-medium">
-                          مجموعة حصرية من الاختبارات ونماذج التقييم الطبي المُعدة خصيصاً من قِبل مطوري المنصة لتقديم محتوى نوعي ومميز.
+                        <p className="text-base leading-8 text-slate-700 dark:text-amber-100/80 font-medium">
+                          {devHeroDescription}
                         </p>
 
                         <div className="mt-6 flex flex-wrap gap-2.5">
-                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300">
-                            <Crown className="w-4 h-4 text-amber-400" />
-                            محتوى خاص ومعتمد
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-100/80 px-4 py-2 text-xs font-bold text-amber-700 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+                            <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                            {devExclusiveLabel}
                           </span>
-                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-4 py-2 text-xs font-bold text-yellow-300">
+                          <span className="inline-flex items-center gap-1.5 rounded-xl border border-yellow-300 bg-yellow-100/80 px-4 py-2 text-xs font-bold text-yellow-700 dark:border-yellow-400/30 dark:bg-yellow-500/10 dark:text-yellow-300">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            تغطية مخصصة للسنوات
+                            {devYearCoverageLabel}
                           </span>
                         </div>
                       </div>
@@ -397,25 +534,25 @@ export default function YearsClient({
                     {/* DEV MODE LEVEL 3: EXAM DASHBOARD VIEW (Selected Dev Subject)              */}
                     {/* ========================================================================= */}
                     {devMode && selectedDevSubject ? (
-                      <div className="rounded-[2.5rem] border border-amber-500/30 bg-[#140e02]/95 p-6 sm:p-10 shadow-2xl shadow-amber-950/30">
+                      <div className="rounded-[2.5rem] border border-amber-300 bg-[#fffaf3] p-6 sm:p-10 shadow-2xl shadow-amber-200/40 dark:border-amber-500/30 dark:bg-[#140e02]/95 dark:shadow-amber-950/30">
                         {/* Subject Header Banner */}
-                        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between border-b border-amber-500/20 pb-6">
+                        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between border-b border-amber-200 pb-6 dark:border-amber-500/20">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-700 mb-2 dark:text-amber-400">
                               <span>{selectedDevYear?.name}</span>
                               <ChevronRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
-                              <span>اختبارات المطور</span>
+                              <span>{devSectionLabel}</span>
                             </div>
-                            <h3 className="text-3xl font-black text-amber-100 sm:text-4xl">{selectedDevSubject.name}</h3>
+                            <h3 className="text-3xl font-black text-amber-900 sm:text-4xl dark:text-amber-100">{selectedDevSubject.name}</h3>
                           </div>
                           
                           <div className="flex items-center gap-3">
-                            <span className="rounded-2xl border border-amber-400/30 bg-amber-500/15 px-4 py-2 text-xs font-black text-amber-200">
+                            <span className="rounded-2xl border border-amber-300 bg-amber-100 px-4 py-2 text-xs font-black text-amber-700 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-200">
                               {selectedDevSubject.code || "DEV-QCM"}
                             </span>
-                            <span className="rounded-2xl border border-yellow-400/30 bg-yellow-500/15 px-4 py-2 text-xs font-black text-yellow-300 flex items-center gap-1.5">
+                            <span className="rounded-2xl border border-yellow-300 bg-yellow-100 px-4 py-2 text-xs font-black text-yellow-700 flex items-center gap-1.5 dark:border-yellow-400/30 dark:bg-yellow-500/15 dark:text-yellow-300">
                               <Star className="w-3.5 h-3.5 fill-yellow-400" />
-                              {(selectedDevSubject.examLinks || []).length} {isRtl ? "اختبار مطور" : "Dev Exams"}
+                              {(selectedDevSubject.examLinks || []).length} {localeText("اختبارات مطور", "tests développeur", "Dev exams")}
                             </span>
                           </div>
                         </div>
@@ -423,42 +560,49 @@ export default function YearsClient({
                         {/* Exam Cards Grid */}
                         <div className="space-y-6">
                           <div className="flex items-center justify-between">
-                            <h4 className="text-xl font-black text-amber-200 flex items-center gap-2.5">
+                            <h4 className="text-xl font-black text-amber-800 flex items-center gap-2.5 dark:text-amber-200">
                               <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                              <span>{isRtl ? "نماذج الاختبارات المخصصة للمادة" : "Available Developer Exams"}</span>
+                              <span>{devSubjectStream}</span>
                             </h4>
                           </div>
+
+                          {qcmRemaining !== null && qcmRemaining >= 0 && (
+                            <div className="mb-5 rounded-2xl border border-amber-300 bg-amber-100 px-4 py-3 text-sm font-black text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" dir="rtl">
+                              {devRemainingText(qcmRemaining)}
+                            </div>
+                          )}
 
                           {(selectedDevSubject.examLinks || []).length > 0 ? (
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                               {(selectedDevSubject.examLinks || []).map((link: any, idx: number) => (
                                 <div
                                   key={link.id}
-                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-500/30 bg-gradient-to-b from-[#211603] to-[#120c01] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400/60 hover:shadow-2xl hover:shadow-amber-500/20"
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-200 bg-gradient-to-b from-[#fffaf0] to-[#fef3c7] p-6 shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400/60 hover:shadow-2xl hover:shadow-amber-500/20 dark:border-amber-500/30 dark:from-[#211603] dark:to-[#120c01]"
                                 >
                                   <div>
                                     <div className="mb-4 flex items-center justify-between">
-                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 text-amber-300 group-hover:scale-110 transition-all border border-amber-500/30">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-200 to-yellow-100 text-amber-700 group-hover:scale-110 transition-all border border-amber-300 dark:from-amber-500/30 dark:to-yellow-500/20 dark:text-amber-300 dark:border-amber-500/30">
                                         <Star className="h-5.5 w-5.5 fill-amber-400 text-amber-400" />
                                       </div>
-                                      <span className="rounded-xl border border-amber-500/30 bg-amber-950/80 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-300">
+                                      <span className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-700 dark:border-amber-500/30 dark:bg-amber-950/80 dark:text-amber-300">
                                         DEV #{idx + 1}
                                       </span>
                                     </div>
 
-                                    <h5 className="my-3 text-lg font-black leading-snug text-amber-100 group-hover:text-yellow-200 transition-colors">
+                                    <h5 className="my-3 text-lg font-black leading-snug text-amber-900 group-hover:text-yellow-700 transition-colors dark:text-amber-100 dark:group-hover:text-yellow-200">
                                       {link.label}
                                     </h5>
                                   </div>
 
-                                  <div className="mt-6 pt-4 border-t border-amber-500/20">
+                                  <div className="mt-6 pt-4 border-t border-amber-200 dark:border-amber-500/20">
                                     <a
                                       href={link.url}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 py-3.5 px-4 text-xs font-black text-slate-950 shadow-lg shadow-amber-600/30 transition-all hover:scale-[1.02] hover:shadow-amber-500/50 active:scale-[0.98]"
+                                      onClick={handleExamLinkClick}
+                                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 py-3.5 px-4 text-xs font-black text-slate-950 shadow-lg shadow-amber-600/30 transition-all hover:scale-[1.02] hover:shadow-amber-500/50 active:scale-[0.98]"
                                     >
-                                      <span>{isRtl ? "بدء اختبار المطور الآن" : "Start Dev Exam"}</span>
+                                      <span>{devStartNow}</span>
                                       <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
                                     </a>
                                   </div>
@@ -466,13 +610,13 @@ export default function YearsClient({
                               ))}
                             </div>
                           ) : (
-                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/30 p-12 text-center">
+                            <div className="rounded-3xl border border-dashed border-amber-300 bg-amber-50 p-12 text-center dark:border-amber-500/30 dark:bg-amber-950/30">
                               <Star className="h-14 w-14 text-amber-600 mx-auto mb-4" />
-                              <h5 className="text-lg font-black text-amber-200">
-                                لا توجد اختبارات منشأة من المطور لهذه المادة حالياً
+                              <h5 className="text-lg font-black text-amber-800 dark:text-amber-200">
+                                {devEmptySubject}
                               </h5>
-                              <p className="text-xs text-amber-400/60 mt-2 font-medium">
-                                سيتم إدراج النماذج الحصرية تباعاً فور نشرها من لوحة التحكم.
+                              <p className="text-xs text-amber-700/75 mt-2 font-medium dark:text-amber-400/60">
+                                {devEmptySubjectDesc}
                               </p>
                             </div>
                           )}
@@ -480,34 +624,31 @@ export default function YearsClient({
                       </div>
 
                     ) : devMode && selectedDevYear ? (
-                      /* ========================================================================= */
-                      /* DEV MODE LEVEL 2: SUBJECT EXPLORER VIEW (Selected Dev Year)               */
-                      /* ========================================================================= */
                       <div className="mt-4">
-                        <div className="mb-8 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-[#201402] via-[#2c1b03] to-[#180f01] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6 shadow-xl">
+                        <div className="mb-8 rounded-3xl border border-amber-300 bg-gradient-to-r from-[#fff7ed] via-[#fff1d6] to-[#fef3c7] p-6 sm:p-8 flex flex-wrap items-center justify-between gap-6 shadow-xl dark:border-amber-500/30 dark:from-[#201402] dark:via-[#2c1b03] dark:to-[#180f01]">
                           <div>
-                            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-1">
+                            <div className="flex items-center gap-2 text-xs font-bold text-amber-700 mb-1 dark:text-amber-400">
                               <Crown className="h-4 w-4" />
-                              <span>اختبارات المطور — {selectedDevYear.name}</span>
+                              <span>{localeText(`اختبارات المطور — ${selectedDevYear.name}`, `Tests du développeur — ${selectedDevYear.name}`, `Developer tests — ${selectedDevYear.name}`)}</span>
                             </div>
-                            <h3 className="text-3xl font-black text-amber-100 sm:text-4xl">{selectedDevYear.name}</h3>
-                            <p className="mt-1 text-xs font-bold text-amber-200/70">
-                              اختر المادة التعليمية لحل اختباراتها المنشأة خصيصاً من المطور.
+                            <h3 className="text-3xl font-black text-amber-900 sm:text-4xl dark:text-amber-100">{selectedDevYear.name}</h3>
+                            <p className="mt-1 text-xs font-bold text-amber-700/80 dark:text-amber-200/70">
+                              {devSelectSubjectText}
                             </p>
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <div className="rounded-2xl border border-amber-500/40 bg-amber-950/80 px-5 py-3 text-center">
-                              <p className="text-2xl font-black text-amber-300">{selectedDevYear.subjects?.length || 0}</p>
-                              <p className="text-[10px] font-bold text-amber-400/80">مواد باختبارات مميزة</p>
+                            <div className="rounded-2xl border border-amber-300 bg-amber-100 px-5 py-3 text-center dark:border-amber-500/40 dark:bg-amber-950/80">
+                              <p className="text-2xl font-black text-amber-700 dark:text-amber-300">{selectedDevYear.subjects?.length || 0}</p>
+                              <p className="text-[10px] font-bold text-amber-700/80 dark:text-amber-400/80">{localeText("مواد ذات اختبارات خاصة", "Matières avec tests spéciaux", "Subjects with special tests")}</p>
                             </div>
                           </div>
                         </div>
 
                         <div className="space-y-4">
-                          <h4 className="text-lg font-black text-amber-200 flex items-center gap-2">
-                            <BookOpen className="h-5 w-5 text-amber-400" />
-                            <span>المواد الدراسية المتوفرة</span>
+                          <h4 className="text-lg font-black text-amber-800 flex items-center gap-2 dark:text-amber-200">
+                            <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            <span>{devAvailableSubjects}</span>
                           </h4>
 
                           {selectedDevYear.subjects?.length ? (
@@ -516,29 +657,29 @@ export default function YearsClient({
                                 <button
                                   key={subject.id}
                                   onClick={() => setSelectedDevSubjectId(subject.id)}
-                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-500/30 bg-[#160f02] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400 hover:bg-[#201503] hover:shadow-2xl hover:shadow-amber-500/20"
+                                  className="group relative flex flex-col justify-between rounded-3xl border border-amber-200 bg-[#fffaf3] p-6 text-start shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400 hover:bg-[#fff1d6] hover:shadow-2xl hover:shadow-amber-500/20 dark:border-amber-500/30 dark:bg-[#160f02] dark:hover:bg-[#201503]"
                                 >
                                   <div>
                                     <div className="mb-5 flex items-center justify-between">
-                                      <span className="rounded-xl border border-amber-400/30 bg-amber-500/15 px-3 py-1 text-[11px] font-black text-amber-300">
+                                      <span className="rounded-xl border border-amber-300 bg-amber-100 px-3 py-1 text-[11px] font-black text-amber-700 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-300">
                                         {subject.code || "DEV"}
                                       </span>
-                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all dark:bg-amber-500/20 dark:text-amber-300">
                                         <Star className="h-5 w-5 fill-current" />
                                       </div>
                                     </div>
 
-                                    <h4 className="text-xl font-black text-amber-100 group-hover:text-yellow-200 transition-colors leading-tight">
+                                    <h4 className="text-xl font-black text-amber-900 group-hover:text-yellow-700 transition-colors leading-tight dark:text-amber-100 dark:group-hover:text-yellow-200">
                                       {subject.name}
                                     </h4>
                                   </div>
 
-                                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-amber-500/20">
-                                    <span className="text-xs font-bold text-amber-300/80">
-                                      {(subject.examLinks || []).length} اختبار مطور
+                                  <div className="mt-6 flex items-center justify-between pt-4 border-t border-amber-200 dark:border-amber-500/20">
+                                    <span className="text-xs font-bold text-amber-700/80 dark:text-amber-300/80">
+                                      {(subject.examLinks || []).length} {devTestCount}
                                     </span>
-                                    <span className="text-xs font-black text-amber-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                                      <span>فتح الاختبارات</span>
+                                    <span className="text-xs font-black text-amber-700 flex items-center gap-1 group-hover:gap-2 transition-all dark:text-amber-400">
+                                      <span>{devOpenTests}</span>
                                       <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
                                     </span>
                                   </div>
@@ -546,9 +687,9 @@ export default function YearsClient({
                               ))}
                             </div>
                           ) : (
-                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/30 p-12 text-center text-amber-400/70">
+                            <div className="rounded-3xl border border-dashed border-amber-300 bg-amber-50 p-12 text-center text-amber-700/80 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-400/70">
                               <BookOpen className="h-14 w-14 text-amber-600 mx-auto mb-3" />
-                              <p className="text-base font-bold">لم تتوفر مواد باختبارات مطور بعد لهذه السنة.</p>
+                              <p className="text-base font-bold">{devNoSubjectsYear}</p>
                             </div>
                           )}
                         </div>
@@ -560,12 +701,12 @@ export default function YearsClient({
                       /* ========================================================================= */
                       <div className="mt-4">
                         <div className="mb-6 flex items-center justify-between">
-                          <h3 className="text-xl font-black text-amber-200 flex items-center gap-2.5">
-                            <Crown className="h-5.5 w-5.5 text-amber-400" />
-                            <span>السنوات الدراسية التي تتوفر بها اختبارات المطور</span>
+                          <h3 className="text-xl font-black text-amber-800 flex items-center gap-2.5 dark:text-amber-200">
+                            <Crown className="h-5.5 w-5.5 text-amber-600 dark:text-amber-400" />
+                            <span>{devYearsTitle}</span>
                           </h3>
-                          <span className="text-xs font-bold text-amber-400/80">
-                            {(devFeaturedYears || []).length} سنوات متاحة
+                          <span className="text-xs font-bold text-amber-700/80 dark:text-amber-400/80">
+                            {(devFeaturedYears || []).length} {devYearsCount}
                           </span>
                         </div>
 
@@ -579,43 +720,43 @@ export default function YearsClient({
                                   setSelectedDevYearId(year.id);
                                   setSelectedDevSubjectId(null);
                                 }}
-                                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-amber-500/40 bg-gradient-to-br from-[#1a1202] via-[#241804] to-[#120c01] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/30"
+                                className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] border border-amber-300 bg-gradient-to-br from-[#fffaf0] via-[#fff1d6] to-[#fef3c7] p-7 text-start shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/30 dark:border-amber-500/40 dark:from-[#1a1202] dark:via-[#241804] dark:to-[#120c01]"
                               >
                                 <div className="relative z-10 flex items-center justify-between gap-3">
-                                  <span className="rounded-xl border border-amber-500/30 bg-amber-500/15 px-3.5 py-1.5 text-xs font-black text-amber-300 flex items-center gap-1.5">
+                                  <span className="rounded-xl border border-amber-300 bg-amber-100 px-3.5 py-1.5 text-xs font-black text-amber-700 flex items-center gap-1.5 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300">
                                     <Star className="w-3.5 h-3.5 fill-amber-400" />
-                                    {totalDevExams} اختبار مطور
+                                    {totalDevExams} {devYearBadge}
                                   </span>
-                                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/30 to-yellow-500/20 text-amber-300 border border-amber-500/30 shadow-inner group-hover:scale-110 transition-all">
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-200 to-yellow-100 text-amber-700 border border-amber-300 shadow-inner group-hover:scale-110 transition-all dark:from-amber-500/30 dark:to-yellow-500/20 dark:text-amber-300 dark:border-amber-500/30">
                                     <Crown className="h-6 w-6" />
                                   </div>
                                 </div>
 
                                 <div className="relative z-10 mt-6">
-                                  <h4 className="text-2xl font-black leading-tight text-amber-100 group-hover:text-yellow-200 transition-colors">
+                                  <h4 className="text-2xl font-black leading-tight text-amber-900 group-hover:text-yellow-700 transition-colors dark:text-amber-100 dark:group-hover:text-yellow-200">
                                     {year.name}
                                   </h4>
-                                  <p className="mt-2 text-xs font-bold text-amber-400/70">
-                                    {year.subjects?.length || 0} مواد تحتوي اختبارات حصرية
+                                  <p className="mt-2 text-xs font-bold text-amber-700/80 dark:text-amber-400/70">
+                                    {year.subjects?.length || 0} {devSubjectsCount}
                                   </p>
                                 </div>
 
-                                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-amber-500/20">
-                                  <span className="text-xs font-black text-amber-400 group-hover:text-yellow-300 transition-colors">
-                                    استعراض المواد والاختبارات
+                                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-amber-200 dark:border-amber-500/20">
+                                  <span className="text-xs font-black text-amber-700 group-hover:text-yellow-700 transition-colors dark:text-amber-400 dark:group-hover:text-yellow-300">
+                                    {devViewMaterials}
                                   </span>
-                                  <ChevronRight className={`h-4 w-4 text-amber-400 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} />
+                                  <ChevronRight className={`h-4 w-4 text-amber-700 transition-transform dark:text-amber-400 ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} />
                                 </div>
                               </button>
                             );
                           })}
 
                           {(!devFeaturedYears || devFeaturedYears.length === 0) && (
-                            <div className="rounded-3xl border border-dashed border-amber-500/30 bg-amber-950/20 p-12 text-center text-amber-400 md:col-span-2">
+                            <div className="rounded-3xl border border-dashed border-amber-300 bg-amber-50 p-12 text-center text-amber-700 md:col-span-2 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-400">
                               <Star className="h-14 w-14 text-amber-600 mx-auto mb-3" />
-                              <p className="text-base font-bold">لم يتم تمييز أي اختبارات منشأة من المطور بعد.</p>
-                              <p className="text-xs text-amber-400/60 mt-2">
-                                يمكنك تمييز الاختبارات بوضع النجمة ⭐ عليها في لوحة التحكم لتظهر هنا فوراً.
+                              <p className="text-base font-bold">{devNoYearsYet}</p>
+                              <p className="text-xs text-amber-700/75 mt-2 dark:text-amber-400/60">
+                                {devNoYearsHint}
                               </p>
                             </div>
                           )}
@@ -631,7 +772,7 @@ export default function YearsClient({
                             <div className="flex items-center gap-2 text-xs font-bold text-violet-400 mb-2">
                               <span>{selectedQcmsYear?.name}</span>
                               <ChevronRight className={`h-3 w-3 ${isRtl ? "rotate-180" : ""}`} />
-                              <span>{isRtl ? "بنك امتحانات المادة" : "Exams Bank"}</span>
+                              <span>{localeText("بنك امتحانات المادة", "Banque d'examens de la matière", "Exams Bank")}</span>
                             </div>
                             <h3 className="text-3xl font-black text-white sm:text-4xl">{selectedQcmsSubject.name}</h3>
                           </div>
@@ -641,7 +782,7 @@ export default function YearsClient({
                               {selectedQcmsSubject.code || "QCM"}
                             </span>
                             <span className="rounded-2xl border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-xs font-black text-cyan-200">
-                              {(selectedQcmsSubject.examLinks || []).length} {isRtl ? "امتحان متاح" : "Exams"}
+                              {(selectedQcmsSubject.examLinks || []).length} {localeText("امتحان متاح", "examens disponibles", "Exams")}
                             </span>
                           </div>
                         </div>
@@ -651,9 +792,15 @@ export default function YearsClient({
                           <div className="flex items-center justify-between">
                             <h4 className="text-xl font-black text-white flex items-center gap-2.5">
                               <NotebookPen className="h-5 w-5 text-violet-400" />
-                              <span>{isRtl ? "قائمة نماذج الامتحانات المتاحة" : "Available Exam Papers"}</span>
+                              <span>{localeText("قائمة نماذج الامتحانات المتاحة", "Liste des modèles d'examens disponibles", "Available Exam Papers")}</span>
                             </h4>
                           </div>
+
+                          {qcmRemaining !== null && qcmRemaining >= 0 && (
+                            <div className="mb-5 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-sm font-black text-violet-200" dir="rtl">
+                              {devRemainingText(qcmRemaining)}
+                            </div>
+                          )}
 
                           {(selectedQcmsSubject.examLinks || []).length > 0 ? (
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -684,9 +831,10 @@ export default function YearsClient({
                                       href={link.url}
                                       target="_blank"
                                       rel="noreferrer"
+                                      onClick={handleExamLinkClick}
                                       className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3.5 px-4 text-xs font-black text-white shadow-lg shadow-violet-600/30 transition-all hover:scale-[1.02] hover:shadow-violet-600/50 active:scale-[0.98]"
                                     >
-                                      <span>{isRtl ? "بدء الامتحان الآن" : "Start Exam Now"}</span>
+                                      <span>{localeText("بدء الامتحان الآن", "Commencer l'examen maintenant", "Start Exam Now")}</span>
                                       <ChevronRight className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
                                     </a>
                                   </div>
@@ -698,10 +846,10 @@ export default function YearsClient({
                             <div className="rounded-3xl border border-dashed border-slate-800 bg-slate-950/60 p-12 text-center">
                               <NotebookPen className="h-14 w-14 text-slate-600 mx-auto mb-4" />
                               <h5 className="text-lg font-black text-slate-300">
-                                {isRtl ? "لا توجد روابط امتحانات لهذا المساق حالياً" : "No exam papers available for this subject yet."}
+                                {localeText("لا توجد روابط امتحانات لهذا المساق حالياً", "Aucun document d'examen disponible pour ce cours pour le moment.", "No exam papers available for this subject yet.")}
                               </h5>
                               <p className="text-xs text-slate-500 mt-2 font-medium">
-                                {isRtl ? "سيتم رفع النماذج الجديدة فور اعتمادها من قبل الإدارة." : "Exams will be uploaded soon."}
+                                {localeText("سيتم رفع النماذج الجديدة فور اعتمادها من قبل الإدارة.", "Les nouveaux modèles seront ajoutés dès leur validation par l'administration.", "Exams will be uploaded soon.")}
                               </p>
                             </div>
                           )}
@@ -857,76 +1005,7 @@ export default function YearsClient({
                             </div>
                           )}
 
-                          {/* ===== GOLDEN DEVELOPER CARD ===== */}
-                          <button
-                            onClick={() => {
-                              setDevMode(true);
-                              setSelectedDevYearId(null);
-                              setSelectedDevSubjectId(null);
-                            }}
-                            className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-[2.2rem] p-7 text-start shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-amber-500/40"
-                            style={{
-                              background: "linear-gradient(135deg, #1a1200 0%, #2d1f00 35%, #1a1200 70%, #0d0a00 100%)",
-                              border: "1.5px solid rgba(245,158,11,0.5)",
-                              boxShadow: "0 0 30px -10px rgba(245,158,11,0.25), inset 0 1px 0 rgba(255,215,0,0.15)"
-                            }}
-                          >
-                            {/* Shimmer effect */}
-                            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                              style={{
-                                background: "linear-gradient(105deg, transparent 30%, rgba(255,215,0,0.08) 50%, transparent 70%)",
-                                backgroundSize: "200% 100%",
-                                animation: "shimmer 2s infinite"
-                              }}
-                            />
-                            {/* Glow corners */}
-                            <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px]" style={{ background: "rgba(245,158,11,0.15)" }} />
-                            <div className="pointer-events-none absolute bottom-0 left-0 w-24 h-24 rounded-full blur-[50px]" style={{ background: "rgba(251,191,36,0.12)" }} />
 
-                            {/* Giant background number */}
-                            <Crown className="pointer-events-none absolute -bottom-4 -right-4 w-32 h-32 opacity-5 text-amber-400" />
-
-                            {/* Header */}
-                            <div className="relative z-10 flex items-center justify-between gap-3">
-                              <span className="rounded-xl px-3.5 py-1.5 text-xs font-black"
-                                style={{
-                                  background: "rgba(245,158,11,0.15)",
-                                  border: "1px solid rgba(245,158,11,0.35)",
-                                  color: "#fbbf24"
-                                }}
-                              >
-                                {devFeaturedYears.reduce((acc: number, y: any) =>
-                                  acc + (y.subjects || []).reduce((a: number, s: any) =>
-                                    a + (s.examLinks || []).length, 0), 0)} اختبار متاح
-                              </span>
-                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner group-hover:scale-110 transition-all duration-300"
-                                style={{
-                                  background: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.15))",
-                                  border: "1px solid rgba(245,158,11,0.4)"
-                                }}
-                              >
-                                <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                              </div>
-                            </div>
-
-                            {/* Body */}
-                            <div className="relative z-10 mt-6">
-                              <h4 className="text-2xl font-black leading-tight transition-colors" style={{ color: "#fde68a" }}>
-                                اختبارات أنشأها المطور
-                              </h4>
-                              <p className="mt-2 text-xs font-bold" style={{ color: "rgba(251,191,36,0.6)" }}>
-                                محتوى حصري ومميز من لدن فريق AuraMed
-                              </p>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="relative z-10 mt-6 flex items-center justify-between pt-4" style={{ borderTop: "1px solid rgba(245,158,11,0.2)" }}>
-                              <span className="text-xs font-black transition-colors" style={{ color: "#f59e0b" }}>
-                                تصفح الاختبارات المميزة
-                              </span>
-                              <ChevronRight className={`h-4 w-4 transition-transform ${isRtl ? "rotate-180 group-hover:-translate-x-1.5" : "group-hover:translate-x-1.5"}`} style={{ color: "#f59e0b" }} />
-                            </div>
-                          </button>
                         </div>
                       </div>
                     )}
@@ -1001,6 +1080,52 @@ export default function YearsClient({
                               </p>
                             </div>
                           </div>
+
+                          {!devMode && (
+                            <div className="mt-4">
+                              <button
+                                onClick={() => {
+                                  if (!canViewQcms) {
+                                    setShowQcmLockModal(true);
+                                    return;
+                                  }
+                                  setDevMode(true);
+                                  setSelectedDevYearId(null);
+                                  setSelectedDevSubjectId(null);
+                                }}
+                                className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl p-4 text-start shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/20"
+                                style={{
+                                  background: "linear-gradient(135deg, #1a1200 0%, #2d1f00 50%, #1a1200 100%)",
+                                  border: "1px solid rgba(245,158,11,0.4)",
+                                }}
+                              >
+                                {/* Shimmer */}
+                                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                                  style={{
+                                    background: "linear-gradient(105deg, transparent 30%, rgba(255,215,0,0.08) 50%, transparent 70%)",
+                                    backgroundSize: "200% 100%",
+                                    animation: "shimmer 2s infinite"
+                                  }}
+                                />
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                                  style={{
+                                    background: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.15))",
+                                    border: "1px solid rgba(245,158,11,0.4)"
+                                  }}
+                                >
+                                  <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-black leading-tight text-amber-200">
+                                    {devBreadcrumbLabel}
+                                  </h4>
+                                  <p className="mt-1 text-[10px] font-bold text-amber-500/80">
+                                    {devBrowseLabel}
+                                  </p>
+                                </div>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -1008,12 +1133,14 @@ export default function YearsClient({
                       <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-cyan-500/10 p-5">
                         <div className="flex items-center gap-3 mb-2">
                           <GraduationCap className="h-5 w-5 text-violet-400" />
-                          <h4 className="text-xs font-black uppercase tracking-wider text-white">{isRtl ? "نصيحة المراجعة الطبية" : "Exam Tip"}</h4>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-white">{localeText("نصيحة المراجعة الطبية", "Conseil d'examen", "EXAM TIP")}</h4>
                         </div>
                         <p className="text-xs font-medium leading-relaxed text-slate-300">
-                          {isRtl 
-                            ? "يُنصح بحل نماذج الـ QCMs فور الانتهاء من مراجعة كل فصل تثبيتاً للمعلومات ودعماً للاستحضار السريع في الامتحانات."
-                            : "Solve QCM exam papers regularly after studying each topic to reinforce long-term recall."}
+                          {localeText(
+                            "يُنصح بحل نماذج الـ QCMs بانتظام بعد دراسة كل موضوع لتعزيز التذكر طويل المدى.",
+                            "Résoudre régulièrement des sujets d'examen QCM après avoir étudié chaque sujet pour renforcer la mémoire à long terme.",
+                            "Solve QCM exam papers regularly after studying each topic to reinforce long-term recall."
+                          )}
                         </p>
                       </div>
 

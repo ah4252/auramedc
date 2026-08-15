@@ -150,7 +150,7 @@ export async function deleteQcmsSubject(id: string) {
   }
 }
 
-export async function createQcmsExamLink(qcmsSubjectId: string, label: string, url: string, isFeatured: boolean = false) {
+export async function createQcmsExamLink(qcmsSubjectId: string, label: string, url: string, isFeatured: boolean) {
   await requireAdmin();
 
   if (!(prisma as any).qcmsExamLink) {
@@ -247,9 +247,7 @@ export async function getDevFeaturedYears() {
       orderBy: { createdAt: "asc" }
     });
 
-    return years.filter((y: any) =>
-      (y.subjects || []).some((s: any) => (s.examLinks || []).length > 0)
-    );
+    return years;
   } catch (error) {
     console.error("Error fetching dev featured years:", error);
     return [];

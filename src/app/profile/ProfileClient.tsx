@@ -26,8 +26,16 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [paymentDate, setPaymentDate] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [subscriptionType, setSubscriptionType] = useState("TIMETABLE");
+  const [subscriptionType, setSubscriptionType] = useState(searchParams.get("subscriptionType") === "QCM" ? "QCM" : "TIMETABLE");
   const [receiptBase64, setReceiptBase64] = useState("");
+
+  useEffect(() => {
+    const qcmParam = searchParams.get("subscriptionType");
+    if (qcmParam === "QCM") {
+      setSubscriptionType("QCM");
+      setActiveTab("subscription");
+    }
+  }, [searchParams]);
 
   // Password change state
   const [pwLoading, setPwLoading] = useState(false);
@@ -534,6 +542,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       const txId = latestSubscription.transactionId || "";
                       const subType = txId.startsWith("TIMETABLE:") ? t("profile_subscription_type_timetable")
                         : txId.startsWith("GPA:") ? t("profile_subscription_type_gpa")
+                        : txId.startsWith("QCM:") ? "اشتراك QCM مميز"
                         : txId.startsWith("SUPPORT:") ? t("profile_subscription_type_support")
                         : t("profile_subscription_type_default");
 
@@ -663,8 +672,9 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                           <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
                             <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_fee_label")}</p>
                             <p className="text-3xl font-black text-yellow-400 text-center py-2">
-                              {subscriptionType === "TIMETABLE" ? t("profile_subscription_fee_timetable") : 
-                               subscriptionType === "GPA" ? t("profile_subscription_fee_gpa") : 
+                              {subscriptionType === "TIMETABLE" ? t("profile_subscription_fee_timetable") :
+                               subscriptionType === "GPA" ? t("profile_subscription_fee_gpa") :
+                               subscriptionType === "QCM" ? "50 دج" :
                                t("profile_subscription_fee_support")}
                             </p>
                           </div>
@@ -712,6 +722,7 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                                     {[
                                       { id: "TIMETABLE", label: t("profile_subscription_option_timetable_label"), desc: t("profile_subscription_option_timetable_desc"), price: t("profile_subscription_fee_timetable") },
                                       { id: "GPA", label: t("profile_subscription_option_gpa_label"), desc: t("profile_subscription_option_gpa_desc"), price: t("profile_subscription_fee_gpa") },
+                                      { id: "QCM", label: "اشتراك QCM مميز", desc: "فتح قسم اختبارات QCMs بعد الموافقة على الدفع.", price: "50 دج" },
                                       { id: "SUPPORT", label: t("profile_subscription_option_support_label"), desc: t("profile_subscription_option_support_desc"), price: t("profile_subscription_fee_support") }
                                     ].map((opt) => (
                                       <button

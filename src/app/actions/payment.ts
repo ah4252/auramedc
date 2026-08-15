@@ -42,15 +42,121 @@ export async function updateSubscriptionStatus(requestId: string, newStatus: str
       return { error: "صلاحيات إدارية مطلوبة" };
     }
 
+    const request = await (prisma as any).subscriptionRequest.findUnique({
+      where: { id: requestId },
+    });
+
     await (prisma as any).subscriptionRequest.update({
       where: { id: requestId },
-      data: { status: newStatus }
+      data: {
+        status: newStatus,
+        ...(newStatus === "APPROVED" && (
+          String(request?.transactionId || "").startsWith("QCM:") ||
+          String(request?.transactionId || "").startsWith("ALL:") ||
+          !String(request?.transactionId || "").includes(":")
+        ) ? { usedViews: 0, maxViews: 5 } : {}),
+      }
     });
 
     return { success: true };
   } catch (error) {
     console.error("Error updating subscription status:", error);
     return { error: "فشل تحديث الحالة" };
+  }
+}
+
+export async function getQcmRemainingViews() {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("user_token")?.value;
+
+    if (!userId) {
+      return { allowed: false, remaining: 0, maxViews: 5 };
+    }
+
+    const request = await (prisma as any).subscriptionRequest.findFirst({
+      where: {
+        userId,
+        status: "APPROVED",
+        OR: [
+          { transactionId: { startsWith: "QCM:" } },
+          { transactionId: { startsWith: "ALL:" } },
+          { transactionId: { not: { contains: ":" } } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!request) {
+      return { allowed: false, remaining: 0, maxViews: 5 };
+    }
+
+    const maxViews = Number(request.maxViews ?? 5);
+    const usedViews = Number(request.usedViews ?? 0);
+    const remaining = Math.max(0, maxViews - usedViews);
+
+    return {
+      allowed: usedViews < maxViews,
+      remaining,
+      maxViews,
+    };
+  } catch (error) {
+    console.error("Error reading QCM remaining views:", error);
+    return { allowed: false, remaining: 0, maxViews: 5 };
+  }
+}
+
+export async function consumeQcmView() {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("user_token")?.value;
+
+    if (!userId) {
+      return { allowed: false, remaining: 0, message: "login" };
+    }
+
+    const request = await (prisma as any).subscriptionRequest.findFirst({
+      where: {
+        userId,
+        status: "APPROVED",
+        OR: [
+          { transactionId: { startsWith: "QCM:" } },
+          { transactionId: { startsWith: "ALL:" } },
+          { transactionId: { not: { contains: ":" } } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!request) {
+      return { allowed: false, remaining: 0, message: "missing" };
+    }
+
+    const maxViews = Number(request.maxViews ?? 5);
+    const usedViews = Number(request.usedViews ?? 0);
+
+    if (usedViews >= maxViews) {
+      await (prisma as any).subscriptionRequest.update({
+        where: { id: request.id },
+        data: { status: "EXPIRED" },
+      });
+      return { allowed: false, remaining: 0, message: "limit_reached" };
+    }
+
+    const nextUsedViews = usedViews + 1;
+    await (prisma as any).subscriptionRequest.update({
+      where: { id: request.id },
+      data: { usedViews: nextUsedViews },
+    });
+
+    return {
+      allowed: true,
+      remaining: Math.max(0, maxViews - nextUsedViews),
+      message: "ok",
+    };
+  } catch (error) {
+    console.error("Error consuming QCM view:", error);
+    return { allowed: false, remaining: 0, message: "error" };
   }
 }
 

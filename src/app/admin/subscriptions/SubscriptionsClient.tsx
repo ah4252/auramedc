@@ -19,6 +19,9 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
     if (txId.startsWith("GPA:")) {
       return { type: "معدل", id: txId.replace("GPA:", "") };
     }
+    if (txId.startsWith("QCM:")) {
+      return { type: "اختبارات", id: txId.replace("QCM:", "") };
+    }
     if (txId.startsWith("SUPPORT:")) {
       return { type: "دعم", id: txId.replace("SUPPORT:", "") };
     }
@@ -137,6 +140,8 @@ export default function SubscriptionsClient({ initialRequests }: { initialReques
                               ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                               : type === "معدل"
                               ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                              : type === "اختبارات"
+                              ? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
                               : type === "دعم"
                               ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                               : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"

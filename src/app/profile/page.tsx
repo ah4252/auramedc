@@ -8,53 +8,66 @@ import { getNews } from "@/app/actions/news";
 export default async function ProfilePage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_token")?.value;
-  
+
   if (!userId) {
     redirect("/login");
   }
 
-  const user = await (prisma as any).user.findUnique({
-    where: { id: userId },
-    include: {
-      progress: {
-        include: {
-          lesson: {
-            include: {
-              subject: true
-            }
-          }
-        },
-        orderBy: {
-          updatedAt: 'desc'
-        }
+  const [user, progress, favorites, gpaCalculations] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        studyYear: true,
+        wilaya: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        facebook: true,
+        instagram: true,
+        telegram: true,
+        passwordChangedAt: true,
+        lastActiveAt: true,
+        lastReadNewsAt: true,
       },
-      favorites: {
-        include: {
-          lesson: {
-            include: {
-              subject: true
-            }
-          }
-        }
-      },
-      gpaCalculations: {
-        orderBy: {
-          createdAt: 'desc'
+    }),
+    prisma.progress.findMany({
+      where: { userId },
+      include: {
+        lesson: {
+          include: {
+            subject: true,
+          },
         },
-        take: 5
-      }
-    }
-  });
+      },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.favorite.findMany({
+      where: { userId },
+      include: {
+        lesson: {
+          include: {
+            subject: true,
+          },
+        },
+      },
+    }),
+    (prisma as any).gpaCalculation 
+      ? (prisma as any).gpaCalculation.findMany({
+          where: { userId },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        })
+      : Promise.resolve([]),
+  ]);
 
   if (user) {
-    const socialData: any[] = await prisma.$queryRaw`
-      SELECT telegram, instagram, facebook FROM "User" WHERE id = ${userId}
-    `;
-    if (socialData.length > 0) {
-      user.telegram = socialData[0].telegram;
-      user.instagram = socialData[0].instagram;
-      user.facebook = socialData[0].facebook;
-    }
+    (user as any).progress = progress;
+    (user as any).favorites = favorites;
+    (user as any).gpaCalculations = gpaCalculations;
   }
 
   if (!user) {

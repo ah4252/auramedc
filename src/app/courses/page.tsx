@@ -2,11 +2,12 @@ import { Suspense } from "react";
 import { getCategories } from "@/app/actions/content";
 import { getPharmacySections } from "@/app/actions/pharmacy";
 import { getQcmsYears, getDevFeaturedYears } from "@/app/actions/qcmsAdmin";
-import { canAccessPharmacy } from "@/lib/auth-helpers";
+import { canAccessPharmacy, canAccessQcms } from "@/lib/auth-helpers";
 import YearsClient from "./components/YearsClient";
 
 export default async function CoursesPage() {
   const canViewPharmacy = await canAccessPharmacy();
+  const canViewQcms = await canAccessQcms();
   const [yearCategories, pharmacyCategories, qcmsYears, devFeaturedYears] = await Promise.all([
     getCategories("YEAR"),
     canViewPharmacy ? getPharmacySections() : Promise.resolve([]),
@@ -22,6 +23,7 @@ export default async function CoursesPage() {
         qcmsYears={JSON.parse(JSON.stringify(qcmsYears))}
         devFeaturedYears={JSON.parse(JSON.stringify(devFeaturedYears))}
         canViewPharmacy={canViewPharmacy}
+        canViewQcms={canViewQcms}
       />
     </Suspense>
   );

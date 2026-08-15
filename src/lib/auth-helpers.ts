@@ -113,6 +113,10 @@ export function isThirdYearStudyYear(value?: string | null): boolean {
   return simplePatterns.some(pattern => pattern.test(normalized));
 }
 
+export function isSubscriptionExemptEmail(email?: string | null): boolean {
+  return (email ?? "").trim().toLowerCase() === "abendakfal07@gmail.com";
+}
+
 export async function canAccessPharmacy(): Promise<boolean> {
   const userId = await getCurrentUserId();
   if (!userId) return false;
@@ -123,6 +127,37 @@ export async function canAccessPharmacy(): Promise<boolean> {
   });
 
   return isThirdYearStudyYear(user?.studyYear ?? null);
+}
+
+export async function canAccessQcms(): Promise<boolean> {
+  const userId = await getCurrentUserId();
+  if (!userId) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+
+  if (isSubscriptionExemptEmail(user?.email ?? null)) return true;
+
+  const approved = await prisma.subscriptionRequest.findFirst({
+    where: {
+      userId,
+      status: "APPROVED",
+      OR: [
+        { transactionId: { startsWith: "QCM:" } },
+        { transactionId: { startsWith: "ALL:" } },
+        { transactionId: { not: { contains: ":" } } }
+      ]
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!approved) return false;
+
+  const used = Number((approved as any).usedViews ?? 0);
+  const max = Number((approved as any).maxViews ?? 5);
+  return used < max;
 }
 
 // ============================================================
