@@ -36,6 +36,19 @@ export async function GET() {
 
     return NextResponse.json(latest);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("latest-update DB error:", error);
+
+    const message = (error?.message || "").toLowerCase();
+    const isDatabaseUnavailable =
+      message.includes("can't reach database server") ||
+      message.includes("connection refused") ||
+      message.includes("timeout") ||
+      message.includes("database") && message.includes("unreachable");
+
+    if (isDatabaseUnavailable) {
+      return NextResponse.json({ id: null, status: "database_unavailable" }, { status: 200 });
+    }
+
+    return NextResponse.json({ id: null, status: "error" }, { status: 200 });
   }
 }
