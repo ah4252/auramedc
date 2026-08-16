@@ -925,11 +925,7 @@ export default function YearsClient({
                             </h4>
                           </div>
 
-                          {qcmRemaining !== null && qcmRemaining >= 0 && (
-                            <div className="mb-5 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-3 text-sm font-black text-violet-200" dir="rtl">
-                              {devRemainingText(qcmRemaining)}
-                            </div>
-                          )}
+
 
                           {(selectedQcmsSubject.examLinks || []).length > 0 ? (
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -1276,6 +1272,40 @@ export default function YearsClient({
                                   </p>
                                 </div>
                               </button>
+
+                              {/* Quiz Button */}
+                              <Link
+                                href="/quiz"
+                                className="mt-3 group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl p-4 text-start shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-purple-500/20"
+                                style={{
+                                  background: "linear-gradient(135deg, #160f24 0%, #2a1640 50%, #160f24 100%)",
+                                  border: "1px solid rgba(168,85,247,0.4)",
+                                }}
+                              >
+                                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                                  style={{
+                                    background: "linear-gradient(105deg, transparent 30%, rgba(168,85,247,0.08) 50%, transparent 70%)",
+                                    backgroundSize: "200% 100%",
+                                    animation: "shimmer 2s infinite"
+                                  }}
+                                />
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                                  style={{
+                                    background: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(192,132,252,0.15))",
+                                    border: "1px solid rgba(168,85,247,0.4)"
+                                  }}
+                                >
+                                  <Sparkles className="h-6 w-6 text-purple-400" />
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-black leading-tight text-purple-200">
+                                    {isRtl ? "اختبارات Quiz" : "Quiz Tests"}
+                                  </h4>
+                                  <p className="mt-1 text-[10px] font-bold text-purple-400/80">
+                                    {isRtl ? "اختبر معلوماتك" : "Test your knowledge"}
+                                  </p>
+                                </div>
+                              </Link>
                             </div>
                           )}
                         </div>
