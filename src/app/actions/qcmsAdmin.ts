@@ -16,7 +16,7 @@ function isQcmsClientReady() {
   return Boolean((prisma as any).qcmsYear && (prisma as any).qcmsSubject);
 }
 
-export async function getQcmsYears() {
+export async function getQcmsYears(includeFeatured: boolean = true) {
   try {
     if (!(prisma as any).qcmsYear) {
       console.warn("QCMS Prisma model qcmsYear is not available in generated client");
@@ -30,6 +30,7 @@ export async function getQcmsYears() {
     if ((prisma as any).qcmsExamLink) {
       includeSubjects.include = {
         examLinks: {
+          where: includeFeatured ? undefined : { isFeatured: false },
           orderBy: { createdAt: "asc" }
         }
       };

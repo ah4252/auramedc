@@ -11,7 +11,7 @@ export default async function CoursesPage() {
   const [yearCategories, pharmacyCategories, qcmsYears, devFeaturedYears] = await Promise.all([
     getCategories("YEAR"),
     canViewPharmacy ? getPharmacySections() : Promise.resolve([]),
-    getQcmsYears(),
+    getQcmsYears(false),
     getDevFeaturedYears(),
   ]);
 
