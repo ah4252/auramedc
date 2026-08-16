@@ -685,11 +685,7 @@ export default function YearsClient({
                             </h4>
                           </div>
 
-                          {qcmRemaining !== null && qcmRemaining >= 0 && (
-                            <div className="mb-5 rounded-2xl border border-amber-300 bg-amber-100 px-4 py-3 text-sm font-black text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" dir="rtl">
-                              {devRemainingText(qcmRemaining)}
-                            </div>
-                          )}
+
 
                           {(selectedDevSubject.examLinks || []).length > 0 ? (
                             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
