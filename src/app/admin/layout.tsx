@@ -29,16 +29,6 @@ export default async function AdminLayout({
     where: { status: "PENDING" }
   });
 
-  // جلب عدد طلبات الاشتراك المعلقة
-  let pendingSubscriptionCount = 0;
-  try {
-    pendingSubscriptionCount = await (prisma as any).subscriptionRequest.count({
-      where: { status: "PENDING" }
-    });
-  } catch (error) {
-    // Ignore error if table doesn't exist yet
-  }
-
   // جلب إجمالي المستخدمين لمعرفة المستخدمين الجدد
   const totalUsersCount = await prisma.user.count();
 
@@ -49,7 +39,6 @@ export default async function AdminLayout({
         toolsProtected={settings.toolsProtectionEnabled} 
         toolsUnlocked={toolsUnlocked} 
         pendingRecoveryCount={pendingRecoveryCount}
-        pendingSubscriptionCount={pendingSubscriptionCount}
         totalUsersCount={totalUsersCount}
       />
 

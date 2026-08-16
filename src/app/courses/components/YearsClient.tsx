@@ -5,7 +5,6 @@ import Link from "next/link";
 import { BookOpen, GraduationCap, Sparkles, ChevronRight, FlaskConical, Search, Pill, Layers, Image as ImageIcon, ArrowLeft, ArrowRight, NotebookPen, Star, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "@/context/LocaleProvider.client";
-import { consumeQcmView, getQcmRemainingViews } from "@/app/actions/payment";
 
 import { useSearchParams } from "next/navigation";
 
@@ -41,12 +40,10 @@ export default function YearsClient({
   const rawTab = searchParams.get("tab");
   const initialTab = rawTab === "pharmacy" && canViewPharmacy ? "pharmacy" : rawTab === "qcms" ? "qcms" : "years";
   const [activeTab, setActiveTab] = useState<"years" | "pharmacy" | "qcms">(initialTab);
-  const [showQcmLockModal, setShowQcmLockModal] = useState(false);
-  const [qcmLimitReached, setQcmLimitReached] = useState(false);
   const [pharmacySearch, setPharmacySearch] = useState("");
   const [selectedQcmsYearId, setSelectedQcmsYearId] = useState<string | null>(null);
   const [selectedQcmsSubjectId, setSelectedQcmsSubjectId] = useState<string | null>(null);
-  const [qcmRemaining, setQcmRemaining] = useState<number | null>(null);
+
 
   // Developer mode state
   const [devMode, setDevMode] = useState(false);
@@ -56,15 +53,7 @@ export default function YearsClient({
   const yearsContentKey = `${devMode ? "dev" : "qcm"}-${selectedDevYearId ?? "none"}-${selectedDevSubjectId ?? "none"}-${selectedQcmsYearId ?? "none"}-${selectedQcmsSubjectId ?? "none"}`;
   const qcmsViewKey = `${devMode ? "dev" : "qcm"}-${selectedDevYearId ?? "none"}-${selectedDevSubjectId ?? "none"}-${selectedQcmsYearId ?? "none"}-${selectedQcmsSubjectId ?? "none"}`;
 
-  useEffect(() => {
-    if (!canViewDeveloperQcms) return;
 
-    getQcmRemainingViews().then((result) => {
-      if (typeof result?.remaining === "number") {
-        setQcmRemaining(result.remaining);
-      }
-    });
-  }, [canViewDeveloperQcms]);
 
   const filteredPharmacy = pharmacyCategories.filter(s =>
     s.name.toLowerCase().includes(pharmacySearch.toLowerCase()) ||
@@ -184,17 +173,7 @@ export default function YearsClient({
     `${remaining} files remaining out of 5`
   );
 
-  const qcmLockTitle = qcmLimitReached
-    ? localeText("تم الوصول إلى الحد المسموح", "Vous avez atteint la limite autorisée", "Limit reached")
-    : localeText("اشتراك QCM مميز", "Abonnement QCM premium", "Premium QCM subscription");
 
-  const qcmLockDescription = qcmLimitReached
-    ? localeText("تم الوصول إلى الحد المسموح — يرجى تجديد الاشتراك.", "Vous avez atteint la limite autorisée — veuillez renouveler votre abonnement.", "You have reached the allowed limit — please renew your subscription.")
-    : localeText("هذا القسم محجوب حتى يتم الموافقة على اشتراكك. سعر الاشتراك هو ", "Cette section est verrouillée jusqu'à validation de votre abonnement. Le prix est de ", "This section is locked until your subscription is approved. The price is ");
-
-  const qcmLockPriceText = localeText("إعادة الاشتراك 50 دج", "Renouvellement 50 DZD", "Renewal 50 DZD");
-  const qcmCloseLabel = localeText("إغلاق", "Fermer", "Close");
-  const qcmRequestLabel = localeText("طلب الاشتراك", "Demander l'abonnement", "Request subscription");
   const devBreadcrumbLabel = localeText("اختبارات أنشأها المطور", "Tests créés par le développeur", "Developer-created tests");
   const devBrowseLabel = localeText("تصفح الاختبارات المميزة", "Parcourir les tests premium", "Browse premium tests");
   const devSubjectStream = localeText("نماذج الاختبارات المتاحة", "Modèles d'examens disponibles", "Available developer exam models");
@@ -259,22 +238,8 @@ export default function YearsClient({
   };
 
   const handleDeveloperExamLinkClick = async (event: any) => {
-    if (!canViewDeveloperQcms) {
-      event.preventDefault();
-      setQcmLimitReached(false);
-      setShowQcmLockModal(true);
-      return;
-    }
-
-    const result = await consumeQcmView();
-    if (!result?.allowed) {
-      event.preventDefault();
-      setQcmLimitReached(true);
-      setShowQcmLockModal(true);
-      return;
-    }
-
-    setQcmRemaining(typeof result.remaining === "number" ? result.remaining : qcmRemaining);
+    event.preventDefault();
+    window.open(event.currentTarget.href, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -367,62 +332,7 @@ export default function YearsClient({
         </Link>
       </div>
 
-      <AnimatePresence>
-        {showQcmLockModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 20 }}
-              className="w-full max-w-md rounded-[2rem] border border-violet-500/30 bg-[#0b1220] p-8 text-center shadow-[0_0_50px_rgba(167,139,250,0.25)]"
-              dir="rtl"
-            >
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/15 text-violet-300">
-                <Sparkles className="h-8 w-8" />
-              </div>
-              <h3 className="text-2xl font-black text-white">{qcmLockTitle}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                {qcmLimitReached ? (
-                  qcmLockDescription
-                ) : (
-                  <>
-                    {qcmLockDescription}<span className="font-black text-violet-300">50 دج</span>{lang === "fr" ? "" : lang === "en" ? "" : ""}
-                  </>
-                )}
-              </p>
-              <div className="mt-6 rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 text-violet-200 font-black text-xl">
-                {qcmLockPriceText}
-              </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button
-                  onClick={() => {
-                    setShowQcmLockModal(false);
-                    setQcmLimitReached(false);
-                  }}
-                  className="flex-1 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm font-black text-slate-200 transition hover:bg-slate-800"
-                >
-                  {qcmCloseLabel}
-                </button>
-                <Link
-                  href="/profile?tab=subscription&subscriptionType=QCM"
-                  onClick={() => {
-                    setShowQcmLockModal(false);
-                    setQcmLimitReached(false);
-                  }}
-                  className="flex-1 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-black text-white transition hover:from-violet-500 hover:to-indigo-500"
-                >
-                  {qcmRequestLabel}
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* ===== YEARS TAB CONTENT ===== */}
       <AnimatePresence mode="wait">

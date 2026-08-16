@@ -160,36 +160,9 @@ export async function canAccessPharmacy(): Promise<boolean> {
 export async function canAccessQcms(): Promise<boolean> {
   try {
     const userId = await getCurrentUserId();
-    if (!userId) return false;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
-    });
-
-    if (isSubscriptionExemptEmail(user?.email ?? null)) return true;
-
-    const approvedRequests = await prisma.subscriptionRequest.findMany({
-      where: {
-        userId,
-        status: "APPROVED",
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const approved = approvedRequests.find((request: any) => isQcmSubscriptionTransactionId(request?.transactionId)) ?? null;
-
-    if (!approved) return false;
-
-    const used = Number((approved as any).usedViews ?? 0);
-    const max = Number((approved as any).maxViews ?? 5);
-    return used < max;
+    return !!userId;
   } catch (error) {
-    if (isDatabaseUnavailableError(error)) {
-      console.warn("Database unavailable while checking QCM access:", (error as any)?.message || error);
-      return false;
-    }
-    throw error;
+    return false;
   }
 }
 

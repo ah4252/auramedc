@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/context/LocaleProvider.client";
 import { updateProfile, changePassword, deleteAccount } from "@/app/actions/auth";
-import { submitSubscriptionRequest } from "@/app/actions/payment";
 import { deleteGPACalculation, deleteAllGPACalculations } from "@/app/actions/gpaUser";
 import { useSearchParams, useRouter } from "next/navigation";
 import { User, Camera, Save, ArrowRight, CheckCircle, BookOpen, Heart, GraduationCap, Clock, PlayCircle, Inbox, ExternalLink, Zap, Trash2, Instagram, Facebook, Send, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, Sparkles, TrendingUp, Award, X, Calendar, MapPin, ChevronDown } from "lucide-react";
@@ -12,7 +11,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getYoutubeThumbnail, getSocialUrl, compressImage } from "@/lib/utils";
 
-export default function ProfileClient({ user, news = [], latestSubscription = null }: { user: any, news?: any[], latestSubscription?: any }) {
+export default function ProfileClient({ user, news = [] }: { user: any, news?: any[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t, lang } = useLocale();
@@ -21,32 +20,11 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // Payment state
-  const [transactionId, setTransactionId] = useState("");
-  const [paymentDate, setPaymentDate] = useState("");
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [subscriptionType, setSubscriptionType] = useState(() => {
-    const type = searchParams.get("subscriptionType");
-    if (type === "GPA") return "GPA";
-    if (type === "QCM") return "QCM";
-    if (type === "TIMETABLE") return "TIMETABLE";
-    return "TIMETABLE";
-  });
-  const [receiptBase64, setReceiptBase64] = useState("");
 
-  useEffect(() => {
-    const type = searchParams.get("subscriptionType");
-    const requestedTab = searchParams.get("tab");
 
-    if (type === "GPA" || type === "QCM" || type === "TIMETABLE") {
-      setSubscriptionType(type);
-    }
 
-    if (requestedTab === "subscription" || type === "GPA" || type === "QCM" || type === "TIMETABLE") {
-      setActiveTab("subscription");
-    }
-  }, [searchParams]);
+
+
 
   // Password change state
   const [pwLoading, setPwLoading] = useState(false);
@@ -279,7 +257,6 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                 {[
                   { id: "overview", label: t("profile_tab_overview"), icon: BookOpen },
                   { id: "favorites", label: t("profile_tab_favorites"), icon: Heart },
-                  { id: "subscription", label: t("profile_tab_subscription"), icon: Zap },
                   { id: "settings", label: t("profile_tab_settings"), icon: User },
                 ].map((tab) => {
                   const isActive = activeTab === tab.id;
@@ -532,305 +509,6 @@ export default function ProfileClient({ user, news = [], latestSubscription = nu
                       <p className="text-slate-500 dark:text-slate-400 font-bold">{t("profile_favorites_empty_description")}</p>
                     </div>
                   )}
-                </motion.div>
-              )}
-
-              {/* SUBSCRIPTION TAB */}
-              {activeTab === "subscription" && (
-                <motion.div
-                  key="subscription"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-6"
-                >
-                  <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-600" />
-                    
-                    {/* Status Banner - Dynamic by Subscription Type */}
-                    {latestSubscription && (() => {
-                      const txId = latestSubscription.transactionId || "";
-                      const subType = txId.startsWith("TIMETABLE:") ? t("profile_subscription_type_timetable")
-                        : txId.startsWith("GPA:") ? t("profile_subscription_type_gpa")
-                        : txId.startsWith("QCM:") ? "اشتراك QCM مميز"
-                        : txId.startsWith("SUPPORT:") ? t("profile_subscription_type_support")
-                        : t("profile_subscription_type_default");
-
-                      if (latestSubscription.status === "APPROVED") {
-                        return (
-                          <div className="mb-8 flex items-start gap-4 bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-2xl">
-                            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 shrink-0">
-                              <CheckCircle className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <h4 className="font-black text-emerald-600 dark:text-emerald-400 text-lg">{t("profile_subscription_approved_heading")}</h4>
-                              <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-1">
-                                {t("profile_subscription_approved_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_approved_description_suffix")}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-                      if (latestSubscription.status === "REJECTED") {
-                        return (
-                          <div className="mb-8 flex items-start gap-4 bg-rose-500/10 border border-rose-500/30 p-5 rounded-2xl">
-                            <div className="p-2 bg-rose-500/20 rounded-xl text-rose-500 shrink-0">
-                              <AlertCircle className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <h4 className="font-black text-rose-600 dark:text-rose-400 text-lg">{t("profile_subscription_rejected_heading")}</h4>
-                              <p className="text-sm text-rose-600/80 dark:text-rose-400/80 font-bold mt-1">
-                                {t("profile_subscription_rejected_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_rejected_description_suffix")}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-                      if (latestSubscription.status === "PENDING") {
-                        return (
-                          <div className="mb-8 flex items-start gap-4 bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl">
-                            <div className="p-2 bg-amber-500/20 rounded-xl text-amber-500 shrink-0">
-                              <Clock className="w-6 h-6" />
-                            </div>
-                            <div>
-                              <h4 className="font-black text-amber-600 dark:text-amber-400 text-lg">{t("profile_subscription_pending_heading")}</h4>
-                              <p className="text-sm text-amber-600/80 dark:text-amber-400/80 font-bold mt-1">
-                                {t("profile_subscription_pending_description_prefix")} <span className="font-black">{subType}</span> {t("profile_subscription_pending_description_suffix")}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                    
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="p-3 bg-yellow-500/10 rounded-2xl text-yellow-500 shadow-inner">
-                        <Zap className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-black text-slate-800 dark:text-white">{t("profile_subscription_title")}</h2>
-                        <p className="text-slate-500 font-bold mt-1">{t("profile_subscription_description")}</p>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[2.5rem] border border-slate-200/40 dark:border-slate-700/40 bg-slate-50 dark:bg-slate-900/30 p-8 mb-8">
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mb-4">{t("profile_subscription_guide_title")}</h3>
-                      <div className="space-y-4 text-slate-600 dark:text-slate-300">
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_1_title")}</h4>
-                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_1_desc")}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_2_title")}</h4>
-                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_2_desc")}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_guide_step_3_title")}</h4>
-                          <p className="mt-2 text-sm leading-relaxed">{t("profile_subscription_guide_step_3_desc")}</p>
-                        </div>
-                        <div className="rounded-3xl border border-slate-200/30 dark:border-slate-700/30 bg-white/80 dark:bg-slate-950/80 p-4">
-                          <h4 className="font-bold text-slate-900 dark:text-white">{t("profile_subscription_payment_policy_title")}</h4>
-                          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{t("profile_subscription_payment_policy_desc")}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {/* BaridiMob Info */}
-                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] p-8 text-white relative overflow-hidden border border-slate-700 shadow-xl">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                        <div className="absolute bottom-0 left-0 w-40 h-40 bg-medical-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-                        
-                        <div className="flex justify-between items-start mb-8 relative z-10">
-                          <div>
-                            <h3 className="text-2xl font-black mb-1 text-yellow-400">{t("profile_payment_baridimob_title")}</h3>
-                            <p className="text-slate-400 text-sm font-bold">{t("profile_payment_baridimob_description")}</p>
-                          </div>
-                          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-inner">
-                            <Zap className="w-7 h-7 text-yellow-400" />
-                          </div>
-                        </div>
-
-                        <div className="space-y-4 relative z-10">
-                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors group relative">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-2 text-right flex items-center justify-between">
-                              <span>{t("profile_subscription_account_number_label")}</span>
-                            </p>
-                            <div 
-                              className="relative cursor-pointer" 
-                              onClick={() => {
-                                navigator.clipboard.writeText("00799999004272170042");
-                                alert(t("profile_subscription_account_copied"));
-                              }}
-                              title={t("profile_subscription_copy_title")}
-                            >
-                              <p className="font-mono text-lg md:text-xl font-bold tracking-widest text-center py-4 bg-black/30 rounded-xl select-all border border-white/5 group-hover:border-yellow-500/30 transition-colors" dir="ltr">
-                                007 99999 0042721700 42
-                              </p>
-                              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-yellow-400 transition-colors bg-white/5 p-2 rounded-lg backdrop-blur-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_full_name_label")}</p>
-                            <p className="text-lg font-bold text-center py-1">Ahmed BD</p>
-                          </div>
-
-                          <div className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1 text-right">{t("profile_subscription_fee_label")}</p>
-                            <p className="text-3xl font-black text-yellow-400 text-center py-2">
-                              {subscriptionType === "TIMETABLE" ? t("profile_subscription_fee_timetable") :
-                               subscriptionType === "GPA" ? t("profile_subscription_fee_gpa") :
-                               subscriptionType === "QCM" ? "50 دج" :
-                               t("profile_subscription_fee_support")}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Form */}
-                      <div className="flex flex-col justify-center">
-                        <div className="bg-slate-50 dark:bg-slate-800/30 p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
-                          <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-emerald-500" /> {t("profile_payment_confirm_title")}
-                          </h3>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mb-8 leading-relaxed">
-                            {t("profile_payment_confirm_description")}
-                          </p>
-                          
-                          <form className="space-y-5" onSubmit={async (e) => { 
-                            e.preventDefault(); 
-                            if (!transactionId || !paymentDate || !receiptBase64) return;
-                            setPaymentLoading(true);
-                            // Prefix the transactionId with subscriptionType
-                            const prefixedTxId = `${subscriptionType}:${transactionId}`;
-                            const res = await submitSubscriptionRequest(prefixedTxId, paymentDate, receiptBase64);
-                            setPaymentLoading(false);
-                            if (res?.success) {
-                              setPaymentSuccess(true);
-                              setTransactionId("");
-                              setPaymentDate("");
-                              setReceiptBase64("");
-                            } else {
-                              alert(res?.error || t("profile_generic_error"));
-                            }
-                          }}>
-                            {paymentSuccess ? (
-                              <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center text-amber-600 dark:text-amber-400">
-                                <Clock className="w-12 h-12 mx-auto mb-3 text-amber-500 animate-pulse" />
-                                <h4 className="font-black text-lg mb-1">{t("profile_payment_request_sent_title")}</h4>
-                                <p className="text-sm font-bold">{t("profile_payment_request_sent_description")}</p>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="space-y-3 mb-6">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_subscription_select_label")}</label>
-                                  <div className="grid grid-cols-1 gap-3">
-                                    {[
-                                      { id: "TIMETABLE", label: t("profile_subscription_option_timetable_label"), desc: t("profile_subscription_option_timetable_desc"), price: t("profile_subscription_fee_timetable") },
-                                      { id: "GPA", label: t("profile_subscription_option_gpa_label"), desc: t("profile_subscription_option_gpa_desc"), price: t("profile_subscription_fee_gpa") },
-                                      { id: "QCM", label: "اشتراك QCM مميز", desc: "فتح قسم اختبارات QCMs بعد الموافقة على الدفع.", price: "50 دج" },
-                                      { id: "SUPPORT", label: t("profile_subscription_option_support_label"), desc: t("profile_subscription_option_support_desc"), price: t("profile_subscription_fee_support") }
-                                    ].map((opt) => (
-                                      <button
-                                        key={opt.id}
-                                        type="button"
-                                        onClick={() => setSubscriptionType(opt.id)}
-                                        className={`flex items-start justify-between p-4 rounded-2xl border-2 text-right transition-all hover:bg-slate-100 dark:hover:bg-slate-800/40 ${
-                                          subscriptionType === opt.id
-                                            ? "border-yellow-500 bg-yellow-500/5 dark:bg-yellow-500/10"
-                                            : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/10"
-                                        }`}
-                                      >
-                                        <div className="flex-1 pl-4">
-                                          <div className="font-bold text-slate-800 dark:text-white text-sm">{opt.label}</div>
-                                          <div className="text-[11px] text-slate-400 mt-1 leading-normal font-medium">{opt.desc}</div>
-                                        </div>
-                                        <div className="text-right shrink-0 flex flex-col items-end justify-center">
-                                          <span className="text-xs font-black text-yellow-500">{opt.price}</span>
-                                          <div className={`w-5 h-5 rounded-full border-2 mt-2 flex items-center justify-center ${
-                                            subscriptionType === opt.id ? "border-yellow-500 bg-yellow-500" : "border-slate-300 dark:border-slate-600"
-                                          }`}>
-                                            {subscriptionType === opt.id && <div className="w-2 h-2 rounded-full bg-white" />}
-                                          </div>
-                                        </div>
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_transaction_id_label")}</label>
-                                  <input 
-                                    type="text" 
-                                    placeholder={t("profile_payment_transaction_id_placeholder")} 
-                                    required
-                                    value={transactionId}
-                                    onChange={(e) => setTransactionId(e.target.value)}
-                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
-                                  />
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_date_label")}</label>
-                                  <input 
-                                    type="date" 
-                                    required
-                                    title={t("profile_payment_date_label")}
-                                    placeholder={t("profile_payment_date_placeholder")}
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 outline-none transition-all font-bold text-slate-800 dark:text-white text-center"
-                                  />
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block text-right">{t("profile_payment_receipt_image_label")} <span className="text-rose-500">*</span></label>
-                                  <input 
-                                    type="file"
-                                    required
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => setReceiptBase64(reader.result as string);
-                                        reader.readAsDataURL(file);
-                                      } else {
-                                        setReceiptBase64("");
-                                      }
-                                    }}
-                                    className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-yellow-500 outline-none transition-all font-bold text-slate-800 dark:text-white text-right file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-yellow-500/10 file:text-yellow-600 hover:file:bg-yellow-500/20"
-                                  />
-                                </div>
-
-                                <button 
-                                  type="submit" 
-                                  disabled={paymentLoading || !receiptBase64}
-                                  className="w-full py-4 mt-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2 text-lg hover:-translate-y-1 group disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {paymentLoading ? t("profile_payment_sending") : (
-                                    <><Send className="w-5 h-5 group-hover:scale-110 transition-transform" /> {t("profile_payment_submit_button")}</>
-                                  )}
-                                </button>
-                              </>
-                            )}
-                          </form>
-
-                          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
-                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-3">{t("profile_payment_receipt_note")}</p>
-                            <a href="http://t.me/chi_jkoa" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white rounded-2xl font-black transition-all text-sm hover:shadow-[0_5px_15px_rgba(14,165,233,0.3)]">
-                              <Send className="w-4 h-4" /> {t("profile_contact_support_button")}
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </motion.div>
               )}
 

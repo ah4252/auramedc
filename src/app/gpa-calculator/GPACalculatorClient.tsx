@@ -26,7 +26,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
   const [saveLoading, setSaveLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
   const [showUsageModal, setShowUsageModal] = useState(false);
   const [didRedirect, setDidRedirect] = useState(false);
   const [reportId, setReportId] = useState("MP-00000");
@@ -120,18 +120,6 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
 
   const handleExport = async () => {
     if (!certificateRef.current || !selectedYear) return;
-    
-    // Check download limit
-    const isExcluded = userEmail === "abendakfal07@gmail.com" || localStorage.getItem("unlimited_gpa") === "true";
-    const storageKey = `gpa_downloads_${userId || 'guest'}_${selectedYear.id}`;
-    let downloads = parseInt(localStorage.getItem(storageKey) || "0", 10);
-    
-    const allowedDownloads = isExcluded ? Infinity : (activeSubscriptionsCount === 0 ? 2 : 2 + (activeSubscriptionsCount * 5));
-    
-    if (downloads >= allowedDownloads) {
-      setShowPaymentModal(true);
-      return;
-    }
 
     setExportLoading(true);
     
@@ -411,12 +399,6 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                     <span className="relative text-sm font-bold text-slate-500 dark:text-slate-300 mt-2 z-10 uppercase tracking-widest">{t("gpa_overall_label")}</span>
                   </div>
 
-                  {hasActiveSubscription && didRedirect && (
-                    <div className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-emerald-600 dark:text-emerald-400 text-center flex items-center justify-center gap-2 font-bold text-sm">
-                      <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500 animate-bounce" />
-                      <span>{t("gpa_unlimited_download_active")}</span>
-                    </div>
-                  )}
 
                   {!userId && (
                     <div className="mt-8 p-6 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl relative overflow-hidden group">
@@ -702,53 +684,6 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
         )}
       </AnimatePresence>
 
-      {/* Payment Modal */}
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute inset-0 bg-slate-900/80 backdrop-blur-md"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden"
-            >
-              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-yellow-400 to-amber-600" />
-              
-              <div className="flex flex-col items-center text-center mt-2 mb-8">
-                <div className="w-20 h-20 bg-yellow-500/10 rounded-[2rem] flex items-center justify-center mb-5 border border-yellow-500/20">
-                  <Award className="w-10 h-10 text-yellow-500" />
-                </div>
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white mb-3">{t("gpa_payment_modal_title")}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
-                    {t("gpa_payment_modal_body_prefix")}<span className="text-yellow-500 font-black">{t("gpa_payment_modal_price")}</span>{t("gpa_payment_modal_body_suffix")}
-                  </p>
-                <Link 
-                  href="/profile?tab=subscription"
-                  onClick={() => {
-                    localStorage.setItem("gpa_payment_redirected", "true");
-                    setDidRedirect(true);
-                  }}
-                  className="w-full py-4 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-[0_10px_30px_-10px_rgba(245,158,11,0.5)] text-lg hover:-translate-y-1 group"
-                >
-                  <span>{t("gpa_payment_modal_action")}</span>
-                  <ArrowRight className="w-5 h-5 group-hover:-translate-x-1 transition-transform rotate-180" />
-                </Link>
-                <button 
-                  onClick={() => setShowPaymentModal(false)} 
-                  className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-black transition-all"
-                >
-                  {t("gpa_payment_modal_cancel")}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

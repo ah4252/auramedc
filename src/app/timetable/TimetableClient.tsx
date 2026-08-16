@@ -51,7 +51,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   const { saveFile } = useAuraDownloader();
   const certificateRef = useRef<HTMLDivElement>(null);
   const [downloadCount, setDownloadCount] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
 
   // Unique local storage key per user based on their email
   const downloadKey = userEmail ? `timetableDownloadCount_${userEmail}` : "timetableDownloadCount_guest";
@@ -121,13 +121,6 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   };
 
   const handleExport = async () => {
-    const isExcluded = userEmail === "abendakfal07@gmail.com" || localStorage.getItem("unlimited_timetable") === "true";
-    const allowedDownloads = isExcluded ? Infinity : (activeSubscriptionsCount === 0 ? 2 : 2 + (activeSubscriptionsCount * 5));
-    
-    if (downloadCount >= allowedDownloads) {
-      setShowPaymentModal(true);
-      return;
-    }
     if (!certificateRef.current) return;
     setExportLoading(true);
     try {
@@ -148,14 +141,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
       const image = canvas.toDataURL("image/png", 1.0);
       await saveFile(image, `AuraMed_Schedule_${new Date().getTime()}.png`, "image/png");
       
-      if (allowedDownloads !== Infinity) {
-        const newCount = downloadCount + 1;
-        setDownloadCount(newCount);
-        localStorage.setItem(downloadKey, newCount.toString());
-          setMessage({ type: 'success', text: t("timetable_export_success_with_remaining", "Schedule image downloaded successfully! 📸 (Remaining: {{remaining}})",).replace("{{remaining}}", `${allowedDownloads - newCount}`) });
-      } else {
-        setMessage({ type: 'success', text: t("timetable_export_success", "Schedule image downloaded successfully! 📸") });
-      }
+      setMessage({ type: 'success', text: t("timetable_export_success", "Schedule image downloaded successfully! 📸") });
     } catch (error) {
       setMessage({ type: 'error', text: t("timetable_export_error", "An error occurred while exporting") });
     } finally {
@@ -352,51 +338,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showPaymentModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
-              
-              <div className="relative z-10 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/20 mb-6">
-                  <Award className="w-10 h-10 text-white" />
-                </div>
-                
-                <h3 className="text-2xl font-black text-white mb-2">{t("timetable_payment_heading","Your free attempts are over")}</h3>
-                <p className="text-slate-400 mb-8 leading-relaxed">
-                  {t("timetable_payment_body","You have reached the limit for schedule image downloads (2 times). To continue unlimited downloads and support the platform, please subscribe.")}
-                </p>
-                
-                <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700">
-                  <div className="text-sm text-slate-400 mb-1">{t("timetable_subscription_fee_label","Subscription fee")}</div>
-                  <div className="text-3xl font-black text-white">{t("timetable_subscription_fee_amount","500 DZD")}</div>
-                </div>
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setShowPaymentModal(false)}
-                    className="flex-1 py-4 rounded-xl font-bold text-slate-300 hover:bg-slate-800 transition-colors border border-slate-700"
-                  >
-                    {t("timetable_payment_cancel","Cancel")}
-                  </button>
-                  <Link 
-                    href="/profile?tab=subscription"
-                    className="flex-[2] py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
-                  >
-                    {t("timetable_payment_checkout","Go to checkout")}
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
 
       <div ref={certificateRef} className="hidden fixed top-[-9999px] left-[-9999px] w-[1200px] bg-white p-10 text-right rtl font-sans certificate-export-root">
         <div className="border-[2px] border-slate-100 shadow-2xl p-10 h-full relative bg-white rounded-[2rem] overflow-hidden">
