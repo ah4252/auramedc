@@ -1229,10 +1229,7 @@ export default function YearsClient({
                             <div className="mt-4">
                               <button
                                 onClick={() => {
-                                  if (!canViewDeveloperQcms) {
-                                    setShowQcmLockModal(true);
-                                    return;
-                                  }
+
                                   applyQcmNavigationState({
                                     devMode: true,
                                     selectedQcmsYearId: null,

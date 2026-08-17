@@ -98,11 +98,13 @@ export default async function RootLayout({
       darkBg: "#0f172a",
       maintenanceMode: false,
       maintenanceCourses: false,
+      maintenanceSubjects: false,
+      maintenancePharmacy: false,
       maintenanceTimetable: false,
-
       maintenanceGpa: false,
       maintenanceNews: false,
-      maintenanceQcms: false
+      maintenanceQcms: false,
+      maintenanceQuiz: false,
     };
   }
 

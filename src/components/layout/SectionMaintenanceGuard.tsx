@@ -63,6 +63,9 @@ export default function SectionMaintenanceGuard({
     } else if ((pathname.startsWith("/qcms") || (pathname.startsWith("/courses") && activeTab === "qcms")) && settings.maintenanceQcms) {
       isUnderMaintenance = true;
       sectionName = "قسم QCMs";
+    } else if (pathname.startsWith("/quiz") && settings.maintenanceQuiz) {
+      isUnderMaintenance = true;
+      sectionName = "Quiz";
     }
   }
 

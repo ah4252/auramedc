@@ -9,33 +9,35 @@ datasource db {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  name                 String?
-  email                String                @unique
-  password             String?
-  image                String?
-  studyYear            String?
-  wilaya               String?
-  role                 String                @default("USER")
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  facebook             String?
-  instagram            String?
-  telegram             String?
-  passwordChangedAt    DateTime?
-  lastActiveAt         DateTime?
-  lastReadNewsAt       DateTime?
-  comments             Comment[]
-  favorites            Favorite[]
-  friendshipsReceived  Friendship[]          @relation("FriendFriendships")
-  friendshipsInitiated Friendship[]          @relation("UserFriendships")
-  friendshipDecisionsSent FriendshipDecision[] @relation("FriendshipDecisionActor")
+  id                         String                @id @default(cuid())
+  name                       String?
+  email                      String                @unique
+  password                   String?
+  image                      String?
+  studyYear                  String?
+  wilaya                     String?
+  role                       String                @default("USER")
+  createdAt                  DateTime              @default(now())
+  updatedAt                  DateTime              @updatedAt
+  facebook                   String?
+  instagram                  String?
+  telegram                   String?
+  passwordChangedAt          DateTime?
+  lastActiveAt               DateTime?
+  lastReadNewsAt             DateTime?
+  comments                   Comment[]
+  favorites                  Favorite[]
+  friendshipsReceived        Friendship[]          @relation("FriendFriendships")
+  friendshipsInitiated       Friendship[]          @relation("UserFriendships")
+  friendshipDecisionsSent    FriendshipDecision[] @relation("FriendshipDecisionActor")
   friendshipDecisionsReceived FriendshipDecision[] @relation("FriendshipDecisionTarget")
-  gpaCalculations      GPACalculation[]
-  newsComments         NewsComment[]
-  progress             Progress[]
-  pushSubscriptions    PushSubscription[]
-  timetable            Timetable?
+  gpaCalculations            GPACalculation[]
+  newsComments               NewsComment[]
+  progress                   Progress[]
+  pushSubscriptions          PushSubscription[]
+  timetable                  Timetable?
+  quizQuestions              QuizQuestion[]
+  quizAttempts               QuizAttempt[]
 }
 
 model Category {
@@ -50,16 +52,18 @@ model Category {
 }
 
 model Subject {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  slug        String   @unique
-  categoryId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  semester    String?
-  lessons     Lesson[]
-  category    Category @relation(fields: [categoryId], references: [id])
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  slug         String        @unique
+  categoryId   String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  semester     String?
+  lessons      Lesson[]
+  category     Category      @relation(fields: [categoryId], references: [id])
+  quizQuestions QuizQuestion[]
+  quizExams    QuizExam[]
 }
 
 model Lesson {
@@ -181,6 +185,7 @@ model SiteSettings {
   maintenancePharmacy    Boolean  @default(false)
   maintenanceSubjects    Boolean  @default(false)
   maintenanceQcms         Boolean  @default(false)
+  maintenanceQuiz        Boolean  @default(false)
 }
 
 model Timetable {
@@ -240,6 +245,105 @@ model QcmsExamLink {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   qcmsSubject   QcmsSubject  @relation(fields: [qcmsSubjectId], references: [id], onDelete: Cascade)
+}
+
+model QuizQuestion {
+  id             String             @id @default(cuid())
+  text           String
+  subjectId      String
+  studyYear      String
+  difficulty     String             @default("MEDIUM")
+  type           String             @default("MULTIPLE_CHOICE")
+  explanation    String?
+  hint           String?
+  reference      String?
+  keywords       String?
+  isPublished    Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  authorId       String?
+  subject        Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  author         User?              @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  options        QuizOption[]
+  examLinks      QuizExamQuestion[]
+  attemptAnswers QuizAttemptAnswer[]
+}
+
+model QuizOption {
+  id         String        @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean       @default(false)
+  order      Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  question   QuizQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model QuizExam {
+  id                     String            @id @default(cuid())
+  title                  String
+  description            String?
+  subjectId              String
+  studyYear              String
+  difficulty             String?
+  questionCount          Int               @default(0)
+  durationMinutes        Int               @default(20)
+  passScore              Int               @default(60)
+  allowRetake            Boolean           @default(true)
+  randomizeQuestions     Boolean           @default(false)
+  randomizeOptions       Boolean           @default(false)
+  showAnswerExplanation Boolean          @default(true)
+  isPublished            Boolean           @default(false)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  subject                Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions              QuizExamQuestion[]
+  attempts               QuizAttempt[]
+}
+
+model QuizExamQuestion {
+  id         String      @id @default(cuid())
+  examId     String
+  questionId String
+  order      Int         @default(0)
+  exam       QuizExam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, questionId])
+}
+
+model QuizAttempt {
+  id               String              @id @default(cuid())
+  userId           String
+  examId           String
+  score            Int                 @default(0)
+  percentage       Float               @default(0)
+  correctCount     Int                 @default(0)
+  incorrectCount   Int                 @default(0)
+  unansweredCount  Int                 @default(0)
+  startedAt        DateTime            @default(now())
+  completedAt      DateTime?
+  timeSpentSeconds Int                 @default(0)
+  status           String              @default("IN_PROGRESS")
+  resultSummary    String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam             QuizExam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers          QuizAttemptAnswer[]
+}
+
+model QuizAttemptAnswer {
+  id              String        @id @default(cuid())
+  attemptId       String
+  questionId      String
+  selectedOptionId String?
+  isCorrect       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  attempt         QuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        QuizQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model News {

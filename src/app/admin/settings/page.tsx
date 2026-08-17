@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3, Pill, NotebookPen } from "lucide-react";
+import { Settings, Shield, Lock, Palette, Save, AlertTriangle, UserPlus, Globe, Monitor as MonitorIcon, Database, ShieldCheck, Mail, Sliders, Cpu, Users, Stethoscope, PlayCircle, ExternalLink, CheckCircle2, KeyRound, Unlock, HeartPulse, BarChart3, Pill, NotebookPen, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, updateSettings, changeAdminPassword, getToolsProtection, updateToolsProtection, getSystemStatus } from "@/app/actions/settings";
@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
   const [maintenanceGpa, setMaintenanceGpa] = useState(false);
   const [maintenanceNews, setMaintenanceNews] = useState(false);
   const [maintenanceQcms, setMaintenanceQcms] = useState(false);
+  const [maintenanceQuiz, setMaintenanceQuiz] = useState(false);
   const [allowRegistration, setAllowRegistration] = useState(true);
   const [siteName, setSiteName] = useState("Aura Med Elite");
   const [primaryColor, setPrimaryColor] = useState("#0ea5e9");
@@ -65,6 +66,7 @@ export default function AdminSettingsPage() {
       setMaintenanceGpa(s.maintenanceGpa || false);
       setMaintenanceNews(s.maintenanceNews || false);
       setMaintenanceQcms(s.maintenanceQcms || false);
+      setMaintenanceQuiz(s.maintenanceQuiz || false);
       setAllowRegistration(s.allowRegistration);
       setSiteName(s.siteName || "Aura Med Elite");
       setPrimaryColor(s.primaryColor || "#0ea5e9");
@@ -98,7 +100,11 @@ export default function AdminSettingsPage() {
   const handleToggleMaintenance = async () => {
     const newVal = !maintenanceMode;
     setMaintenanceMode(newVal);
-    await updateSettings({ maintenanceMode: newVal });
+    const result = await updateSettings({ maintenanceMode: newVal });
+    if (result?.error) {
+      setMaintenanceMode(!newVal);
+      console.error("خطأ في تحديث وضع الصيانة:", result.error);
+    }
   };
 
   const handleToggleSection = async (section: string, value: boolean) => {
@@ -111,6 +117,7 @@ export default function AdminSettingsPage() {
       case 'gpa': setMaintenanceGpa(value); break;
       case 'news': setMaintenanceNews(value); break;
       case 'qcms': setMaintenanceQcms(value); break;
+      case 'quiz': setMaintenanceQuiz(value); break;
     }
 
     // Then save to database
@@ -123,6 +130,7 @@ export default function AdminSettingsPage() {
       case 'gpa': data.maintenanceGpa = value; break;
       case 'news': data.maintenanceNews = value; break;
       case 'qcms': data.maintenanceQcms = value; break;
+      case 'quiz': data.maintenanceQuiz = value; break;
     }
 
     const result = await updateSettings(data);
@@ -137,6 +145,7 @@ export default function AdminSettingsPage() {
         case 'gpa': setMaintenanceGpa(!value); break;
         case 'news': setMaintenanceNews(!value); break;
         case 'qcms': setMaintenanceQcms(!value); break;
+        case 'quiz': setMaintenanceQuiz(!value); break;
       }
       console.error(`خطأ في تحديث ${section}:`, result.error);
     }
@@ -740,6 +749,7 @@ export default function AdminSettingsPage() {
                                { id: 'gpa', label: 'حاسبة المعدل', icon: Sliders, value: maintenanceGpa },
                                { id: 'news', label: 'الأخبار والمستجدات', icon: Globe, value: maintenanceNews },
                                { id: 'qcms', label: 'QCMs', icon: NotebookPen, value: maintenanceQcms },
+                               { id: 'quiz', label: 'Quiz', icon: Sparkles, value: maintenanceQuiz },
                              ].map((section) => {
                                const Icon = section.icon;
                                return (

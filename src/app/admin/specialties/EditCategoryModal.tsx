@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Edit2, X, Save, Plus, Link as LinkIcon, Trash2, Stethoscope, Activity, Dna, Brain, Bone, Eye, Heart, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { updateCategory } from "@/app/actions/content";
 
 type Category = {
   id: string;

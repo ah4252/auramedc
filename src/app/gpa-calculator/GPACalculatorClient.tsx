@@ -146,8 +146,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
       const image = canvas.toDataURL("image/png", 1.0);
       await saveFile(image, `AuraMed_Result_${new Date().getTime()}.png`, "image/png");
       
-      // Increment download count after successful download
-      localStorage.setItem(storageKey, (downloads + 1).toString());
+
     } catch (error) {
       console.error("Export failed:", error);
       alert(t("gpa_export_error"));
