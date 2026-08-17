@@ -782,37 +782,37 @@ export default function QuizPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 50 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl overflow-hidden rounded-[40px] border-2 shadow-2xl ${
+              className={`w-full max-w-lg overflow-hidden rounded-[28px] border-2 shadow-2xl ${
                 resultSummary.percentage >= 50
                   ? "border-emerald-200/50 bg-gradient-to-br from-emerald-50/95 via-green-50/80 to-teal-50/60 dark:border-emerald-800/50 dark:from-emerald-950/80 dark:via-slate-900/80 dark:to-teal-950/60"
                   : "border-red-200/50 bg-gradient-to-br from-red-50/95 via-orange-50/80 to-rose-50/60 dark:border-red-800/50 dark:from-red-950/80 dark:via-slate-900/80 dark:to-rose-950/60"
               }`}
             >
               {/* الرأس */}
-              <div className={`px-8 py-6 ${
+              <div className={`px-5 py-4 sm:px-8 sm:py-6 ${
                 resultSummary.percentage >= 50
                   ? "bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500"
                   : "bg-gradient-to-r from-red-500 via-orange-500 to-rose-500"
               }`}>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
                     <motion.div
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ duration: 0.6, type: "spring" }}
-                      className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20"
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 sm:h-16 sm:w-16"
                     >
                       {resultSummary.percentage >= 50 ? (
-                        <Trophy className="h-8 w-8 text-white" />
+                        <Trophy className="h-6 w-6 text-white sm:h-8 sm:w-8" />
                       ) : (
-                        <AlertCircle className="h-8 w-8 text-white" />
+                        <AlertCircle className="h-6 w-6 text-white sm:h-8 sm:w-8" />
                       )}
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-black text-white">
-                        {resultSummary.percentage >= 50 ? "ممتاز! 🎉" : "حاول مرة أخرى 💪"}
+                      <h3 className="text-lg font-black text-white sm:text-2xl">
+                        {resultSummary.percentage >= 50 ? "ممتاز!" : "حاول مرة أخرى"}
                       </h3>
-                      <p className="text-xs text-white/80 mt-1">
+                      <p className="text-[10px] text-white/80 mt-0.5 sm:text-xs">
                         {resultSummary.percentage >= 50
                           ? "لقد حققت درجة عالية!"
                           : "لديك المزيد من المحاولات"}
@@ -821,7 +821,7 @@ export default function QuizPage() {
                   </div>
                   <button
                     onClick={() => setShowResultsModal(false)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition sm:h-10 sm:w-10"
                   >
                     ✕
                   </button>
@@ -829,37 +829,37 @@ export default function QuizPage() {
               </div>
 
               {/* محتوى النتائج */}
-              <div className="px-8 py-8 space-y-6">
+              <div className="max-h-[65vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-4 sm:px-8 sm:py-8 sm:space-y-6 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
                 {/* الإحصائيات الرئيسية */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="rounded-2xl bg-white/70 p-6 shadow-lg dark:bg-slate-800/70 border-2 border-emerald-200 dark:border-emerald-700"
+                    className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-emerald-200 dark:border-emerald-700 sm:p-6"
                   >
-                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400">الإجابات الصحيحة</p>
-                    <p className="mt-4 text-5xl font-black text-emerald-600 dark:text-emerald-400">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400 sm:text-xs">الصحيحة</p>
+                    <p className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:mt-4 sm:text-5xl">
                       {resultSummary.correct}
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">من {resultSummary.total}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 sm:text-sm sm:mt-2">من {resultSummary.total}</p>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="rounded-2xl bg-white/70 p-6 shadow-lg dark:bg-slate-800/70 border-2 border-sky-200 dark:border-sky-700"
+                    className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-sky-200 dark:border-sky-700 sm:p-6"
                   >
-                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-400">النسبة المئوية</p>
-                    <p className="mt-4 text-5xl font-black bg-gradient-to-r from-medical-600 to-sky-500 bg-clip-text text-transparent">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-400 sm:text-xs">النسبة</p>
+                    <p className="mt-2 text-2xl font-black bg-gradient-to-r from-medical-600 to-sky-500 bg-clip-text text-transparent sm:mt-4 sm:text-5xl">
                       {resultSummary.percentage}%
                     </p>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${resultSummary.percentage}%` }}
                       transition={{ duration: 1.5, delay: 0.5 }}
-                      className="mt-3 h-2 rounded-full bg-gradient-to-r from-medical-600 to-sky-500"
+                      className="mt-2 h-1.5 rounded-full bg-gradient-to-r from-medical-600 to-sky-500 sm:mt-3 sm:h-2"
                     />
                   </motion.div>
 
@@ -867,21 +867,21 @@ export default function QuizPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="rounded-2xl bg-white/70 p-6 shadow-lg dark:bg-slate-800/70 border-2 border-red-200 dark:border-red-700"
+                    className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-red-200 dark:border-red-700 sm:p-6"
                   >
-                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-700 dark:text-red-400">الإجابات الخاطئة</p>
-                    <p className="mt-4 text-5xl font-black text-red-600 dark:text-red-400">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-red-700 dark:text-red-400 sm:text-xs">الخاطئة</p>
+                    <p className="mt-2 text-2xl font-black text-red-600 dark:text-red-400 sm:mt-4 sm:text-5xl">
                       {resultSummary.total - resultSummary.correct}
                     </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">يمكنك المحاولة مجددًا</p>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 sm:text-sm sm:mt-2">حاول مجددًا</p>
                   </motion.div>
                 </div>
 
                 {/* تفاصيل الأسئلة المختصرة */}
                 {questionsDetails.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="text-lg font-black text-slate-900 dark:text-white mb-4">📋 تفاصيل الإجابات</h4>
-                    <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white sm:text-lg">تفاصيل الإجابات</h4>
+                    <div className="max-h-48 overflow-y-auto space-y-2 pr-1 sm:max-h-64 sm:pr-2">
                       {questionsDetails.map((detail, index) => (
                         <motion.button
                           key={detail.id}
@@ -889,17 +889,17 @@ export default function QuizPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                           onClick={() => openQuestionDetail(detail)}
-                          className={`w-full rounded-2xl p-3.5 text-right transition-all duration-300 border-2 ${
+                          className={`w-full rounded-xl p-2.5 text-right transition-all duration-300 border-2 sm:rounded-2xl sm:p-3.5 ${
                             detail.isCorrect
                               ? "bg-emerald-100/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600 hover:shadow-[0_8px_20px_rgba(16,185,129,0.2)]"
                               : "bg-red-100/70 dark:bg-red-950/30 border-red-300 dark:border-red-600 hover:shadow-[0_8px_20px_rgba(239,68,68,0.2)]"
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-3">
-                            <span className={`text-sm font-black ${detail.isCorrect ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={`text-xs font-black sm:text-sm ${detail.isCorrect ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
                               {detail.isCorrect ? "✅" : "❌"}
                             </span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate flex-1">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate flex-1 sm:text-xs">
                               السؤال {index + 1}: {detail.text}
                             </span>
                           </div>
@@ -911,7 +911,7 @@ export default function QuizPage() {
               </div>
 
               {/* الأزرار */}
-              <div className="border-t border-emerald-200 dark:border-emerald-700 px-8 py-5 flex gap-3">
+              <div className="border-t border-emerald-200 dark:border-emerald-700 px-5 py-3 flex gap-2 sm:px-8 sm:py-5 sm:gap-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -923,15 +923,15 @@ export default function QuizPage() {
                     setAttemptLocked(false);
                     setQuestions((prev) => shuffleQuestions(prev));
                   }}
-                  className="flex-1 rounded-2xl bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 px-4 py-3 font-black text-white shadow-[0_12px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_16px_40px_rgba(14,165,233,0.4)] transition-all"
+                  className="flex-1 rounded-xl bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 px-3 py-2.5 font-black text-xs text-white shadow-[0_12px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_16px_40px_rgba(14,165,233,0.4)] transition-all sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
                 >
-                  🔄 حاول مرة أخرى
+                  حاول مرة أخرى
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowResultsModal(false)}
-                  className="flex-1 rounded-2xl border-2 border-slate-300 bg-white px-4 py-3 font-black text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                  className="flex-1 rounded-xl border-2 border-slate-300 bg-white px-3 py-2.5 font-black text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-all sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
                 >
                   ✓ حسناً
                 </motion.button>
@@ -955,36 +955,36 @@ export default function QuizPage() {
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-3xl overflow-hidden rounded-[30px] border-2 border-slate-200 bg-white shadow-[0_25px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900"
+              className="w-full max-w-lg overflow-hidden rounded-[24px] border-2 border-slate-200 bg-white shadow-[0_25px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900 sm:max-w-3xl sm:rounded-[30px]"
             >
-              <div className="bg-gradient-to-r from-medical-600 to-sky-500 px-6 py-5">
-                <div className="flex items-center justify-between gap-4">
+              <div className="bg-gradient-to-r from-medical-600 to-sky-500 px-5 py-4 sm:px-6 sm:py-5">
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">محاولة مكتملة</p>
-                    <h3 className="mt-2 text-2xl font-black text-white">{selectedCompletedAttempt.exam.title}</h3>
+                    <h3 className="mt-1 text-lg font-black text-white sm:mt-2 sm:text-2xl">{selectedCompletedAttempt.exam.title}</h3>
                   </div>
                   <button
                     onClick={() => setShowCompletedAttemptModal(false)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 sm:h-10 sm:w-10"
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              <div className="max-h-[75vh] overflow-y-auto px-6 py-6 space-y-5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">السنة</p>
-                    <p className="mt-2 text-lg font-black text-slate-900 dark:text-white">{selectedCompletedAttempt.exam.studyYear || "-"}</p>
+              <div className="max-h-[70vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-3 sm:max-h-[75vh] sm:px-6 sm:py-6 sm:space-y-5 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
+                <div className="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-3">
+                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">السنة</p>
+                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{selectedCompletedAttempt.exam.studyYear || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">المادة</p>
-                    <p className="mt-2 text-lg font-black text-slate-900 dark:text-white">{selectedCompletedAttempt.exam.subject?.name || "-"}</p>
+                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">المادة</p>
+                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{selectedCompletedAttempt.exam.subject?.name || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">النسبة</p>
-                    <p className="mt-2 text-lg font-black text-slate-900 dark:text-white">{Number(selectedCompletedAttempt.percentage || 0).toFixed(1)}%</p>
+                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">النسبة</p>
+                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{Number(selectedCompletedAttempt.percentage || 0).toFixed(1)}%</p>
                   </div>
                 </div>
 
@@ -997,43 +997,43 @@ export default function QuizPage() {
                   return (
                     <div
                       key={item.questionId}
-                      className={`rounded-[24px] border-2 p-4 ${
+                      className={`rounded-xl border-2 p-3 sm:rounded-[24px] sm:p-4 ${
                         isCorrect
                           ? "border-emerald-300 bg-emerald-50/80 dark:border-emerald-600 dark:bg-emerald-950/20"
                           : "border-red-300 bg-red-50/80 dark:border-red-600 dark:bg-red-950/20"
                       }`}
                     >
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">السؤال {index + 1}</p>
+                      <div className="mb-2 flex items-center justify-between gap-2 sm:mb-3 sm:gap-3">
+                        <p className="text-xs font-black text-slate-800 dark:text-slate-100 sm:text-sm">السؤال {index + 1}</p>
                         <span className={`rounded-full px-2 py-1 text-[10px] font-black ${isCorrect ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300" : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300"}`}>
                           {isCorrect ? "صح" : "خطأ"}
                         </span>
                       </div>
 
-                      <p className="text-base font-bold text-slate-900 dark:text-white">{item.question.text}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white sm:text-base">{item.question.text}</p>
 
-                      <div className="mt-4 space-y-3">
-                        <div className="rounded-2xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-                          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">اختياري</p>
-                          <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{selectedOption?.text || "لم تجب"}</p>
+                      <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-3">
+                        <div className="rounded-xl border border-slate-200 bg-white/70 p-2.5 dark:border-slate-700 dark:bg-slate-800/60 sm:rounded-2xl sm:p-3">
+                          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sm:text-[10px]">اختياري</p>
+                          <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-100 sm:text-sm">{selectedOption?.text || "لم تجب"}</p>
                         </div>
 
-                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-3 dark:border-emerald-700 dark:bg-emerald-950/20">
-                          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">الإجابة الصحيحة</p>
-                          <p className="mt-1 text-sm font-bold text-emerald-900 dark:text-emerald-200">{correctOption?.text}</p>
+                        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-2.5 dark:border-emerald-700 dark:bg-emerald-950/20 sm:rounded-2xl sm:p-3">
+                          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300 sm:text-[10px]">الإجابة الصحيحة</p>
+                          <p className="mt-0.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 sm:text-sm">{correctOption?.text}</p>
                         </div>
 
                         {item.question.explanation && (
-                          <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-700 dark:bg-blue-950/20">
-                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300">الشرح</p>
-                            <p className="mt-1 text-sm text-blue-900 dark:text-blue-200">{item.question.explanation}</p>
+                          <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-2.5 dark:border-blue-700 dark:bg-blue-950/20 sm:rounded-2xl sm:p-3">
+                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300 sm:text-[10px]">الشرح</p>
+                            <p className="mt-0.5 text-xs text-blue-900 dark:text-blue-200 sm:text-sm">{item.question.explanation}</p>
                           </div>
                         )}
 
                         {item.question.reference && (
-                          <div className="rounded-2xl border border-indigo-200 bg-indigo-50/80 p-3 dark:border-indigo-700 dark:bg-indigo-950/20">
-                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-300">المرجع العلمي</p>
-                            <p className="mt-1 text-sm text-indigo-900 dark:text-indigo-200">{item.question.reference}</p>
+                          <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 p-2.5 dark:border-indigo-700 dark:bg-indigo-950/20 sm:rounded-2xl sm:p-3">
+                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-300 sm:text-[10px]">المرجع العلمي</p>
+                            <p className="mt-0.5 text-xs text-indigo-900 dark:text-indigo-200 sm:text-sm">{item.question.reference}</p>
                           </div>
                         )}
                       </div>
@@ -1060,7 +1060,7 @@ export default function QuizPage() {
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-2xl overflow-hidden rounded-[30px] border-2 shadow-[0_25px_60px_rgba(15,23,42,0.14)] ${
+              className={`w-full max-w-lg overflow-hidden rounded-[24px] border-2 shadow-[0_25px_60px_rgba(15,23,42,0.14)] sm:max-w-2xl sm:rounded-[30px] ${
                 selectedQuestionDetail.isCorrect
                   ? "border-emerald-300/60 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:border-emerald-700/50 dark:from-emerald-950/40 dark:via-slate-900 dark:to-teal-950/40"
                   : "border-red-300/60 bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:border-red-700/50 dark:from-red-950/40 dark:via-slate-900 dark:to-rose-950/40"
@@ -1068,33 +1068,33 @@ export default function QuizPage() {
             >
               {/* الرأس */}
               <div
-                className={`px-6 py-5 ${
+                className={`px-5 py-4 sm:px-6 sm:py-5 ${
                   selectedQuestionDetail.isCorrect
                     ? "bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500"
                     : "bg-gradient-to-r from-red-500 via-orange-500 to-red-500"
                 }`}
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 sm:h-12 sm:w-12">
                       {selectedQuestionDetail.isCorrect ? (
-                        <CheckCircle2 className="h-7 w-7 text-white" />
+                        <CheckCircle2 className="h-5 w-5 text-white sm:h-7 sm:w-7" />
                       ) : (
-                        <AlertCircle className="h-7 w-7 text-white" />
+                        <AlertCircle className="h-5 w-5 text-white sm:h-7 sm:w-7" />
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-black text-white">
-                        {selectedQuestionDetail.isCorrect ? "✅ إجابة صحيحة!" : "❌ إجابة خاطئة"}
+                      <h3 className="text-sm font-black text-white sm:text-lg">
+                        {selectedQuestionDetail.isCorrect ? "إجابة صحيحة!" : "إجابة خاطئة"}
                       </h3>
-                      <p className="text-xs text-white/80 mt-0.5">
+                      <p className="text-[10px] text-white/80 mt-0.5 sm:text-xs">
                         {selectedQuestionDetail.isCorrect ? "ممتاز! إجابتك صحيحة" : "يرجى مراجعة الإجابة الصحيحة"}
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowDetailModal(false)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition sm:h-10 sm:w-10"
                   >
                     ✕
                   </button>
@@ -1104,70 +1104,70 @@ export default function QuizPage() {
               {/* المحتوى */}
               <div
                 style={{ WebkitOverflowScrolling: "touch" }}
-                className="max-h-[70vh] overflow-y-auto overscroll-contain px-6 py-6 space-y-5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600"
+                className="max-h-[60vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-3 sm:max-h-[70vh] sm:px-6 sm:py-6 sm:space-y-5 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600"
               >
                 {/* السؤال */}
-                <div className="rounded-2xl border border-slate-200/80 bg-white/60 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
-                  <p className="text-xs font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-2">السؤال</p>
-                  <p className="text-base font-bold text-slate-900 leading-relaxed dark:text-white">
+                <div className="rounded-xl border border-slate-200/80 bg-white/60 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:rounded-2xl sm:p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-1.5 sm:text-xs sm:mb-2">السؤال</p>
+                  <p className="text-sm font-bold text-slate-900 leading-relaxed dark:text-white sm:text-base">
                     {selectedQuestionDetail.text}
                   </p>
                 </div>
 
                 {/* إجابتك */}
-                <div className="rounded-2xl bg-white/70 p-4 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-2">
-                    🎯 إجابتك
+                <div className="rounded-xl bg-white/70 p-3 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 shadow-sm sm:rounded-2xl sm:p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-1.5 sm:text-xs sm:mb-2">
+                    إجابتك
                   </p>
-                  <p className={`text-sm font-bold ${selectedQuestionDetail.selectedOption ? "text-slate-900 dark:text-white" : "text-red-600 dark:text-red-400"}`}>
+                  <p className={`text-xs font-bold sm:text-sm ${selectedQuestionDetail.selectedOption ? "text-slate-900 dark:text-white" : "text-red-600 dark:text-red-400"}`}>
                     {selectedQuestionDetail.selectedOption?.text || "لم تجب على هذا السؤال"}
                   </p>
                 </div>
 
                 {/* الإجابة الصحيحة */}
                 <div
-                  className={`rounded-2xl p-4 border-2 shadow-sm ${
+                  className={`rounded-xl p-3 border-2 shadow-sm sm:rounded-2xl sm:p-4 ${
                     selectedQuestionDetail.isCorrect
                       ? "bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600"
                       : "bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600"
                   }`}
                 >
-                  <p className="text-xs font-black uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400 mb-2">
-                    ✅ الإجابة الصحيحة
+                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400 mb-1.5 sm:text-xs sm:mb-2">
+                    الإجابة الصحيحة
                   </p>
-                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+                  <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 sm:text-sm">
                     {selectedQuestionDetail.correctOption?.text}
                   </p>
                 </div>
 
                 {/* الشرح */}
-                <div className="rounded-2xl bg-blue-100/60 dark:bg-blue-950/30 p-4 border-2 border-blue-300 dark:border-blue-600 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-[0.1em] text-blue-700 dark:text-blue-400 mb-2">
-                    💡 الشرح التفصيلي
+                <div className="rounded-xl bg-blue-100/60 dark:bg-blue-950/30 p-3 border-2 border-blue-300 dark:border-blue-600 shadow-sm sm:rounded-2xl sm:p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-700 dark:text-blue-400 mb-1.5 sm:text-xs sm:mb-2">
+                    الشرح التفصيلي
                   </p>
-                  <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">
+                  <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed sm:text-sm">
                     {selectedQuestionDetail.explanation}
                   </p>
                 </div>
 
                 {/* المرجع العلمي */}
-                <div className="rounded-2xl bg-indigo-100/60 dark:bg-indigo-950/30 p-4 border-2 border-indigo-300 dark:border-indigo-600 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-[0.1em] text-indigo-700 dark:text-indigo-400 mb-2">
-                    📚 المرجع العلمي
+                <div className="rounded-xl bg-indigo-100/60 dark:bg-indigo-950/30 p-3 border-2 border-indigo-300 dark:border-indigo-600 shadow-sm sm:rounded-2xl sm:p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.1em] text-indigo-700 dark:text-indigo-400 mb-1.5 sm:text-xs sm:mb-2">
+                    المرجع العلمي
                   </p>
-                  <p className="text-sm text-indigo-900 dark:text-indigo-200 leading-relaxed">
+                  <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-relaxed sm:text-sm">
                     {selectedQuestionDetail.reference}
                   </p>
                 </div>
               </div>
 
               {/* الزر */}
-              <div className="border-t border-slate-200 dark:border-slate-700 px-6 py-4">
+              <div className="border-t border-slate-200 dark:border-slate-700 px-5 py-3 sm:px-6 sm:py-4">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowDetailModal(false)}
-                  className={`w-full rounded-2xl px-4 py-3 font-black text-white transition-all ${
+                  className={`w-full rounded-xl px-4 py-2.5 font-black text-sm text-white transition-all sm:rounded-2xl sm:py-3 ${
                     selectedQuestionDetail.isCorrect
                       ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-[0_12px_30px_rgba(16,185,129,0.3)]"
                       : "bg-gradient-to-r from-red-500 to-orange-500 hover:shadow-[0_12px_30px_rgba(239,68,68,0.3)]"
