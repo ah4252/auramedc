@@ -18,7 +18,7 @@ import html2canvas from "html2canvas";
 import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 import { useLocale } from "@/context/LocaleProvider.client";
 
-export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscription = false, activeSubscriptionsCount = 0, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, hasActiveSubscription?: boolean, activeSubscriptionsCount?: number, initialData: any, gpaYears: any[] }) {
+export default function GPACalculatorClient({ userId, userEmail, initialData, gpaYears }: { userId: string | null, userEmail?: string | null, initialData: any, gpaYears: any[] }) {
   const [selectedYear, setSelectedYear] = useState<any>(null);
   const { saveFile } = useAuraDownloader();
   const { t, lang } = useLocale();
@@ -28,12 +28,7 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [showUsageModal, setShowUsageModal] = useState(false);
-  const [didRedirect, setDidRedirect] = useState(false);
   const [reportId, setReportId] = useState("MP-00000");
-
-  useEffect(() => {
-    setDidRedirect(localStorage.getItem("gpa_payment_redirected") === "true");
-  }, []);
   const certificateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -652,30 +647,10 @@ export default function GPACalculatorClient({ userId, userEmail, hasActiveSubscr
                 </div>
 
                 <div className="rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5">
-                  <h4 className="mb-2 text-base font-black text-amber-300">الحد المسموح به</h4>
+                  <h4 className="mb-2 text-base font-black text-amber-300">حفظ وتصدير النتائج</h4>
                   <p>
-                    الحد المسموح للتنزيل أو التصدير هو <span className="font-black text-white">2 تنزيلات</span> لكل سنة إذا لم يكن لديك اشتراك فعّال. إذا كان لديك اشتراك، يضاف إلى الحد عدد إضافي بحسب عدد الاشتراكات الفعالة.
+                    يمكنك حفظ معدلك التراكمي مباشرة بحسابك لustrad لاحقاً. كما يمكنك تصدير النتيجة كصورة PDF بضغطة زر واحدة.
                   </p>
-                  <p className="mt-2 text-amber-200">
-                    مثال: بدون اشتراك = 2 تنزيلات، مع اشتراك = 2 + 5 × عدد الاشتراكات.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-slate-700 bg-slate-900/60 p-4 sm:p-5">
-                  <h4 className="mb-2 text-base font-black text-amber-300">كيفية الاشتراك</h4>
-                  <p>
-                    يمكنك الاشتراك من صفحة الملف الشخصي داخل قسم الاشتراكات، ثم اختيار نوع اشتراك المعدل المناسب. بعد الموافقة، ستتمكن من استخدام ميزات إضافية مثل التنزيلات المتعددة وحفظ النتيجات.
-                  </p>
-                </div>
-
-                <div className="pt-1">
-                  <Link
-                    href="/profile?tab=subscription&subscriptionType=GPA"
-                    onClick={() => setShowUsageModal(false)}
-                    className="block w-full rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-center font-black text-white shadow-lg shadow-amber-600/20 transition hover:brightness-110"
-                  >
-                    الاشتراك الآن
-                  </Link>
                 </div>
               </div>
             </motion.div>

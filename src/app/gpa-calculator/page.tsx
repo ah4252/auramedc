@@ -45,5 +45,5 @@ export default async function GPACalculatorPage() {
     console.error("Error fetching GPA years:", error);
   }
 
-  return <GPACalculatorClient userId={userId || null} userEmail={userEmail || null} hasActiveSubscription={true} activeSubscriptionsCount={1} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
+  return <GPACalculatorClient userId={userId || null} userEmail={userEmail || null} initialData={JSON.parse(JSON.stringify(initialData))} gpaYears={JSON.parse(JSON.stringify(gpaYears))} />;
 }
