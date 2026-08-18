@@ -144,6 +144,27 @@ export async function deleteSubject(id: string) {
   }
 }
 
+export async function updateSubject(id: string, formData: FormData) {
+  await requireAdmin();
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+
+  if (!name) return { error: "الاسم مطلوب" };
+
+  try {
+    const updated = await prisma.subject.update({
+      where: { id },
+      data: { name, description },
+    });
+    revalidatePath("/admin/subjects");
+    revalidatePath("/courses");
+    revalidatePath(`/courses/y/${updated.slug}`);
+    return { success: true };
+  } catch (error) {
+    return { error: "حدث خطأ أثناء تحديث المادة" };
+  }
+}
+
 // --- Lessons ---
 export async function addLesson(formData: FormData) {
   await requireAdmin();

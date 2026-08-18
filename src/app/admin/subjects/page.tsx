@@ -1,6 +1,7 @@
 "use client";
 
 import { addCategory, getCategories, deleteCategory, addSubject, getSubjects, deleteSubject } from "@/app/actions/content";
+import EditSubjectModal from "./EditSubjectModal";
 import { useState, useEffect } from "react";
 import { 
   Save, GraduationCap,
@@ -301,10 +302,13 @@ export default function AdminSubjectsPage() {
                                   <span className="text-[10px] font-bold text-slate-400">{sub.lessons?.length || 0} درس</span>
                                 </div>
                             </div>
-                         </div>
-                         <button title="حذف" aria-label="حذف" onClick={() => handleDeleteSub(sub.id)} className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all opacity-0 group-hover:opacity-100 shadow-sm">
-                            <Trash2 className="w-6 h-6" />
-                         </button>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <EditSubjectModal subject={sub} />
+                            <button title="حذف" aria-label="حذف" onClick={() => handleDeleteSub(sub.id)} className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all shadow-sm">
+                               <Trash2 className="w-6 h-6" />
+                            </button>
+                          </div>
                       </motion.div>
                    ))
                  )}
