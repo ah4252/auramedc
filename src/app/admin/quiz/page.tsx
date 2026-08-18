@@ -191,10 +191,10 @@ export default function AdminQuizPage() {
       if (payload.options.length < 2) return alert("يجب إدخال خيارين على الأقل");
       const result = await createQuizQuestion(payload as any);
       if (result?.success) {
-        setQuestionForm({
+        setQuestionForm((prev) => ({
           text: "",
-          subjectId: "",
-          studyYear: "",
+          subjectId: prev.subjectId,
+          studyYear: prev.studyYear,
           difficulty: "MEDIUM",
           explanation: "",
           hint: "",
@@ -207,9 +207,8 @@ export default function AdminQuizPage() {
             { text: "", isCorrect: false },
             { text: "", isCorrect: false },
           ],
-        });
+        }));
         refreshDashboard();
-        setTab("bank");
       }
     } catch (error: any) {
       alert(error?.message || "حدث خطأ أثناء حفظ السؤال");
