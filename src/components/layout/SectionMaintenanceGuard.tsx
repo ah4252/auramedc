@@ -133,6 +133,18 @@ export default function SectionMaintenanceGuard({
                   </a>
                 </div>
               )}
+
+              {sectionName === "Quiz" && (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="/courses?tab=qcms"
+                    className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs sm:text-sm font-black transition-all shadow-md shadow-violet-600/20 active:scale-95 flex items-center gap-2"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    <span>العودة إلى قسم QCMs</span>
+                  </a>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>

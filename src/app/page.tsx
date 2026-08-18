@@ -7,6 +7,7 @@ import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
 import { canAccessPharmacy } from "@/lib/auth-helpers";
 import { tServer, Locale } from "@/lib/i18n";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export default async function Home() {
   const userId = (await cookies()).get("user_token")?.value;
@@ -522,6 +523,7 @@ export default async function Home() {
           </div>
         </section>
       )}
+      <ScrollToTop />
     </div>
   );
 }

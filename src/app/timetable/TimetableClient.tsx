@@ -11,27 +11,6 @@ import { useAuraDownloader } from "@/hooks/useAuraDownloader";
 
 export default function TimetableClient({ initialData, isUser, hasActiveSubscription = false, activeSubscriptionsCount = 0, userEmail = null }: { initialData: any, isUser: boolean, hasActiveSubscription?: boolean, activeSubscriptionsCount?: number, userEmail?: string | null }) {
   const { t, lang } = useLocale();
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem("theme");
-      if (stored) setTheme(stored === "dark" ? "dark" : "light");
-      else setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
-
-      const handler = (e: any) => {
-        const t = e?.detail?.theme || window.localStorage.getItem("theme") || (document.documentElement.classList.contains("dark") ? "dark" : "light");
-        setTheme(t === "dark" ? "dark" : "light");
-      };
-
-      window.addEventListener("theme-change", handler as EventListener);
-      window.addEventListener("storage", handler as EventListener);
-      return () => {
-        window.removeEventListener("theme-change", handler as EventListener);
-        window.removeEventListener("storage", handler as EventListener);
-      };
-    } catch (e) {}
-  }, []);
 
   const days = [
     { ar: "الأحد", frShort: "Dim", frFull: "Dimanche", enShort: "Sun", enFull: "Sunday" },
@@ -171,7 +150,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
   const progressWidth = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0;
 
   return (
-    <div className={`${theme === 'dark' ? 'w-full bg-[#050505] text-white' : 'w-full bg-white text-slate-900'} min-h-screen p-4 md:p-12 font-sans relative`}>
+    <div className="w-full bg-white dark:bg-[#050505] text-slate-900 dark:text-white min-h-screen p-4 md:p-12 font-sans relative transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto">
         
         {/* --- MOBILE RESTRICTION OVERLAY --- */}
@@ -215,8 +194,8 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
              <div className="text-right border-r-2 border-blue-500/30 pr-6 py-1">
                 <p className="text-[10px] font-black text-slate-500 uppercase mb-1">{t("timetable_week_progress_label","Week progress")}</p>
                 <div className="flex items-center gap-3">
-                   <span className="text-2xl font-black text-white">{Math.round(progressWidth)}%</span>
-                   <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                   <span className="text-2xl font-black text-slate-900 dark:text-white">{Math.round(progressWidth)}%</span>
+                   <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${progressWidth}%` }}
@@ -246,19 +225,19 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
 
         {/* Main Schedule Grid */}
         <div className="overflow-x-auto pb-10 scrollbar-hide" dir="rtl">
-           <div className="grid grid-cols-7 gap-px rounded-[3rem] border overflow-hidden min-w-[1200px] shadow-2xl" style={{ background: theme === 'dark' ? undefined : 'transparent', borderColor: theme === 'dark' ? undefined : undefined }}>
+           <div className="grid grid-cols-7 gap-px rounded-[3rem] border border-slate-200 dark:border-white/10 overflow-hidden min-w-[1200px] shadow-2xl bg-slate-200 dark:bg-white/10">
               {days.map((day, idx) => {
                 const isToday = new Date().getDay() === idx;
                 return (
-                  <div key={day.ar} className={`flex flex-col min-h-[650px] transition-all duration-700 ${isToday ? (theme === 'dark' ? 'bg-blue-600/[0.03] ring-1 ring-inset ring-blue-500/10' : 'bg-blue-50 ring-1 ring-inset ring-blue-200') : (theme === 'dark' ? 'bg-[#0a0c14]' : 'bg-slate-50')}`}>
-                    <div className={`p-8 text-center border-b transition-all duration-700 ${
+                  <div key={day.ar} className={`flex flex-col min-h-[650px] transition-all duration-300 ${isToday ? 'bg-blue-50 dark:bg-blue-600/[0.03] ring-1 ring-inset ring-blue-200 dark:ring-blue-500/10' : 'bg-slate-50 dark:bg-[#0a0c14]'}`}>
+                    <div className={`p-8 text-center border-b transition-all duration-300 ${
                       isToday 
                         ? 'bg-blue-600 text-white shadow-[0_15px_40px_-10px_rgba(37,99,235,0.4)] border-blue-400/20 z-10' 
-                        : (theme === 'dark' ? 'bg-slate-900/20 text-slate-500 border-slate-800/40' : 'bg-white text-slate-800 border-slate-200')
+                        : 'bg-white dark:bg-slate-900/20 text-slate-800 dark:text-slate-500 border-slate-200 dark:border-slate-800/40'
                     }`}>
                         <div className="flex flex-col items-center gap-1.5">
-                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? (theme === 'dark' ? 'text-white' : 'text-slate-900') : (theme === 'dark' ? 'text-slate-300' : 'text-slate-700')}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frFull : day.enFull}</h3>
-                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? (theme === 'dark' ? 'text-blue-100/60' : 'text-blue-600/80') : (theme === 'dark' ? 'text-slate-600' : 'text-slate-600')}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frShort : day.enShort}</p>
+                          <h3 className={`text-2xl font-black leading-none tracking-tight ${isToday ? 'text-white dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frFull : day.enFull}</h3>
+                          <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-600/80 dark:text-blue-100/60' : 'text-slate-600'}`}>{lang === 'ar' ? day.ar : lang === 'fr' ? day.frShort : day.enShort}</p>
                         </div>
                     </div>
                     <div className="flex-1 p-5 space-y-5">
@@ -267,7 +246,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             key={task.id} 
-                            className={`p-5 rounded-[2rem] border transition-all relative group ${task.completed ? (theme === 'dark' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200') : (theme === 'dark' ? 'bg-white/5 border-white/5 hover:border-blue-500/30' : 'bg-white border-slate-200 hover:border-blue-500/30')}`}
+                            className={`p-5 rounded-[2rem] border transition-all relative group ${task.completed ? 'bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20' : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-blue-500/30'}`}
                           >
                             <div className="flex flex-col items-center gap-4">
                                 <input 
@@ -275,14 +254,14 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                                   value={task.time}
                                   onChange={(e) => updateTask(day.ar, task.id, 'time', e.target.value)}
                                   placeholder="00:00"
-                                  className={`w-full bg-transparent border-none text-[11px] font-black text-center ${theme === 'dark' ? 'text-slate-500 placeholder:text-slate-700' : 'text-slate-700 placeholder:text-slate-700'} outline-none`}
+                                  className="w-full bg-transparent border-none text-[11px] font-black text-center text-slate-700 dark:text-slate-500 placeholder:text-slate-700 dark:placeholder:text-slate-700 outline-none"
                                 />
                                 <textarea 
                                   value={task.subject}
                                   onChange={(e) => updateTask(day.ar, task.id, 'subject', e.target.value)}
                                   placeholder={t("timetable_task_placeholder", "Task...")}
                                   rows={2}
-                                  className={`w-full bg-transparent border-none text-center text-lg font-black outline-none resize-none leading-snug ${task.completed ? (theme === 'dark' ? 'text-emerald-500/60 line-through' : 'text-emerald-600/60 line-through') : (theme === 'dark' ? 'text-white' : 'text-slate-900')}`}
+                                  className={`w-full bg-transparent border-none text-center text-lg font-black outline-none resize-none leading-snug ${task.completed ? 'text-emerald-600/60 line-through dark:text-emerald-500/60' : 'text-slate-900 dark:text-white'}`}
                                 />
                                 <div className="flex items-center gap-5 pt-3 opacity-0 group-hover:opacity-100 transition-all">
                                   <button title={t("timetable_toggle_task_title","Toggle status")} aria-label={t("timetable_toggle_task_title","Toggle status")} onClick={() => toggleTask(day.ar, task.id)} className="transition-transform hover:scale-125">
@@ -298,9 +277,9 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
                         <button 
                           title={t("timetable_add_task", "Add new task")} aria-label={t("timetable_add_task", "Add new task")}
                           onClick={() => addTask(day.ar)}
-                          className="w-full py-8 rounded-[2rem] border-2 border-dashed border-slate-900 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all flex items-center justify-center group"
+                          className="w-full py-8 rounded-[2rem] border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all flex items-center justify-center group"
                         >
-                          <Plus className="w-8 h-8 text-slate-800 group-hover:text-blue-500 group-hover:rotate-90 transition-all duration-500" />
+                          <Plus className="w-8 h-8 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 group-hover:rotate-90 transition-all duration-500" />
                         </button>
                     </div>
                   </div>
@@ -313,7 +292,7 @@ export default function TimetableClient({ initialData, isUser, hasActiveSubscrip
         <div className="flex flex-wrap items-center justify-center gap-6 mt-16" dir="rtl">
            {isUser && (
              <div className="flex flex-wrap items-center justify-center gap-4">
-                <button onClick={handleExport} disabled={exportLoading} className="px-10 py-5 bg-slate-900 hover:bg-slate-800 text-white rounded-[2rem] font-black flex items-center gap-3 transition-all border border-slate-800 disabled:opacity-50 shadow-xl">
+                <button onClick={handleExport} disabled={exportLoading} className="px-10 py-5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-[2rem] font-black flex items-center gap-3 transition-all border border-slate-800 dark:border-slate-200 disabled:opacity-50 shadow-xl">
                    {exportLoading ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> : <Download className="w-6 h-6 text-blue-500" />}
                    {t("timetable_export_button", "Download schedule as image")}
                 </button>
