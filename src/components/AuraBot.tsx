@@ -67,7 +67,10 @@ export default function AuraBot() {
 
   useEffect(() => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      if (localStorage.getItem(STORAGE_KEY) === "true") {
+        setIsPermaHidden(true);
+        return;
+      }
     } catch {}
     const timer = setTimeout(() => setIsOpen(true), 2000);
     return () => clearTimeout(timer);
