@@ -8,11 +8,13 @@ import MobileNav from "@/components/layout/MobileNav";
 import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 import { getSettings } from "@/app/actions/settings";
 import { prisma, isDatabaseEnabled } from "@/lib/db";
+import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
 import SSENotificationListener from "@/components/SSENotificationListener";
 import AppLinkGuard from "@/components/AppLinkGuard";
+import AuraBot from "@/components/AuraBot";
 
 const cairo = Cairo({ subsets: ["arabic", "latin"], display: "swap" });
 
@@ -48,8 +50,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const isAdmin = !!cookieStore.get("admin_token");
-  const userId = cookieStore.get("user_token")?.value;
+  const adminToken = cookieStore.get("admin_token")?.value;
+  const isAdmin = !!adminToken && verifyAdminToken(adminToken);
+  const userId = getUserIdFromCookies(cookieStore);
   const showTopNav = !!userId || isAdmin;
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
 
@@ -156,6 +159,7 @@ export default async function RootLayout({
             </main>
             <Footer />
             {showTopNav && <MobileNav />}
+            <AuraBot />
           </MaintenanceGuard>
         </LocaleProvider>
       </body>

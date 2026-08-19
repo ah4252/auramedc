@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendPushNotification } from "@/lib/push";
@@ -8,7 +9,7 @@ import { sendPushNotification } from "@/lib/push";
 // Get active logged-in user id
 async function getActiveUserId() {
   const cookieStore = await cookies();
-  return cookieStore.get("user_token")?.value;
+  return getUserIdFromCookies(cookieStore);
 }
 
 // Search user by email

@@ -5,6 +5,7 @@ import NewsClient from "./NewsClient";
 import NewsLoginRequired from "./NewsLoginRequired";
 
 import { prisma } from "@/lib/db";
+import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
 import { tServer } from "@/lib/i18n";
 
 export async function generateMetadata() {
@@ -25,9 +26,9 @@ export async function generateMetadata() {
 
 export default async function NewsPage() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   const adminToken = cookieStore.get("admin_token")?.value;
-  const isAdmin = !!adminToken;
+  const isAdmin = !!adminToken && verifyAdminToken(adminToken);
   const siteLang = (cookieStore.get("site_lang")?.value as any) || "ar";
 
   if (!userId && !isAdmin) {
@@ -35,7 +36,7 @@ export default async function NewsPage() {
   }
 
   let isValid = false;
-  if (adminToken === "secure_session_token") {
+  if (isAdmin) {
     isValid = true;
   } else if (userId) {
     try {
@@ -96,7 +97,7 @@ export default async function NewsPage() {
       </div>
 
       {/* News Content */}
-      <NewsClient news={news} userId={userId} isAdmin={isAdmin} />
+      <NewsClient news={news} userId={userId ?? undefined} isAdmin={isAdmin} />
     </div>
   );
 }

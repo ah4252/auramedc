@@ -1,11 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { revalidatePath } from "next/cache";
 
 export async function getTimetable() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
 
   if (!userId) return null;
 
@@ -49,7 +50,7 @@ export async function getTimetable() {
 
 export async function saveTimetable(data: any) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
 
   if (!userId) return { error: "يجب تسجيل الدخول لحفظ الجدول" };
 

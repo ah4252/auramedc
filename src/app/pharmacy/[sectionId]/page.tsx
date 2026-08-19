@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
-import { canAccessPharmacy } from "@/lib/auth-helpers";
+import { canAccessPharmacy, getCurrentUserId } from "@/lib/auth-helpers";
 import { tServer, type Locale } from "@/lib/i18n";
 import SectionClient from "./SectionClient";
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ sectionId
 }
 
 export default async function PharmacySectionPage({ params }: { params: Promise<{ sectionId: string }> }) {
-  const userId = (await cookies()).get("user_token")?.value ?? null;
+  const userId = await getCurrentUserId();
   const hasAccess = await canAccessPharmacy();
 
   if (!hasAccess) {

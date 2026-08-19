@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { getTimetable } from "@/app/actions/timetable";
 import { prisma } from "@/lib/db";
 import TimetableClient from "./TimetableClient";
@@ -7,7 +8,7 @@ import ThemeAwareWrapper from "@/components/ThemeAwareWrapper";
 
 export default async function TimetablePage() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   const isUser = !!userId;
   
   const timetableData = isUser ? await getTimetable() : null;

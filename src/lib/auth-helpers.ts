@@ -14,6 +14,62 @@ import { prisma } from "@/lib/db";
 const ADMIN_SECRET = process.env.NEXTAUTH_SECRET || "change-me-to-a-strong-secret";
 const TOKEN_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 أيام
 
+// ============================================================
+// User Token — جلسات الطلاب الموقّعة
+// ------------------------------------------------------------
+// سابقاً كان كوكي user_token يحمل معرّف المستخدم خاماً، مما يسمح
+// لأي شخص يعرف الـ ID بانتحال أي حساب. الآن التوكن موقّع بـ HMAC
+// ولا يمكن تزويره بدون المفتاح السري.
+// ============================================================
+
+const USER_SECRET =
+  process.env.USER_TOKEN_SECRET || `${ADMIN_SECRET}:user-sessions`;
+// 30 يوماً — مطابق لعمر الكوكي عند تسجيل الدخول
+const USER_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** مقارنة آمنة تمنع Timing Attacks (لا ترمي استثناء عند اختلاف الأطوال) */
+function safeSignatureEqual(actual: string, expected: string): boolean {
+  const a = Buffer.from(actual);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/**
+ * توليد توكن مستخدم موقّع بـ HMAC — الصيغة:
+ * userId.timestamp.nonce.signature
+ */
+export function generateUserToken(userId: string): string {
+  const timestamp = Date.now().toString();
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const payload = `${userId}.${timestamp}.${nonce}`;
+  const signature = crypto
+    .createHmac("sha256", USER_SECRET)
+    .update(payload)
+    .digest("hex");
+  return `${payload}.${signature}`;
+}
+
+/**
+ * التحقق من توكن المستخدم — يرجع معرّف المستخدم إذا كان التوقيع
+ * صحيحاً وغير منتهي الصلاحية، أو null إذا كان مزوّراً/قديماً/خاماً.
+ */
+export function verifyUserToken(token: string): string | null {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 4) return null;
+  const [userId, timestamp, nonce, signature] = parts;
+  if (!userId || !/^\d+$/.test(timestamp) || !signature) return null;
+  const payload = `${userId}.${timestamp}.${nonce}`;
+  const expectedSig = crypto
+    .createHmac("sha256", USER_SECRET)
+    .update(payload)
+    .digest("hex");
+  if (!safeSignatureEqual(signature, expectedSig)) return null;
+  const age = Date.now() - parseInt(timestamp, 10);
+  if (!(age >= 0 && age <= USER_TOKEN_EXPIRY_MS)) return null;
+  return userId;
+}
+
 /**
  * توليد توكن مدير موقّع بـ HMAC — لا يمكن تزويره بدون المفتاح السري
  */
@@ -74,22 +130,36 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 /**
- * يُلزم المستخدم بتسجيل الدخول — يرجع ID المستخدم أو يرمي خطأ
+ * يُلزم المستخدم بتسجيل الدخول — يرجع ID المستخدم (بعد التحقق من
+ * توقيع التوكن) أو يرمي خطأ
  */
 export async function requireUser(): Promise<string> {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = await getCurrentUserId();
   if (!userId) throw new Error("يجب تسجيل الدخول أولاً");
   return userId;
 }
 
+/** نوع مخزن الكوكيز كما ترجعه cookies() من next/headers */
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
 /**
- * يجلب ID المستخدم الحالي أو null إذا لم يكن مسجلاً
+ * يقرأ كوكي الجلسة من cookieStore جاهز ويتحقق من التوقيع —
+ * يرجع معرّف المستخدم أو null. للاستخدام في مكونات الخادم
+ * التي جلبت cookies() مسبقاً لأغراض أخرى.
+ */
+export function getUserIdFromCookies(cookieStore: CookieStore): string | null {
+  const token = cookieStore.get("user_token")?.value;
+  return token ? verifyUserToken(token) : null;
+}
+
+/**
+ * يجلب ID المستخدم الحالي أو null — يتحقق من توقيع التوكن
+ * ويرفض الكوكيز المزوّرة أو القديمة (غير الموقّعة)
  */
 export async function getCurrentUserId(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    return cookieStore.get("user_token")?.value ?? null;
+    return getUserIdFromCookies(cookieStore);
   } catch {
     return null;
   }

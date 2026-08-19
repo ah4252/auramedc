@@ -6,6 +6,7 @@ import {
   BookOpen,
   BrainCircuit,
   CheckCircle2,
+  Edit2,
   FileText,
   Filter,
   LayoutDashboard,
@@ -35,6 +36,7 @@ import {
   toggleQuizQuestionPublish,
 } from "@/app/actions/quiz";
 import { getAvailableQuizSubjects } from "@/app/actions/quiz";
+import EditQuestionModal from "./EditQuestionModal";
 
 
 const difficultyOptions = [
@@ -77,6 +79,7 @@ export default function AdminQuizPage() {
   const [questionBank, setQuestionBank] = useState<any>({ questions: [], total: 0, totalPages: 1 });
   const [resultsList, setResultsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
   const [questionForm, setQuestionForm] = useState({
     text: "",
@@ -443,6 +446,7 @@ export default function AdminQuizPage() {
                     <QuestionCard
                       question={question}
                       onTogglePublish={() => handleTogglePublishQuestion(question.id)}
+                      onEdit={() => setEditingQuestionId(question.id)}
                       onClone={() => handleCloneQuestion(question.id)}
                       onDelete={() => handleDeleteQuestion(question.id)}
                       index={idx}
@@ -805,6 +809,14 @@ export default function AdminQuizPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Edit Question Modal */}
+      {editingQuestionId && (
+        <EditQuestionModal
+          questionId={editingQuestionId}
+          onUpdated={() => { setEditingQuestionId(null); refreshBank(); refreshDashboard(); }}
+        />
+      )}
     </div>
   );
 }
@@ -839,7 +851,7 @@ function StatCard({ title, value, icon: Icon, gradient, bgGlow, delay }: any) {
 /* ────────────────────────────────────────────────────── */
 /* QuestionCard Component                                 */
 /* ────────────────────────────────────────────────────── */
-function QuestionCard({ question, onTogglePublish, onClone, onDelete, index }: any) {
+function QuestionCard({ question, onTogglePublish, onEdit, onClone, onDelete, index }: any) {
   const diffConfig: Record<string, { bg: string; text: string; label: string }> = {
     EASY: { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-700 dark:text-emerald-400", label: "سهل" },
     MEDIUM: { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-700 dark:text-amber-400", label: "متوسط" },
@@ -877,6 +889,15 @@ function QuestionCard({ question, onTogglePublish, onClone, onDelete, index }: a
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={onEdit}
+            className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 transition-all"
+            title="تعديل"
+          >
+            <Edit2 className="w-4 h-4" />
+          </motion.button>
           <motion.button
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}

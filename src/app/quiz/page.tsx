@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { AlertCircle, ArrowLeft, CheckCircle2, Clock3, FileText, Play, ShieldCheck, Sparkles, Star, TimerReset, Trophy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle, ArrowLeft, BookOpen, CheckCircle2, Clock3, Compass, FileText, FlaskConical, Play, ShieldCheck, Sparkles, Star, TimerReset, Trophy } from "lucide-react";
 import {
   getAvailableQuizSubjects,
   getAvailableQuizStudyYears,
@@ -40,6 +40,7 @@ export default function QuizPage() {
   const [selectedCompletedAttempt, setSelectedCompletedAttempt] = useState<any>(null);
   const [showCompletedAttemptModal, setShowCompletedAttemptModal] = useState(false);
   const [attemptLocked, setAttemptLocked] = useState(false);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -101,6 +102,7 @@ export default function QuizPage() {
       setResultSummary(null);
       setQuestionsDetails([]);
       setAttemptLocked(false);
+      setCurrentQuizIndex(0);
     };
 
     loadQuestions();
@@ -287,9 +289,17 @@ export default function QuizPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/courses?tab=qcms" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-medical-300 hover:text-medical-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                <ArrowLeft className="h-4 w-4" />
+              <Link href="/courses?tab=qcms" className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm transition hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md dark:border-violet-800 dark:bg-violet-900/30 dark:text-violet-300">
+                <Sparkles className="h-4 w-4" />
                 QCMs
+              </Link>
+              <Link href="/courses" className="inline-flex items-center gap-2 rounded-2xl border border-medical-200 bg-medical-50 px-4 py-2.5 text-sm font-black text-medical-700 shadow-sm transition hover:-translate-y-0.5 hover:border-medical-400 hover:shadow-md dark:border-medical-800 dark:bg-medical-900/30 dark:text-medical-300">
+                <BookOpen className="h-4 w-4" />
+                الدروس
+              </Link>
+              <Link href="/courses?tab=pharmacy" className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-black text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <FlaskConical className="h-4 w-4" />
+                الصيدلة
               </Link>
               {attempt && (
                 <button
@@ -392,8 +402,9 @@ export default function QuizPage() {
               className="overflow-hidden rounded-[40px] border border-white/20 bg-gradient-to-br from-white/95 via-blue-50/80 to-indigo-50/60 p-8 shadow-[0_32px_80px_rgba(14,165,233,0.2)] backdrop-blur-xl dark:border-slate-700/40 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-indigo-950/40"
             >
               <div className="mb-8">
-                <h2 className="text-3xl font-black bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:via-cyan-400 dark:to-indigo-400">
-                  🎯 اختر مسارك التعليمي
+                <h2 className="text-3xl font-black bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:via-cyan-400 dark:to-indigo-400 flex items-center gap-3">
+                  <Compass className="w-8 h-8 shrink-0 text-medical-500 dark:text-sky-400" />
+                  اختر مسارك التعليمي
                 </h2>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">حدد السنة الدراسية والمادة لبدء التدريب على الأسئلة</p>
               </div>
@@ -472,165 +483,147 @@ export default function QuizPage() {
                 className="space-y-6"
               >
                 <div className="rounded-[40px] border border-white/20 bg-gradient-to-br from-white/95 via-emerald-50/80 to-cyan-50/60 p-8 shadow-[0_32px_80px_rgba(16,185,129,0.15)] backdrop-blur-xl dark:border-slate-700/40 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-emerald-950/40">
+                  {/* Header */}
                   <div className="mb-6 flex items-center justify-between gap-4">
                     <div>
                       <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                        ✨ {subjects.find((s: any) => s.id === selectedSubjectId)?.name || "المادة"}
+                        {subjects.find((s: any) => s.id === selectedSubjectId)?.name || "المادة"}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">أسئلة تدريبية متنوعة ومحدثة</p>
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                        السؤال {Math.min(currentQuizIndex + 1, questions.length)} من {questions.length}
+                      </p>
                     </div>
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-center shadow-[0_12px_32px_rgba(16,185,129,0.3)]">
-                      <span className="text-2xl font-black text-white">{questions.length}</span>
+                      <span className="text-2xl font-black text-white">{currentQuizIndex + 1}/{questions.length}</span>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    {questions.map((question: any, index: number) => {
-                      const selected = answers[question.id];
-                      const isAnswered = !!selected;
-                      const revealed = questionsDetails.find((detail) => detail.id === question.id);
-                      const correctOptionId = revealed?.correctOption?.id;
-                      const selectedOptionId = revealed?.selectedOption?.id;
+                  {/* Progress Bar */}
+                  <div className="mb-6">
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
+                        animate={{ width: `${((currentQuizIndex) / questions.length) * 100}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                      />
+                    </div>
+                  </div>
 
-                      return (
+                  {/* Single Question Card with AnimatePresence */}
+                  <div className="relative overflow-hidden min-h-[320px]">
+                    <AnimatePresence mode="wait">
+                      {currentQuizIndex < questions.length ? (
                         <motion.div
-                          key={question.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className="group overflow-hidden rounded-3xl border-2 border-slate-200/80 bg-white/90 transition-all duration-300 hover:border-medical-400 hover:shadow-[0_12px_40px_rgba(14,165,233,0.15)] dark:border-slate-700/80 dark:bg-slate-900/70 dark:hover:border-medical-500"
+                          key={questions[currentQuizIndex].id}
+                          initial={{ opacity: 0, x: 80, scale: 0.95 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -80, scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          className="rounded-3xl border-2 border-slate-200/80 bg-white/90 dark:border-slate-700/80 dark:bg-slate-900/70 overflow-hidden"
                         >
-                          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4 dark:from-slate-800 dark:to-slate-900">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex items-start gap-3 flex-1">
-                                <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-sky-500 text-xs font-black text-white">
-                                  {index + 1}
-                                </div>
-                                <p className="text-sm font-bold text-slate-900 leading-relaxed dark:text-white">{question.text}</p>
+                          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-5 dark:from-slate-800 dark:to-slate-900">
+                            <div className="flex items-start gap-3">
+                              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-sky-500 text-sm font-black text-white shadow-lg shadow-medical-500/30">
+                                {currentQuizIndex + 1}
                               </div>
-                              {isAnswered && !revealed && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  className="flex-shrink-0 rounded-full bg-emerald-100 p-1 dark:bg-emerald-900/30"
-                                >
-                                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                </motion.div>
-                              )}
-                              {revealed && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  className={`flex-shrink-0 rounded-full p-1 ${revealed.isCorrect ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}
-                                >
-                                  {revealed.isCorrect ? (
-                                    <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                                  ) : (
-                                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                  )}
-                                </motion.div>
-                              )}
+                              <p className="text-base font-bold text-slate-900 leading-relaxed dark:text-white">
+                                {questions[currentQuizIndex].text}
+                              </p>
                             </div>
                           </div>
 
-                          <div className="space-y-2 px-6 py-4">
-                            {revealed && (
-                              <div className={`rounded-[20px] border-2 p-4 shadow-sm ${
-                                revealed.isCorrect
-                                  ? "border-emerald-400 bg-gradient-to-r from-emerald-50 via-green-50 to-emerald-100 dark:border-emerald-500 dark:from-emerald-950/30 dark:via-slate-900 dark:to-emerald-950/20"
-                                  : "border-red-400 bg-gradient-to-r from-red-50 via-rose-50 to-red-100 dark:border-red-500 dark:from-red-950/30 dark:via-slate-900 dark:to-red-950/20"
-                              }`}>
-                                <div className="mb-2 flex items-center justify-between gap-3">
-                                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">الجواب</p>
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowResultsModal(true)}
-                                    className="rounded-full border border-slate-300 bg-white/70 px-2.5 py-1 text-[10px] font-bold text-slate-700 shadow-sm transition hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-                                  >
-                                    إعادة النافذة
-                                  </button>
-                                </div>
-                                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                                  {revealed.selectedOption?.text || "لم تجب على هذا السؤال"}
-                                </p>
-                              </div>
-                            )}
+                          <div className="space-y-3 px-6 py-6">
+                            {(questions[currentQuizIndex].options || []).map((option: any, optIndex: number) => (
+                              <motion.button
+                                key={option.id}
+                                whileHover={{ scale: 1.01, x: 4 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="button"
+                                onClick={() => {
+                                  if (attemptLocked) return;
+                                  const q = questions[currentQuizIndex];
+                                  const newAnswers = { ...answers, [q.id]: option.id };
+                                  setAnswers(newAnswers);
 
-                            {(question.options || []).map((option: any, optIndex: number) => {
-                              const isOptionCorrect = option.id === correctOptionId;
-                              const isSelectedWrong = option.id === selectedOptionId && !!revealed && !revealed.isCorrect;
-                              const isSelectedRight = option.id === selectedOptionId && !!revealed && revealed.isCorrect;
-
-                              return (
-                                <motion.button
-                                  key={option.id}
-                                  whileHover={{ scale: 1.01, translateX: 4 }}
-                                  type="button"
-                                  onClick={() => {
-                                    if (attemptLocked) return;
-
-                                    const newAnswers = { ...answers, [question.id]: option.id };
-                                    setAnswers(newAnswers);
-                                    
-                                    // التحقق ما إذا كانت جميع الأسئلة الآن مجابة
-                                    if (Object.keys(newAnswers).length === questions.length) {
-                                      // حساب النتيجة وفتح النافذة المنبثقة تلقائياً
-                                      setAttemptLocked(true);
-                                      setTimeout(() => {
-                                        const details: any[] = [];
-                                        let correct = 0;
-
-                                        questions.forEach((q) => {
-                                          const sel = newAnswers[q.id];
-                                          const correctOpt = q.options.find((opt: any) => opt.isCorrect);
-                                          const selectedOpt = q.options.find((opt: any) => opt.id === sel);
-                                          const isCorrect = sel === correctOpt?.id;
-
-                                          if (isCorrect) correct++;
-
-                                          details.push({
-                                            id: q.id,
-                                            text: q.text,
-                                            isCorrect,
-                                            selectedOption: selectedOpt,
-                                            correctOption: correctOpt,
-                                            explanation: q.explanation || "لم يتم توفير شرح لهذا السؤال",
-                                            reference: q.reference || "لم يتم توفير مرجع",
-                                          });
+                                  // If last question, compute results and show modal
+                                  if (currentQuizIndex === questions.length - 1) {
+                                    setAttemptLocked(true);
+                                    setTimeout(() => {
+                                      setCurrentQuizIndex(questions.length);
+                                    }, 300);
+                                    setTimeout(() => {
+                                      const details: any[] = [];
+                                      let correct = 0;
+                                      questions.forEach((qItem) => {
+                                        const sel = newAnswers[qItem.id];
+                                        const correctOpt = qItem.options.find((opt: any) => opt.isCorrect);
+                                        const selectedOpt = qItem.options.find((opt: any) => opt.id === sel);
+                                        const isCorrect = sel === correctOpt?.id;
+                                        if (isCorrect) correct++;
+                                        details.push({
+                                          id: qItem.id,
+                                          text: qItem.text,
+                                          isCorrect,
+                                          selectedOption: selectedOpt,
+                                          correctOption: correctOpt,
+                                          explanation: qItem.explanation || "لم يتم توفير شرح لهذا السؤال",
+                                          reference: qItem.reference || "لم يتم توفير مرجع",
                                         });
-
-                                        const percentage = Number(((correct / questions.length) * 100).toFixed(1));
-                                        setQuestionsDetails(details);
-                                        setResultSummary({ correct, total: questions.length, percentage });
-                                        setShowResultsModal(true);
-                                      }, 300);
-                                    }
-                                  }}
-                                  className={`w-full rounded-2xl border-2 p-3.5 text-right font-bold transition-all duration-300 ${
-                                    revealed
-                                      ? isOptionCorrect
-                                        ? "border-emerald-600 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 shadow-[0_8px_20px_rgba(16,185,129,0.22)] dark:border-emerald-500 dark:from-emerald-950/35 dark:to-green-950/30 dark:text-emerald-300"
-                                        : isSelectedWrong
-                                          ? "border-red-600 bg-gradient-to-r from-red-50 to-rose-50 text-red-700 shadow-[0_8px_20px_rgba(239,68,68,0.20)] dark:border-red-500 dark:from-red-950/35 dark:to-rose-950/30 dark:text-red-300"
-                                          : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"
-                                      : selected === option.id
-                                        ? "border-medical-600 bg-gradient-to-r from-medical-50 to-sky-50 text-medical-700 shadow-[0_8px_20px_rgba(14,165,233,0.25)] dark:border-medical-500 dark:from-medical-950/40 dark:to-sky-950/40 dark:text-medical-300"
-                                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-slate-600"
-                                  }`}
-                                >
-                                  <span className="flex items-center justify-between">
-                                    <span>{option.text}</span>
-                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-200/50 text-xs font-black text-slate-700 dark:bg-slate-700 dark:text-slate-300 ml-3">
-                                      {String.fromCharCode(65 + optIndex)}
-                                    </span>
+                                      });
+                                      const percentage = Number(((correct / questions.length) * 100).toFixed(1));
+                                      setQuestionsDetails(details);
+                                      setResultSummary({ correct, total: questions.length, percentage });
+                                      setShowResultsModal(true);
+                                    }, 700);
+                                  } else {
+                                    // Move to next question after brief delay
+                                    setTimeout(() => {
+                                      setCurrentQuizIndex((prev) => prev + 1);
+                                    }, 350);
+                                  }
+                                }}
+                                className={`w-full rounded-2xl border-2 p-4 text-right font-bold transition-all duration-300 ${
+                                  answers[questions[currentQuizIndex].id] === option.id
+                                    ? "border-medical-600 bg-gradient-to-r from-medical-50 to-sky-50 text-medical-700 shadow-[0_8px_20px_rgba(14,165,233,0.25)] dark:border-medical-500 dark:from-medical-950/40 dark:to-sky-950/40 dark:text-medical-300"
+                                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-slate-600"
+                                }`}
+                              >
+                                <span className="flex items-center justify-between">
+                                  <span>{option.text}</span>
+                                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-200/50 text-xs font-black text-slate-700 dark:bg-slate-700 dark:text-slate-300 ml-3">
+                                    {String.fromCharCode(65 + optIndex)}
                                   </span>
-                                </motion.button>
-                              );
-                            })}
+                                </span>
+                              </motion.button>
+                            ))}
                           </div>
                         </motion.div>
-                      );
-                    })}
+                      ) : (
+                        <motion.div
+                          key="completed"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          className="rounded-3xl border-2 border-emerald-300 dark:border-emerald-600 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/40 dark:to-cyan-950/40 p-10 text-center"
+                        >
+                          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                            <CheckCircle2 className="h-8 w-8" />
+                          </div>
+                          <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">أجبت على جميع الأسئلة!</h3>
+                          <p className="text-slate-500 dark:text-slate-400 mb-6">يمكنك مراجعة نتائجك في أي وقت</p>
+                          <motion.button
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => setShowResultsModal(true)}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-medical-600 to-sky-500 px-8 py-3.5 font-black text-sm text-white shadow-[0_16px_40px_rgba(14,165,233,0.35)] hover:shadow-[0_20px_50px_rgba(14,165,233,0.45)] transition-all"
+                          >
+                            <Trophy className="h-5 w-5" />
+                            عرض النتيجة
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </motion.div>
@@ -921,6 +914,7 @@ export default function QuizPage() {
                     setResultSummary(null);
                     setQuestionsDetails([]);
                     setAttemptLocked(false);
+                    setCurrentQuizIndex(0);
                     setQuestions((prev) => shuffleQuestions(prev));
                   }}
                   className="flex-1 rounded-xl bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 px-3 py-2.5 font-black text-xs text-white shadow-[0_12px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_16px_40px_rgba(14,165,233,0.4)] transition-all sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"

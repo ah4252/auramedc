@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { canAccessPharmacy } from "@/lib/auth-helpers";
+import { canAccessPharmacy, getCurrentUserId } from "@/lib/auth-helpers";
 import { tServer, type Locale } from "@/lib/i18n";
 import MedicineDetailClient from "./MedicineDetailClient";
 
@@ -36,7 +36,7 @@ export default async function PharmacyMedicinePage({
 }: {
   params: Promise<{ sectionId: string; medicineId: string }>;
 }) {
-  const userId = (await cookies()).get("user_token")?.value ?? null;
+  const userId = await getCurrentUserId();
   const hasAccess = await canAccessPharmacy();
 
   if (!hasAccess) {

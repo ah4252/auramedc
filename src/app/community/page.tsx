@@ -4,21 +4,22 @@ import { Sparkles, GraduationCap, ArrowRight, MessageSquare, Lock } from "lucide
 import { cookies } from "next/headers";
 import CommunityLoginRequired from "./CommunityLoginRequired";
 import { prisma } from "@/lib/db";
+import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
 
 export const dynamic = "force-dynamic";
 
 export default async function CommunityPortalPage() {
   const cookieStore = await cookies();
-  const userToken = cookieStore.get("user_token")?.value;
+  const userToken = getUserIdFromCookies(cookieStore);
   const adminToken = cookieStore.get("admin_token")?.value;
 
-  if (!userToken && !adminToken) {
+  if (!userToken && !(adminToken && verifyAdminToken(adminToken))) {
     return <CommunityLoginRequired />;
   }
 
   // Validate that the user actually exists in the database, or the admin has a valid session
   let isValid = false;
-  if (adminToken === "secure_session_token") {
+  if (adminToken && verifyAdminToken(adminToken)) {
     isValid = true;
   } else if (userToken) {
     try {

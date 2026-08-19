@@ -2,6 +2,7 @@ import CommunityClient from "@/app/community/CommunityClient";
 import CommunityAccessClient from "@/app/community/CommunityAccessClient";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
 import { notFound } from "next/navigation";
 import { getDiscussions } from "@/app/actions/community";
 import CommunityLoginRequired from "@/app/community/CommunityLoginRequired";
@@ -26,7 +27,7 @@ export default async function CommunityYearPage({ params }: { params: Promise<{ 
   }
 
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   const adminToken = cookieStore.get("admin_token")?.value;
 
   let user = null;
@@ -37,7 +38,7 @@ export default async function CommunityYearPage({ params }: { params: Promise<{ 
     });
   }
 
-  if (!user && adminToken === "secure_session_token") {
+  if (!user && adminToken && verifyAdminToken(adminToken)) {
     user = {
       id: "secure_session_token",
       name: "المشرف العام",

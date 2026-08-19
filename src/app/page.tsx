@@ -5,12 +5,12 @@ import { PlayCircle, BookOpen, Stethoscope, Award, ArrowLeft, HeartPulse, Layout
 import { prisma } from "@/lib/db";
 import { getYoutubeThumbnail } from "@/lib/utils";
 import { getSettings } from "@/app/actions/settings";
-import { canAccessPharmacy } from "@/lib/auth-helpers";
+import { canAccessPharmacy, getCurrentUserId } from "@/lib/auth-helpers";
 import { tServer, Locale } from "@/lib/i18n";
 import ScrollToTop from "@/components/ScrollToTop";
 
 export default async function Home() {
-  const userId = (await cookies()).get("user_token")?.value;
+  const userId = await getCurrentUserId();
   if (!userId) {
     redirect("/login");
   }

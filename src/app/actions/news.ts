@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
 import { broadcast } from "@/lib/sse-store";
 
@@ -188,7 +189,7 @@ export async function addNewsComment(newsId: string, content: string, parentId?:
     await cleanupOldComments();
 
     const cookieStore = await cookies();
-    const userId = cookieStore.get("user_token")?.value;
+    const userId = getUserIdFromCookies(cookieStore);
     
     if (!userId) {
       return { success: false, error: "يجب تسجيل الدخول لإضافة تعليق" };
@@ -226,7 +227,7 @@ export async function addNewsComment(newsId: string, content: string, parentId?:
 export async function deleteNewsComment(commentId: string) {
   try {
     const cookieStore = await cookies();
-    const userId = cookieStore.get("user_token")?.value;
+    const userId = getUserIdFromCookies(cookieStore);
     const adminToken = cookieStore.get("admin_token")?.value;
     
     if (!userId && !adminToken) {

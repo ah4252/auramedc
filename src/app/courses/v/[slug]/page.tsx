@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import FavoriteButton from "@/components/courses/FavoriteButton";
 
 function getEmbedUrl(url: string | null) {
@@ -57,7 +58,7 @@ export default async function LessonDetailsPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   
   let lesson;
   try {

@@ -1,13 +1,14 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { redirect } from "next/navigation";
 import ProfileClient from "./ProfileClient";
 import { getNews } from "@/app/actions/news";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
 
   if (!userId) {
     redirect("/login");

@@ -1,12 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 export async function toggleFavorite(lessonId: string) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   try {

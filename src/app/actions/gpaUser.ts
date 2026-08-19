@@ -1,11 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 
 export async function deleteGPACalculation(id: string) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   try {
@@ -22,7 +23,7 @@ export async function deleteGPACalculation(id: string) {
 
 export async function deleteAllGPACalculations() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   try {

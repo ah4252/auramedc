@@ -2,6 +2,7 @@ import { getDiscussion } from "@/app/actions/community";
 import DiscussionViewClient from "./DiscussionViewClient";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
 import { notFound } from "next/navigation";
 import CommunityLoginRequired from "@/app/community/CommunityLoginRequired";
 
@@ -10,9 +11,9 @@ export const dynamic = "force-dynamic";
 export default async function DiscussionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   const adminToken = cookieStore.get("admin_token")?.value;
-  
+
   let user = null;
   if (userId) {
     user = await prisma.user.findUnique({
@@ -21,7 +22,7 @@ export default async function DiscussionPage({ params }: { params: Promise<{ id:
     });
   }
 
-  if (!user && adminToken === "secure_session_token") {
+  if (!user && adminToken && verifyAdminToken(adminToken)) {
     user = {
       id: "secure_session_token",
       name: "المشرف العام",

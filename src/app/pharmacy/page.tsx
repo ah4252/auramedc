@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPharmacySections } from "@/app/actions/pharmacy";
 import PharmacyClient from "./PharmacyClient";
-import { canAccessPharmacy } from "@/lib/auth-helpers";
+import { canAccessPharmacy, getCurrentUserId } from "@/lib/auth-helpers";
 import { tServer, type Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -17,7 +17,7 @@ export const metadata = async (): Promise<Metadata> => {
 };
 
 export default async function PharmacyPage() {
-  const userId = (await cookies()).get("user_token")?.value ?? null;
+  const userId = await getCurrentUserId();
   const hasAccess = await canAccessPharmacy();
 
   if (!hasAccess) {

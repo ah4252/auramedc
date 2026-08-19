@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 import GPACalculatorClient from "./GPACalculatorClient";
 
 export default async function GPACalculatorPage() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   
   let initialData = null;
   let userEmail = null;

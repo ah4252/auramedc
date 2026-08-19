@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
@@ -28,7 +27,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasUser = !!request.cookies.get("user_token")?.value;
+  // فحص سريع للصيغة فقط (userId.timestamp.nonce.signature) —
+  // التحقق الكامل من التوقيع يتم في auth-helpers على الخادم،
+  // لأن middleware يعمل على Edge Runtime بدون وصول لـ crypto الخاص بـ Node.
+  const token = request.cookies.get("user_token")?.value;
+  const hasUser = !!token && token.split(".").length === 4;
 
   if (!hasUser) {
     const url = request.nextUrl.clone();
@@ -39,17 +42,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith("/timetable")) {
-    const userId = request.cookies.get("user_token")?.value;
-    if (!userId) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(url);
-    }
-
-    // Allow the timetable page to open for logged-in users.
-    // Premium access can still be enforced in the UI for export/save features,
-    // without blocking the page itself from loading.
+    // التوكن موجود وصيغته سليمة — صفحة الجدول تفتح للمسجلين.
+    // الفحص الكامل للتوقيع يتم في إجراءات الخادم.
     return NextResponse.next();
   }
 

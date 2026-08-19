@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { getUserIdFromCookies } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/db";
 
 // دالة لتنظيف الحسابات الخاملة (أكثر من شهر)
@@ -36,7 +37,7 @@ async function cleanupInactiveUsers() {
 
 export async function pingPresence() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { success: false };
 
   try {

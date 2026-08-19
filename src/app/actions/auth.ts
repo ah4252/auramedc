@@ -3,7 +3,12 @@
 import { cookies, headers } from "next/headers";
 import { prisma, isDatabaseEnabled } from "@/lib/db";
 import bcrypt from "bcryptjs";
-import { generateAdminToken, verifyAdminToken } from "@/lib/auth-helpers";
+import {
+  generateAdminToken,
+  verifyAdminToken,
+  generateUserToken,
+  getUserIdFromCookies,
+} from "@/lib/auth-helpers";
 import { z } from "zod";
 
 const DEFAULT_ADMIN_PASSWORD = "admin123";
@@ -116,8 +121,9 @@ export async function registerUser(formData: FormData) {
       },
     });
 
-    (await cookies()).set("user_token", user.id, {
+    (await cookies()).set("user_token", generateUserToken(user.id), {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 يوماً
       path: "/",
@@ -197,8 +203,9 @@ export async function loginUser(formData: FormData) {
       };
     }
 
-    (await cookies()).set("user_token", user.id, {
+    (await cookies()).set("user_token", generateUserToken(user.id), {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",
@@ -237,7 +244,7 @@ export async function adminChangePassword(userId: string, newPassword: string) {
 
 export async function changePassword(currentPassword: string, newPassword: string) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
   if (!currentPassword || !newPassword) return { error: "الرجاء تعبئة جميع الحقول" };
   if (newPassword.length < 6) return { error: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل" };
@@ -309,7 +316,7 @@ const updateProfileSchema = z.object({
 
 export async function updateProfile(formData: FormData) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   const imageFile = formData.get("imageFile") as File | null;
@@ -364,7 +371,7 @@ export async function updateProfile(formData: FormData) {
 
 export async function updateProfileImage(formData: FormData) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   const imageFile = formData.get("imageFile") as File | null;
@@ -446,8 +453,9 @@ export async function resetForgotPassword(email: string, tempPassword: string, n
     });
 
     // Log the user in by setting the cookie
-    (await cookies()).set("user_token", user.id, {
+    (await cookies()).set("user_token", generateUserToken(user.id), {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",
@@ -466,7 +474,7 @@ export async function resetForgotPassword(email: string, tempPassword: string, n
 
 export async function deleteAccount(password: string) {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("user_token")?.value;
+  const userId = getUserIdFromCookies(cookieStore);
   if (!userId) return { error: "يجب تسجيل الدخول أولاً" };
 
   if (!password) return { error: "كلمة المرور مطلوبة" };
