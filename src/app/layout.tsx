@@ -159,7 +159,7 @@ export default async function RootLayout({
             </main>
             <Footer />
             {showTopNav && <MobileNav />}
-            <AuraBot />
+            {showTopNav && <AuraBot />}
           </MaintenanceGuard>
         </LocaleProvider>
       </body>
