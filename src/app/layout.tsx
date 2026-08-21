@@ -152,7 +152,7 @@ export default async function RootLayout({
             )}
             <main className="flex-1 pb-20 md:pb-0">
               <Suspense fallback={null}>
-                <SectionMaintenanceGuard settings={settings}>
+                <SectionMaintenanceGuard settings={settings} isAdminUser={isAdmin}>
                   {children}
                 </SectionMaintenanceGuard>
               </Suspense>

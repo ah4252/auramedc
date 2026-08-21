@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 
 export default function SectionMaintenanceGuard({
   settings,
+  isAdminUser = false,
   children,
 }: {
   settings: any;
+  isAdminUser?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -29,13 +31,14 @@ export default function SectionMaintenanceGuard({
     return () => window.removeEventListener("popstate", handleUrlChange);
   }, []);
 
+
   // Determine maintenance state AFTER all hooks
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdminPath = pathname.startsWith("/admin");
 
   let isUnderMaintenance = false;
   let sectionName = "";
 
-  if (!isAdmin) {
+  if (!isAdminPath && !isAdminUser) {
     // قسم الصيدلة: يشمل /pharmacy و /courses?tab=pharmacy و /courses/pharmacy/[sectionId]
     const activeTab = currentQuery || searchParams.get("tab");
     const isPharmacyTab = pathname.startsWith("/courses") && activeTab === "pharmacy";

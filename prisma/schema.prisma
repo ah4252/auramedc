@@ -240,7 +240,6 @@ model QcmsExamLink {
   id            String       @id @default(cuid())
   label         String
   url           String
-  isFeatured    Boolean      @default(false)
   qcmsSubjectId String
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt

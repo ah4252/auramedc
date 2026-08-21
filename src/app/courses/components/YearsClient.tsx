@@ -1227,48 +1227,6 @@ export default function YearsClient({
 
                           {!devMode && (
                             <div className="mt-4">
-                              <button
-                                onClick={() => {
-
-                                  applyQcmNavigationState({
-                                    devMode: true,
-                                    selectedQcmsYearId: null,
-                                    selectedQcmsSubjectId: null,
-                                    selectedDevYearId: null,
-                                    selectedDevSubjectId: null,
-                                  });
-                                }}
-                                className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl p-4 text-start shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/20"
-                                style={{
-                                  background: "linear-gradient(135deg, #1a1200 0%, #2d1f00 50%, #1a1200 100%)",
-                                  border: "1px solid rgba(245,158,11,0.4)",
-                                }}
-                              >
-                                {/* Shimmer */}
-                                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                                  style={{
-                                    background: "linear-gradient(105deg, transparent 30%, rgba(255,215,0,0.08) 50%, transparent 70%)",
-                                    backgroundSize: "200% 100%",
-                                    animation: "shimmer 2s infinite"
-                                  }}
-                                />
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-                                  style={{
-                                    background: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(251,191,36,0.15))",
-                                    border: "1px solid rgba(245,158,11,0.4)"
-                                  }}
-                                >
-                                  <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                                </div>
-                                <div>
-                                  <h4 className="text-sm font-black leading-tight text-amber-200">
-                                    {devBreadcrumbLabel}
-                                  </h4>
-                                  <p className="mt-1 text-[10px] font-bold text-amber-500/80">
-                                    {devBrowseLabel}
-                                  </p>
-                                </div>
-                              </button>
 
                               {/* Quiz Button */}
                               <Link
