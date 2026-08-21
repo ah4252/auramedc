@@ -45,7 +45,7 @@ const sectionDefs: SectionItem[] = [
 
 type SectionWithTranslations = SectionItem & { label: string; description: string };
 
-export default function AuraBot() {
+export default function AuraBot({ canViewPharmacy = false }: { canViewPharmacy?: boolean }) {
   const { t, lang } = useLocale();
   const isRtl = lang === "ar";
 
@@ -57,12 +57,14 @@ export default function AuraBot() {
 
   const sections = useMemo(
     () =>
-      sectionDefs.map((s) => ({
-        ...s,
-        label: t(s.labelKey),
-        description: t(s.descKey),
-      })),
-    [t]
+      sectionDefs
+        .filter(s => s.id !== "pharmacy" || canViewPharmacy)
+        .map((s) => ({
+          ...s,
+          label: t(s.labelKey),
+          description: t(s.descKey),
+        })),
+    [t, canViewPharmacy]
   );
 
   useEffect(() => {

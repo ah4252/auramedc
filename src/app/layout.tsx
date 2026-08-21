@@ -8,7 +8,7 @@ import MobileNav from "@/components/layout/MobileNav";
 import MaintenanceGuard from "@/components/layout/MaintenanceGuard";
 import { getSettings } from "@/app/actions/settings";
 import { prisma, isDatabaseEnabled } from "@/lib/db";
-import { getUserIdFromCookies, verifyAdminToken } from "@/lib/auth-helpers";
+import { getUserIdFromCookies, verifyAdminToken, canAccessPharmacy } from "@/lib/auth-helpers";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import ActivePresencePing from "@/components/ActivePresencePing";
@@ -55,6 +55,12 @@ export default async function RootLayout({
   const userId = getUserIdFromCookies(cookieStore);
   const showTopNav = !!userId || isAdmin;
   const siteLang = (cookieStore.get("site_lang")?.value as Locale) || "ar";
+  
+  let canViewPharmacy = false;
+  try {
+    canViewPharmacy = await canAccessPharmacy();
+  } catch {}
+
 
   let userName = null;
   let userImage = null;
@@ -162,7 +168,7 @@ export default async function RootLayout({
             </main>
             <Footer />
             {showTopNav && <MobileNav />}
-            {showTopNav && <AuraBot />}
+            {showTopNav && <AuraBot canViewPharmacy={canViewPharmacy} />}
           </MaintenanceGuard>
         </LocaleProvider>
       </body>
