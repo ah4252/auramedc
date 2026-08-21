@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth-helpers";
+import { requireAdmin, canAccessPharmacy } from "@/lib/auth-helpers";
 import { sendBroadcastNotification } from "@/lib/push";
 import { broadcast } from "@/lib/sse-store";
 
@@ -14,6 +14,14 @@ function isDatabaseUnavailableError(error: any): boolean {
     error?.code === "ETIMEDOUT" ||
     /can't reach database server|database server.*running|connection.*refused|timeout.*database/i.test(message)
   );
+}
+
+export async function getPharmacyAccess() {
+  try {
+    return await canAccessPharmacy();
+  } catch {
+    return false;
+  }
 }
 
 // Helper to get or create Pharmacy category

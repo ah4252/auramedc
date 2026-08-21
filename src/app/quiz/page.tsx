@@ -15,6 +15,7 @@ import {
   submitQuizAttempt,
   getQuizAttemptById,
 } from "@/app/actions/quiz";
+import { getPharmacyAccess } from "@/app/actions/pharmacy";
 
 export default function QuizPage() {
   const [exams, setExams] = useState<any[]>([]);
@@ -41,15 +42,18 @@ export default function QuizPage() {
   const [showCompletedAttemptModal, setShowCompletedAttemptModal] = useState(false);
   const [attemptLocked, setAttemptLocked] = useState(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [canViewPharmacy, setCanViewPharmacy] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
-      const [examData, studentSummary, years] = await Promise.all([
+      const [examData, studentSummary, years, hasPharmacyAccess] = await Promise.all([
         getPublishedQuizExamsForStudent(),
         getStudentQuizSummary(),
         getAvailableQuizStudyYears(),
+        getPharmacyAccess(),
       ]);
       setExams(examData);
+      setCanViewPharmacy(hasPharmacyAccess);
       setStudyYears(years);
       setSummary(studentSummary || { attemptsCount: 0, averageScore: 0, bestScore: 0, totalCorrect: 0, totalWrong: 0, totalUnanswered: 0 });
 
@@ -297,10 +301,12 @@ export default function QuizPage() {
                 <BookOpen className="h-4 w-4" />
                 الدروس
               </Link>
-              <Link href="/courses?tab=pharmacy" className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-black text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
-                <FlaskConical className="h-4 w-4" />
-                الصيدلة
-              </Link>
+              {canViewPharmacy && (
+                <Link href="/courses?tab=pharmacy" className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-black text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  <FlaskConical className="h-4 w-4" />
+                  الصيدلة
+                </Link>
+              )}
               {attempt && (
                 <button
                   type="button"
