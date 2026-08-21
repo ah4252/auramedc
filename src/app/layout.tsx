@@ -58,6 +58,7 @@ export default async function RootLayout({
 
   let userName = null;
   let userImage = null;
+  let userEmail = null;
   let unreadNewsCount = 0;
   let incomingRequestsCount = 0;
   
@@ -68,11 +69,13 @@ export default async function RootLayout({
         select: {
           name: true,
           image: true,
+          email: true,
           lastReadNewsAt: true,
         },
       });
       userName = user?.name || "طالب";
       userImage = user?.image || null;
+      userEmail = user?.email || null;
 
       incomingRequestsCount = await prisma.friendship.count({
         where: { friendId: userId, status: "PENDING" }
@@ -145,14 +148,14 @@ export default async function RootLayout({
         <AppLinkGuard />
         <SSENotificationListener />
         <LocaleProvider initialLang={siteLang as Locale}>
-          <MaintenanceGuard maintenanceMode={settings.maintenanceMode}>
+          <MaintenanceGuard maintenanceMode={settings.maintenanceMode} userEmail={userEmail}>
             <ActivePresencePing userId={userId || null} />
             {showTopNav && (
               <Navbar isAdmin={isAdmin} isUser={!!userId} userName={userName} userImage={userImage} userId={userId || null} incomingRequestsCount={incomingRequestsCount} unreadNewsCount={unreadNewsCount} />
             )}
             <main className="flex-1 pb-20 md:pb-0">
               <Suspense fallback={null}>
-                <SectionMaintenanceGuard settings={settings} isAdminUser={isAdmin}>
+                <SectionMaintenanceGuard settings={settings} isAdminUser={isAdmin} userEmail={userEmail}>
                   {children}
                 </SectionMaintenanceGuard>
               </Suspense>

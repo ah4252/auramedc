@@ -8,10 +8,12 @@ import { motion } from "framer-motion";
 export default function SectionMaintenanceGuard({
   settings,
   isAdminUser = false,
+  userEmail,
   children,
 }: {
   settings: any;
   isAdminUser?: boolean;
+  userEmail?: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -34,11 +36,12 @@ export default function SectionMaintenanceGuard({
 
   // Determine maintenance state AFTER all hooks
   const isAdminPath = pathname.startsWith("/admin");
+  const isOwner = userEmail === "abendakfal07@gmail.com";
 
   let isUnderMaintenance = false;
   let sectionName = "";
 
-  if (!isAdminPath && !isAdminUser) {
+  if (!isAdminPath && !isAdminUser && !isOwner) {
     // قسم الصيدلة: يشمل /pharmacy و /courses?tab=pharmacy و /courses/pharmacy/[sectionId]
     const activeTab = currentQuery || searchParams.get("tab");
     const isPharmacyTab = pathname.startsWith("/courses") && activeTab === "pharmacy";

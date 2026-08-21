@@ -5,15 +5,17 @@ import MaintenanceScreen from "./MaintenanceScreen";
 
 export default function MaintenanceGuard({ 
   children, 
-  maintenanceMode 
+  maintenanceMode,
+  userEmail
 }: { 
   children: React.ReactNode, 
-  maintenanceMode: boolean 
+  maintenanceMode: boolean,
+  userEmail?: string | null
 }) {
   const pathname = usePathname();
   
-  // Never block admin routes
-  if (pathname?.startsWith("/admin")) {
+  // Never block admin routes or specific owner email
+  if (pathname?.startsWith("/admin") || userEmail === "abendakfal07@gmail.com") {
     return <>{children}</>;
   }
 
