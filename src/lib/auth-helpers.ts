@@ -169,15 +169,15 @@ export function normalizeStudyYear(value?: string | null): string {
   return (value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-export function isThirdYearStudyYear(value?: string | null): boolean {
+export function isPharmacyEligibleStudyYear(value?: string | null): boolean {
   const normalized = normalizeStudyYear(value);
   if (!normalized) return false;
 
   const simplePatterns = [
-    /^s?\d+$/,
-    /^(?:السنة\s*)?(?:الثالثة|3|3e|3rd|third)$/,
-    /^(?:السنة\s*)?(?:الثالثة|3|3e|3rd|third)\s*(?:طب|medicine|medecine)?$/,
-    /(?:السنة\s*(?:الثالثة|3)|3(?:rd|e)?\s*(?:year|année|annee)|third\s*year|troisi(?:è|e)me\s*année)/,
+    /^s?[3-7]$/, // matches 3, 4, 5, 6, 7 and s3, s4, s5, s6, s7
+    /^(?:السنة\s*)?(?:الثالثة|الرابعة|الخامسة|السادسة|السابعة|3|4|5|6|7|3e|4e|5e|6e|7e|3rd|4th|5th|6th|7th|third|fourth|fifth|sixth|seventh)$/,
+    /^(?:السنة\s*)?(?:الثالثة|الرابعة|الخامسة|السادسة|السابعة|3|4|5|6|7|3e|4e|5e|6e|7e|3rd|4th|5th|6th|7th|third|fourth|fifth|sixth|seventh)\s*(?:طب|medicine|medecine)?$/,
+    /(?:السنة\s*(?:الثالثة|الرابعة|الخامسة|السادسة|السابعة|3|4|5|6|7)|(?:3|4|5|6|7)(?:rd|th|e)?\s*(?:year|année|annee)|(?:third|fourth|fifth|sixth|seventh)\s*year|(?:troisi(?:è|e)me|quatri(?:è|e)me|cinqui(?:è|e)me|sixi(?:è|e)me|septi(?:è|e)me)\s*année)/,
   ];
 
   return simplePatterns.some(pattern => pattern.test(normalized));
@@ -217,7 +217,7 @@ export async function canAccessPharmacy(): Promise<boolean> {
       select: { studyYear: true },
     });
 
-    return isThirdYearStudyYear(user?.studyYear ?? null);
+    return isPharmacyEligibleStudyYear(user?.studyYear ?? null);
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       console.warn("Database unavailable while checking pharmacy access:", (error as any)?.message || error);

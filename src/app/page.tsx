@@ -247,10 +247,10 @@ export default async function Home() {
               { value: (settings.statLectures && settings.statLectures.trim() !== "") ? settings.statLectures : (lessonCount > 0 ? `+${lessonCount}` : "+0"), label: tServer("home_stats_lectures", siteLang, "محاضرة طبية"), icon: PlayCircle, color: "medical" },
               { value: (settings.statSpecialties && settings.statSpecialties.trim() !== "") ? settings.statSpecialties : (subjectCount > 0 ? `+${subjectCount}` : "+0"), label: tServer("home_stats_specialties", siteLang, "تخصص مختلف"), icon: Stethoscope, color: "violet" },
               { value: (settings.statStudents && settings.statStudents.trim() !== "") ? settings.statStudents : (userCount > 0 ? `${siteLang === "ar" ? userCount.toLocaleString('ar-EG') : userCount.toLocaleString('fr-FR')}+` : "0+"), label: tServer("home_stats_students", siteLang, "طالب طب"), icon: GraduationCap, color: "amber" },
-              { value: (settings.statPharmacy && settings.statPharmacy.trim() !== "") ? settings.statPharmacy : "+0", label: tServer("home_stats_pharmacy", siteLang, "الصيدلة"), icon: Pill, color: "emerald" },
+              { value: (settings.statPharmacy && settings.statPharmacy.trim() !== "") ? settings.statPharmacy : "+0", label: tServer("home_stats_pharmacy", siteLang, "الصيدلة"), icon: Pill, color: "emerald", show: canViewPharmacy },
               { value: (settings.statQCMs && settings.statQCMs.trim() !== "") ? settings.statQCMs : "+0", label: tServer("home_stats_qcms", siteLang, "اختبارات"), icon: HelpCircle, color: "indigo" },
               { value: (settings.statSatisfaction && settings.statSatisfaction.trim() !== "") ? settings.statSatisfaction : "99%", label: tServer("home_stats_satisfaction", siteLang, "نسبة الرضا"), icon: HeartPulse, color: "emerald" },
-            ].map((stat, idx) => {
+            ].filter(stat => stat.show !== false).map((stat, idx) => {
               const colorMap: Record<string, string> = {
                 medical: "bg-medical-100 dark:bg-medical-900/40 text-medical-600 dark:text-medical-400",
                 violet: "bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400",
