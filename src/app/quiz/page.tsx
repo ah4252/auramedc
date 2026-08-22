@@ -3,22 +3,29 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, ArrowLeft, BookOpen, CheckCircle2, Clock3, Compass, FileText, FlaskConical, Play, ShieldCheck, Sparkles, Star, TimerReset, Trophy } from "lucide-react";
+import { AlertCircle, ArrowLeft, BookOpen, Check, CheckCircle2, Clock3, FileText, FlaskConical, Play, ShieldCheck, Sparkles, Star, TimerReset, Trophy, Zap } from "lucide-react";
 import {
   getAvailableQuizSubjects,
   getAvailableQuizStudyYears,
-  getPublishedQuizExamsForStudent,
   getPublishedQuizQuestionsForStudent,
   getStudentQuizSummary,
   saveQuizAttemptProgress,
-  startQuizAttempt,
   submitQuizAttempt,
   getQuizAttemptById,
 } from "@/app/actions/quiz";
 import { getPharmacyAccess } from "@/app/actions/pharmacy";
 
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 export default function QuizPage() {
-  const [exams, setExams] = useState<any[]>([]);
   const [studyYears, setStudyYears] = useState<string[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
   const [selectedStudyYear, setSelectedStudyYear] = useState("");
@@ -26,7 +33,6 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [summary, setSummary] = useState({ attemptsCount: 0, averageScore: 0, bestScore: 0, totalCorrect: 0, totalWrong: 0, totalUnanswered: 0 });
-  const [activeTab, setActiveTab] = useState("all");
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -38,21 +44,17 @@ export default function QuizPage() {
   const [selectedQuestionDetail, setSelectedQuestionDetail] = useState<any>(null);
   const [questionsDetails, setQuestionsDetails] = useState<any[]>([]);
   const [showResultsModal, setShowResultsModal] = useState(false);
-  const [selectedCompletedAttempt, setSelectedCompletedAttempt] = useState<any>(null);
-  const [showCompletedAttemptModal, setShowCompletedAttemptModal] = useState(false);
   const [attemptLocked, setAttemptLocked] = useState(false);
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [canViewPharmacy, setCanViewPharmacy] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
-      const [examData, studentSummary, years, hasPharmacyAccess] = await Promise.all([
-        getPublishedQuizExamsForStudent(),
+      const [studentSummary, years, hasPharmacyAccess] = await Promise.all([
         getStudentQuizSummary(),
         getAvailableQuizStudyYears(),
         getPharmacyAccess(),
       ]);
-      setExams(examData);
       setCanViewPharmacy(hasPharmacyAccess);
       setStudyYears(years);
       setSummary(studentSummary || { attemptsCount: 0, averageScore: 0, bestScore: 0, totalCorrect: 0, totalWrong: 0, totalUnanswered: 0 });
@@ -117,17 +119,31 @@ export default function QuizPage() {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleAutoSubmit();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt?.id]);
 
-  const activeExam = useMemo(() => exams.find((exam: any) => exam.id === selectedExamId) || null, [exams, selectedExamId]);
+  useEffect(() => {
+    if (timeLeft === 0 && attempt && !isSubmitting && !reviewMode) {
+      handleAutoSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
+
+  useEffect(() => {
+    const open = Boolean((showResultsModal && resultSummary) || (showDetailModal && selectedQuestionDetail));
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [showResultsModal, resultSummary, showDetailModal, selectedQuestionDetail]);
+
   const statusMap = useMemo(() => {
     const map: Record<string, string | null> = {};
     (attempt?.answers || []).forEach((answer: any) => {
@@ -141,32 +157,19 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentQuestionIndex] || null;
 
-  const setAnswerState = (value: Record<string, string>) => setAnswers(value);
+  const arenaParticles = useMemo(() => {
+    const rand = mulberry32(20260822);
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: rand() * 100,
+      top: rand() * 100,
+      size: 2 + rand() * 3.5,
+      duration: 3.5 + rand() * 4.5,
+      delay: rand() * 4,
+    }));
+  }, []);
 
-  const handleStartAttempt = async (examId: string) => {
-    try {
-      const result = await startQuizAttempt(examId);
-      if (result?.success) {
-        const loaded = await getQuizAttemptById(result.attemptId);
-        if (!loaded) {
-          alert("خدمة الاختبارات غير متاحة حالياً، حاول لاحقاً.");
-          return;
-        }
-        setAttempt(loaded);
-        setSelectedExamId(loaded.examId);
-        setCurrentQuestionIndex(0);
-        setReviewMode(false);
-        localStorage.setItem("auraQuizAttemptId", result.attemptId);
-        const duration = Number(loaded.exam.durationMinutes || 20) * 60;
-        setTimeLeft(duration);
-        return;
-      }
-      alert(result?.error || "تعذر بدء الاختبار حالياً");
-    } catch (error: any) {
-      console.error("handleStartAttempt failed:", error);
-      alert(error?.message || "حدث خطأ أثناء بدء الاختبار");
-    }
-  };
+  const setAnswerState = (value: Record<string, string>) => setAnswers(value);
 
   const saveAnswer = async (questionId: string, optionId: string | null) => {
     if (!attempt) return;
@@ -192,7 +195,12 @@ export default function QuizPage() {
       const result = await submitQuizAttempt(attempt.id);
       if (result?.success) {
         localStorage.removeItem("auraQuizAttemptId");
-        setAttempt((prev: any) => ({ ...prev, ...result.result, status: "COMPLETED" }));
+        const fullAttempt = await getQuizAttemptById(attempt.id);
+        if (fullAttempt) {
+          setAttempt(fullAttempt);
+        } else {
+          setAttempt((prev: any) => ({ ...prev, ...result.result, status: "COMPLETED" }));
+        }
         setReviewMode(true);
         setSummary(await getStudentQuizSummary());
       } else {
@@ -215,7 +223,12 @@ export default function QuizPage() {
       const result = await submitQuizAttempt(attempt.id);
       if (result?.success) {
         localStorage.removeItem("auraQuizAttemptId");
-        setAttempt((prev: any) => ({ ...prev, ...result.result, status: "COMPLETED" }));
+        const fullAttempt = await getQuizAttemptById(attempt.id);
+        if (fullAttempt) {
+          setAttempt(fullAttempt);
+        } else {
+          setAttempt((prev: any) => ({ ...prev, ...result.result, status: "COMPLETED" }));
+        }
         setReviewMode(true);
         setSummary(await getStudentQuizSummary());
       } else {
@@ -234,27 +247,6 @@ export default function QuizPage() {
   const openQuestionDetail = (detail: any) => {
     setSelectedQuestionDetail(detail);
     setShowDetailModal(true);
-  };
-
-  const filteredExams = useMemo(() => {
-    if (activeTab === "new") {
-      return exams.filter((exam: any) => !exam.attempts?.length);
-    }
-
-    if (activeTab === "done") {
-      return exams.filter((exam: any) => (exam.attempts?.length ?? 0) > 0);
-    }
-
-    return exams;
-  }, [exams, activeTab]);
-
-  const openCompletedAttempt = async (exam: any) => {
-    const latestAttempt = exam.attempts?.[0];
-    if (!latestAttempt) return;
-
-    const fullAttempt = await getQuizAttemptById(latestAttempt.id);
-    setSelectedCompletedAttempt(fullAttempt);
-    setShowCompletedAttemptModal(true);
   };
 
   const shuffleQuestions = (items: any[]) => {
@@ -319,164 +311,209 @@ export default function QuizPage() {
               )}
             </div>
           </div>
-
-          {!attempt && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {[
-                { id: "all", label: "جميع الاختبارات" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-2xl px-4 py-2.5 text-sm font-black transition ${activeTab === tab.id ? "bg-gradient-to-r from-medical-600 to-sky-500 text-white shadow-[0_12px_30px_rgba(14,165,233,0.35)]" : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          )}
         </motion.div>
-
-        {!attempt && filteredExams.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
-          >
-            {filteredExams.map((exam: any) => {
-              const hasAttempts = (exam.attempts?.length ?? 0) > 0;
-              const bestScore = exam.bestScore ?? 0;
-
-              return (
-                <button
-                  key={exam.id}
-                  type="button"
-                  onClick={() => {
-                    if (hasAttempts) {
-                      openCompletedAttempt(exam);
-                      return;
-                    }
-                    handleStartAttempt(exam.id);
-                  }}
-                  className="group rounded-[30px] border border-slate-200 bg-white/90 p-5 text-right shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:border-medical-300 hover:shadow-[0_25px_60px_rgba(14,165,233,0.15)] dark:border-slate-700 dark:bg-slate-900/80"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-medical-600">quiz</p>
-                      <h3 className="mt-2 text-xl font-black text-slate-900 dark:text-white">{exam.title}</h3>
-                    </div>
-                    <div className={`rounded-full px-2.5 py-1 text-[10px] font-black ${hasAttempts ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300" : "bg-sky-100 text-sky-700 dark:bg-sky-900/20 dark:text-sky-300"}`}>
-                      {hasAttempts ? "تم حلها" : "جديدة"}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                    <p>السنة: <span className="font-black text-slate-800 dark:text-slate-200">{exam.studyYear || "-"}</span></p>
-                    <p>المادة: <span className="font-black text-slate-800 dark:text-slate-200">{exam.subject?.name || "-"}</span></p>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800">
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">الأسئلة</p>
-                      <p className="mt-1 font-black text-slate-900 dark:text-white">{exam.questionCount || 0}</p>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800">
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">أفضل درجة</p>
-                      <p className="mt-1 font-black text-slate-900 dark:text-white">{bestScore ? `${bestScore}%` : "-"}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex items-center justify-between">
-                    <span className="text-sm font-black text-medical-600">{hasAttempts ? "عرض النتيجة" : "ابدأ الاختبار"}</span>
-                    <span className="rounded-full bg-gradient-to-r from-medical-600 to-sky-500 px-3 py-1.5 text-xs font-black text-white">▶</span>
-                  </div>
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-
-
 
         {!attempt && (
           <div className="space-y-8">
-            {/* قسم اختيار السنة والمادة - الأول */}
+            {/* ساحة التحدي - اختيار السنة والمادة */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="overflow-hidden rounded-[40px] border border-white/20 bg-gradient-to-br from-white/95 via-blue-50/80 to-indigo-50/60 p-8 shadow-[0_32px_80px_rgba(14,165,233,0.2)] backdrop-blur-xl dark:border-slate-700/40 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-indigo-950/40"
+              transition={{ duration: 0.6 }}
+              className="relative rounded-[36px]"
             >
-              <div className="mb-8">
-                <h2 className="text-3xl font-black bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent dark:from-sky-400 dark:via-cyan-400 dark:to-indigo-400 flex items-center gap-3">
-                  <Compass className="w-8 h-8 shrink-0 text-medical-500 dark:text-sky-400" />
-                  اختر مسارك التعليمي
-                </h2>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">حدد السنة الدراسية والمادة لبدء التدريب على الأسئلة</p>
+              {/* الإطار الضوئي الدوّار (مقصوص لمنع فراغ أسفل الصفحة) */}
+              <div aria-hidden className="pointer-events-none absolute -inset-2.5 z-0 overflow-hidden rounded-[40px]">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 9, ease: "linear" }}
+                  className="absolute left-1/2 top-1/2 h-[400%] w-[400%] bg-[conic-gradient(from_0deg,transparent_0deg,#d946ef_70deg,#22d3ee_140deg,#818cf8_210deg,transparent_280deg)] opacity-40 blur-[22px] dark:opacity-75"
+                  style={{ x: "-50%", y: "-50%" }}
+                />
               </div>
 
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                {/* السنة الدراسية */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="group"
-                >
-                  <label className="mb-3 flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-sky-500 text-white text-xs font-black">1</div>
-                    السنة الدراسية
-                  </label>
-                  <select
-                    value={selectedStudyYear}
-                    onChange={(e) => setSelectedStudyYear(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-slate-200 bg-white/70 px-4 py-3.5 text-sm font-bold text-slate-900 transition-all duration-300 hover:border-medical-400 focus:border-medical-600 focus:outline-none focus:ring-2 focus:ring-medical-200 dark:border-slate-600 dark:bg-slate-800/70 dark:text-white dark:focus:ring-medical-900"
-                  >
-                    <option value="">📚 اختر السنة...</option>
-                    {(studyYears || []).map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </motion.div>
+              <div className="relative z-10 overflow-hidden rounded-[34px] border border-slate-200/80 bg-white/90 shadow-[0_36px_90px_-28px_rgba(99,102,241,0.4)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/85 dark:shadow-[0_40px_120px_-20px_rgba(99,102,241,0.5)]">
+                {/* الشفق المتحرك */}
+                <motion.div aria-hidden className="pointer-events-none absolute -top-32 right-[8%] h-72 w-72 rounded-full bg-fuchsia-300/40 blur-[110px] dark:bg-fuchsia-600/30" animate={{ x: [0, 50, -30, 0], y: [0, 35, 60, 0] }} transition={{ repeat: Infinity, duration: 16, ease: "easeInOut" }} />
+                <motion.div aria-hidden className="pointer-events-none absolute -bottom-40 left-[4%] h-80 w-80 rounded-full bg-cyan-300/35 blur-[120px] dark:bg-cyan-500/25" animate={{ x: [0, -60, 40, 0], y: [0, -40, 20, 0] }} transition={{ repeat: Infinity, duration: 19, ease: "easeInOut" }} />
+                <motion.div aria-hidden className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 rounded-full bg-indigo-300/35 blur-[100px] dark:bg-indigo-600/25" animate={{ x: [0, 45, -50, 0], y: [0, 40, -20, 0] }} transition={{ repeat: Infinity, duration: 23, ease: "easeInOut" }} />
 
-                {/* المادة */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="group"
-                >
-                  <label className="mb-3 flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white text-xs font-black">2</div>
-                    المادة
-                  </label>
-                  <select
-                    value={selectedSubjectId}
-                    onChange={(e) => setSelectedSubjectId(e.target.value)}
-                    disabled={!selectedStudyYear}
-                    className="w-full rounded-2xl border-2 border-slate-200 bg-white/70 px-4 py-3.5 text-sm font-bold text-slate-900 transition-all duration-300 hover:border-sky-400 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800/70 dark:text-white dark:focus:ring-sky-900"
-                  >
-                    <option value="">📖 اختر المادة...</option>
-                    {(subjects || []).map((subject: any) => (
-                      <option key={subject.id} value={subject.id}>{subject.name}</option>
-                    ))}
-                  </select>
-                </motion.div>
+                {/* جزيئات متلألئة */}
+                {arenaParticles.map((p) => (
+                  <motion.span
+                    key={p.id}
+                    aria-hidden
+                    className="pointer-events-none absolute z-10 rounded-full bg-fuchsia-500/50 dark:bg-white"
+                    style={{ left: `${p.left}%`, top: `${p.top}%`, width: p.size, height: p.size }}
+                    animate={{ opacity: [0.05, 0.85, 0.05], scale: [0.6, 1.5, 0.6], y: [0, -16, 0] }}
+                    transition={{ repeat: Infinity, duration: p.duration, delay: p.delay, ease: "easeInOut" }}
+                  />
+                ))}
 
-                {/* عدد الأسئلة */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="group flex flex-col justify-end"
-                >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-black text-slate-700 dark:text-slate-200">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-white text-xs font-black">✓</div>
-                    الأسئلة المتاحة
+                <div className="relative z-20 p-7 md:p-10">
+                  {/* الرأس */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div className="relative shrink-0">
+                        <span className="absolute inset-0 animate-ping rounded-[22px] bg-gradient-to-br from-fuchsia-500 to-indigo-600 opacity-30" />
+                        <motion.div
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: "spring", stiffness: 220, damping: 14, delay: 0.2 }}
+                          className="relative flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-fuchsia-500 via-purple-600 to-indigo-600 shadow-[0_18px_50px_-8px_rgba(217,70,239,0.75)] md:h-20 md:w-20"
+                        >
+                          <Zap className="h-8 w-8 text-white md:h-10 md:w-10" strokeWidth={2.5} fill="rgba(255,255,255,0.25)" />
+                        </motion.div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-fuchsia-600 dark:text-fuchsia-400">Quiz Arena</p>
+                        <h2 className="mt-1.5 text-3xl font-black text-slate-900 dark:text-white md:text-5xl">
+                          ساحة <span className="bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent dark:from-fuchsia-400 dark:via-purple-400 dark:to-cyan-300">التحدي</span>
+                        </h2>
+                        <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">حدّد السنة والمادة… وانطلق في مواجهة الأسئلة</p>
+                      </div>
+                    </div>
+                    <Sparkles className="hidden h-9 w-9 shrink-0 animate-pulse text-fuchsia-400/60 dark:text-fuchsia-400/50 lg:block" />
                   </div>
-                  <div className="rounded-2xl bg-gradient-to-r from-medical-600/20 to-sky-500/20 p-[2px]">
-                    <div className="rounded-2xl bg-white/80 px-4 py-3.5 text-center text-sm font-black text-slate-900 dark:bg-slate-800/80 dark:text-white">
-                      <span className="text-2xl font-black text-transparent bg-gradient-to-r from-medical-600 to-sky-500 bg-clip-text">
-                        {questions.length}
-                      </span>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">سؤال متاح</p>
+
+                  <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr_240px]">
+                    {/* الخطوة ١: السنة الدراسية */}
+                    <div>
+                      <label className="mb-4 flex items-center gap-3 text-sm font-black text-slate-900 dark:text-white">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-xs font-black text-white shadow-[0_8px_20px_rgba(217,70,239,0.5)]">1</div>
+                        السنة الدراسية
+                      </label>
+                      <div className="flex flex-wrap gap-2.5">
+                        {(studyYears || []).map((year, i) => {
+                          const isActive = selectedStudyYear === year;
+                          return (
+                            <motion.button
+                              key={year}
+                              type="button"
+                              onClick={() => setSelectedStudyYear(year)}
+                              initial={{ opacity: 0, y: 14 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: i * 0.05, duration: 0.35 }}
+                              whileHover={{ scale: 1.06, y: -2 }}
+                              whileTap={{ scale: 0.94 }}
+                              className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-black transition-colors ${
+                                isActive
+                                  ? "border-transparent bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-white shadow-[0_12px_36px_rgba(192,38,211,0.55)]"
+                                  : "border-slate-200 bg-white/80 text-slate-700 hover:border-fuchsia-400 hover:bg-fuchsia-50 hover:text-fuchsia-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-fuchsia-400/50 dark:hover:bg-white/[0.09] dark:hover:text-white"
+                              }`}
+                            >
+                              {isActive && (
+                                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                                  <Check className="h-4 w-4" strokeWidth={3} />
+                                </motion.span>
+                              )}
+                              {year}
+                            </motion.button>
+                          );
+                        })}
+                        {!studyYears?.length && <p className="text-sm text-slate-400 dark:text-slate-500">لا توجد سنوات متاحة حالياً</p>}
+                      </div>
+                    </div>
+
+                    {/* الخطوة ٢: المادة */}
+                    <div>
+                      <label className={`mb-4 flex items-center gap-3 text-sm font-black ${selectedStudyYear ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-black shadow-[0_8px_20px_rgba(14,165,233,0.5)] ${selectedStudyYear ? "bg-gradient-to-br from-cyan-400 to-sky-600 text-white" : "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500"}`}>2</div>
+                        المادة
+                      </label>
+                      {selectedStudyYear ? (
+                        <div key={selectedStudyYear} className="flex flex-wrap gap-2.5">
+                          {(subjects || []).map((subject: any, i) => {
+                            const isActive = selectedSubjectId === subject.id;
+                            return (
+                              <motion.button
+                                key={subject.id}
+                                type="button"
+                                onClick={() => setSelectedSubjectId(subject.id)}
+                                initial={{ opacity: 0, scale: 0.8, y: 12 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ delay: i * 0.06, type: "spring", stiffness: 260, damping: 20 }}
+                                whileHover={{ scale: 1.06, y: -2 }}
+                                whileTap={{ scale: 0.94 }}
+                                className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-black transition-colors ${
+                                  isActive
+                                    ? "border-transparent bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 text-white shadow-[0_12px_36px_rgba(6,182,212,0.5)]"
+                                    : "border-slate-200 bg-white/80 text-slate-700 hover:border-cyan-400 hover:bg-cyan-50 hover:text-cyan-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-cyan-400/50 dark:hover:bg-white/[0.09] dark:hover:text-white"
+                                }`}
+                              >
+                                {isActive && (
+                                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+                                    <Check className="h-4 w-4" strokeWidth={3} />
+                                  </motion.span>
+                                )}
+                                {subject.name}
+                              </motion.button>
+                            );
+                          })}
+                          {!(subjects || []).length && <p className="text-sm text-slate-400 dark:text-slate-500">لا توجد مواد لهذه السنة بعد</p>}
+                        </div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="flex h-[54px] items-center gap-3 rounded-2xl border border-dashed border-fuchsia-300 bg-fuchsia-50/50 px-5 text-sm font-bold text-slate-500 dark:border-fuchsia-400/30 dark:bg-white/[0.02] dark:text-slate-400"
+                        >
+                          <motion.span animate={{ x: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 1.4 }}>
+                            ←
+                          </motion.span>
+                          اختر السنة أولاً لتظهر المواد هنا
+                        </motion.div>
+                      )}
+                    </div>
+
+                    {/* العدّاد المتوهج */}
+                    <div className="flex flex-col justify-end">
+                      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-emerald-50/70 to-cyan-50/50 p-6 text-center backdrop-blur dark:border-white/10 dark:bg-white/[0.04]">
+                        <motion.div aria-hidden className="pointer-events-none absolute inset-x-0 -bottom-16 mx-auto h-32 w-32 rounded-full bg-emerald-500/25 blur-2xl" animate={{ opacity: [0.4, 0.9, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400">جاهز للتدريب</p>
+                        <div className="relative mt-3 inline-flex">
+                          <motion.span aria-hidden className="absolute inset-0 rounded-full bg-emerald-400/30" animate={{ scale: [1, 1.8], opacity: [0.6, 0] }} transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }} />
+                          <AnimatePresence mode="popLayout">
+                            <motion.span
+                              key={questions.length}
+                              initial={{ scale: 0.4, opacity: 0, y: 10 }}
+                              animate={{ scale: 1, opacity: 1, y: 0 }}
+                              exit={{ scale: 0.4, opacity: 0, y: -10 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                              className="block bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600 bg-clip-text text-6xl font-black text-transparent dark:from-emerald-300 dark:via-teal-300 dark:to-cyan-300"
+                            >
+                              {questions.length}
+                            </motion.span>
+                          </AnimatePresence>
+                        </div>
+                        <p className="mt-2 text-xs font-bold text-slate-500 dark:text-slate-400">{questions.length === 1 ? "سؤال بانتظارك" : "سؤالاً بانتظارك"}</p>
+                      </div>
                     </div>
                   </div>
-                </motion.div>
+
+                  {/* شريط المسار الحالي */}
+                  <motion.div
+                    initial={false}
+                    animate={{ opacity: selectedStudyYear ? 1 : 0.45 }}
+                    className="mt-8 flex flex-wrap items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-xs font-bold text-slate-600 dark:border-white/5 dark:bg-white/[0.03] dark:text-slate-300"
+                  >
+                    <span className="rounded-lg bg-fuchsia-100 px-3 py-1.5 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300">{selectedStudyYear || "السنة؟"}</span>
+                    <ArrowLeft className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                    <span className={`rounded-lg px-3 py-1.5 ${selectedSubjectId ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300" : "bg-slate-200/70 text-slate-400 dark:bg-white/5 dark:text-slate-500"}`}>
+                      {subjects.find((s: any) => s.id === selectedSubjectId)?.name || "المادة؟"}
+                    </span>
+                    <ArrowLeft className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                    <span className={`rounded-lg px-3 py-1.5 ${questions.length ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-slate-200/70 text-slate-400 dark:bg-white/5 dark:text-slate-500"}`}>
+                      {questions.length ? `${questions.length} سؤال جاهز` : "في انتظار الأسئلة"}
+                    </span>
+                    {questions.length > 0 && (
+                      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="mr-auto inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-white shadow-[0_8px_24px_rgba(16,185,129,0.45)]">
+                        <Zap className="h-3.5 w-3.5" fill="currentColor" />
+                        انطلق!
+                      </motion.span>
+                    )}
+                  </motion.div>
+                </div>
               </div>
             </motion.div>
 
@@ -488,148 +525,214 @@ export default function QuizPage() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="space-y-6"
               >
-                <div className="rounded-[40px] border border-white/20 bg-gradient-to-br from-white/95 via-emerald-50/80 to-cyan-50/60 p-8 shadow-[0_32px_80px_rgba(16,185,129,0.15)] backdrop-blur-xl dark:border-slate-700/40 dark:from-slate-900/90 dark:via-slate-900/80 dark:to-emerald-950/40">
-                  {/* Header */}
-                  <div className="mb-6 flex items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-2xl font-black text-slate-900 dark:text-white">
-                        {subjects.find((s: any) => s.id === selectedSubjectId)?.name || "المادة"}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                        السؤال {Math.min(currentQuizIndex + 1, questions.length)} من {questions.length}
-                      </p>
-                    </div>
-                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 text-center shadow-[0_12px_32px_rgba(16,185,129,0.3)]">
-                      <span className="text-2xl font-black text-white">{currentQuizIndex + 1}/{questions.length}</span>
-                    </div>
-                  </div>
+                <div className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_28px_70px_-24px_rgba(16,185,129,0.35)] backdrop-blur-xl sm:rounded-[36px] sm:p-8 dark:border-white/10 dark:bg-slate-950/85 dark:shadow-[0_32px_90px_-20px_rgba(16,185,129,0.3)]">
+                  {/* توهجات خلفية هادئة */}
+                  <motion.div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-emerald-300/40 blur-[90px] dark:bg-emerald-500/20" animate={{ y: [0, 24, 0] }} transition={{ repeat: Infinity, duration: 12, ease: "easeInOut" }} />
+                  <motion.div aria-hidden className="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-cyan-300/40 blur-[90px] dark:bg-cyan-500/20" animate={{ y: [0, -24, 0] }} transition={{ repeat: Infinity, duration: 14, ease: "easeInOut" }} />
 
-                  {/* Progress Bar */}
-                  <div className="mb-6">
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
-                        animate={{ width: `${((currentQuizIndex) / questions.length) * 100}%` }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                      />
-                    </div>
-                  </div>
+                  <div className="relative z-10">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-xl font-black text-slate-900 dark:text-white sm:text-2xl">
+                            {subjects.find((s: any) => s.id === selectedSubjectId)?.name || "المادة"}
+                          </h3>
+                          <span className="shrink-0 rounded-lg bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">{selectedStudyYear}</span>
+                        </div>
+                        <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400 sm:text-sm">
+                          السؤال {Math.min(currentQuizIndex + 1, questions.length)} من {questions.length}
+                        </p>
+                      </div>
 
-                  {/* Single Question Card with AnimatePresence */}
-                  <div className="relative overflow-hidden min-h-[320px]">
-                    <AnimatePresence mode="wait">
-                      {currentQuizIndex < questions.length ? (
+                      {/* حلقة التقدم الدائرية */}
+                      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center sm:h-[76px] sm:w-[76px]">
+                        <motion.span aria-hidden className="absolute inset-0 rounded-full bg-emerald-400/30 blur-md" animate={{ opacity: [0.35, 0.75, 0.35] }} transition={{ repeat: Infinity, duration: 2.5 }} />
+                        <svg viewBox="0 0 64 64" className="relative h-full w-full -rotate-90">
+                          <circle cx="32" cy="32" r="26" fill="none" strokeWidth="6" className="stroke-slate-200 dark:stroke-slate-700/70" />
+                          <motion.circle
+                            cx="32"
+                            cy="32"
+                            r="26"
+                            fill="none"
+                            strokeWidth="6"
+                            strokeLinecap="round"
+                            stroke="url(#quizRingGradient)"
+                            strokeDasharray={2 * Math.PI * 26}
+                            initial={false}
+                            animate={{ strokeDashoffset: 2 * Math.PI * 26 * (1 - Math.min(currentQuizIndex / questions.length, 1)) }}
+                            transition={{ duration: 0.7, ease: "easeOut" }}
+                          />
+                          <defs>
+                            <linearGradient id="quizRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#10b981" />
+                              <stop offset="100%" stopColor="#06b6d4" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-base font-black leading-none text-slate-900 dark:text-white sm:text-xl">{Math.min(currentQuizIndex + 1, questions.length)}</span>
+                          <span className="mt-0.5 text-[9px] font-bold text-slate-400 dark:text-slate-500">من {questions.length}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mt-4 mb-5 sm:mt-5 sm:mb-6">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700/60">
                         <motion.div
-                          key={questions[currentQuizIndex].id}
-                          initial={{ opacity: 0, x: 80, scale: 0.95 }}
-                          animate={{ opacity: 1, x: 0, scale: 1 }}
-                          exit={{ opacity: 0, x: -80, scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          className="rounded-3xl border-2 border-slate-200/80 bg-white/90 dark:border-slate-700/80 dark:bg-slate-900/70 overflow-hidden"
-                        >
-                          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-5 dark:from-slate-800 dark:to-slate-900">
-                            <div className="flex items-start gap-3">
-                              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-medical-500 to-sky-500 text-sm font-black text-white shadow-lg shadow-medical-500/30">
-                                {currentQuizIndex + 1}
-                              </div>
-                              <p className="text-base font-bold text-slate-900 leading-relaxed dark:text-white">
-                                {questions[currentQuizIndex].text}
-                              </p>
-                            </div>
-                          </div>
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                          animate={{ width: `${(currentQuizIndex / questions.length) * 100}%` }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                        />
+                      </div>
+                    </div>
 
-                          <div className="space-y-3 px-6 py-6">
-                            {(questions[currentQuizIndex].options || []).map((option: any, optIndex: number) => (
-                              <motion.button
-                                key={option.id}
-                                whileHover={{ scale: 1.01, x: 4 }}
-                                whileTap={{ scale: 0.98 }}
-                                type="button"
-                                onClick={() => {
-                                  if (attemptLocked) return;
-                                  const q = questions[currentQuizIndex];
-                                  const newAnswers = { ...answers, [q.id]: option.id };
-                                  setAnswers(newAnswers);
-
-                                  // If last question, compute results and show modal
-                                  if (currentQuizIndex === questions.length - 1) {
-                                    setAttemptLocked(true);
-                                    setTimeout(() => {
-                                      setCurrentQuizIndex(questions.length);
-                                    }, 300);
-                                    setTimeout(() => {
-                                      const details: any[] = [];
-                                      let correct = 0;
-                                      questions.forEach((qItem) => {
-                                        const sel = newAnswers[qItem.id];
-                                        const correctOpt = qItem.options.find((opt: any) => opt.isCorrect);
-                                        const selectedOpt = qItem.options.find((opt: any) => opt.id === sel);
-                                        const isCorrect = sel === correctOpt?.id;
-                                        if (isCorrect) correct++;
-                                        details.push({
-                                          id: qItem.id,
-                                          text: qItem.text,
-                                          isCorrect,
-                                          selectedOption: selectedOpt,
-                                          correctOption: correctOpt,
-                                          explanation: qItem.explanation || "لم يتم توفير شرح لهذا السؤال",
-                                          reference: qItem.reference || "لم يتم توفير مرجع",
-                                        });
-                                      });
-                                      const percentage = Number(((correct / questions.length) * 100).toFixed(1));
-                                      setQuestionsDetails(details);
-                                      setResultSummary({ correct, total: questions.length, percentage });
-                                      setShowResultsModal(true);
-                                    }, 700);
-                                  } else {
-                                    // Move to next question after brief delay
-                                    setTimeout(() => {
-                                      setCurrentQuizIndex((prev) => prev + 1);
-                                    }, 350);
-                                  }
-                                }}
-                                className={`w-full rounded-2xl border-2 p-4 text-right font-bold transition-all duration-300 ${
-                                  answers[questions[currentQuizIndex].id] === option.id
-                                    ? "border-medical-600 bg-gradient-to-r from-medical-50 to-sky-50 text-medical-700 shadow-[0_8px_20px_rgba(14,165,233,0.25)] dark:border-medical-500 dark:from-medical-950/40 dark:to-sky-950/40 dark:text-medical-300"
-                                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200 dark:hover:border-slate-600"
-                                }`}
-                              >
-                                <span className="flex items-center justify-between">
-                                  <span>{option.text}</span>
-                                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-200/50 text-xs font-black text-slate-700 dark:bg-slate-700 dark:text-slate-300 ml-3">
-                                    {String.fromCharCode(65 + optIndex)}
-                                  </span>
-                                </span>
-                              </motion.button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="completed"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          className="rounded-3xl border-2 border-emerald-300 dark:border-emerald-600 bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-950/40 dark:to-cyan-950/40 p-10 text-center"
-                        >
-                          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
-                            <CheckCircle2 className="h-8 w-8" />
-                          </div>
-                          <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">أجبت على جميع الأسئلة!</h3>
-                          <p className="text-slate-500 dark:text-slate-400 mb-6">يمكنك مراجعة نتائجك في أي وقت</p>
-                          <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => setShowResultsModal(true)}
-                            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-medical-600 to-sky-500 px-8 py-3.5 font-black text-sm text-white shadow-[0_16px_40px_rgba(14,165,233,0.35)] hover:shadow-[0_20px_50px_rgba(14,165,233,0.45)] transition-all"
+                    {/* Single Question Card with AnimatePresence */}
+                    <div className="relative min-h-[320px] sm:min-h-[340px]">
+                      <AnimatePresence mode="wait">
+                        {currentQuizIndex < questions.length ? (
+                          <motion.div
+                            key={questions[currentQuizIndex].id}
+                            initial={{ opacity: 0, x: 60, scale: 0.96 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: -60, scale: 0.96 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="overflow-hidden rounded-3xl border-2 border-slate-200/80 bg-white/95 shadow-sm dark:border-white/10 dark:bg-slate-900/80"
                           >
-                            <Trophy className="h-5 w-5" />
-                            عرض النتيجة
-                          </motion.button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                            <div className="bg-gradient-to-l from-emerald-50/90 via-cyan-50/60 to-transparent px-4 py-4 sm:px-6 sm:py-5 dark:from-emerald-950/25 dark:via-slate-900 dark:to-slate-900/95">
+                              <div className="flex items-start gap-3">
+                                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 text-sm font-black text-white shadow-[0_8px_20px_rgba(16,185,129,0.4)] sm:h-10 sm:w-10">
+                                  {currentQuizIndex + 1}
+                                </div>
+                                <p className="text-[17px] font-bold leading-relaxed text-slate-900 dark:text-white sm:text-xl">
+                                  {questions[currentQuizIndex].text}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2.5 px-4 py-4 sm:space-y-3 sm:px-6 sm:py-6">
+                              {(questions[currentQuizIndex].options || []).map((option: any, optIndex: number) => {
+                                const isSelected = answers[questions[currentQuizIndex].id] === option.id;
+                                return (
+                                  <motion.button
+                                    key={option.id}
+                                    initial={{ opacity: 0, x: 28 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.12 + optIndex * 0.07, type: "spring", stiffness: 260, damping: 22 }}
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    type="button"
+                                    onClick={() => {
+                                      if (attemptLocked) return;
+                                      const q = questions[currentQuizIndex];
+                                      const newAnswers = { ...answers, [q.id]: option.id };
+                                      setAnswers(newAnswers);
+
+                                      // If last question, compute results and show modal
+                                      if (currentQuizIndex === questions.length - 1) {
+                                        setAttemptLocked(true);
+                                        setTimeout(() => {
+                                          setCurrentQuizIndex(questions.length);
+                                        }, 300);
+                                        setTimeout(() => {
+                                          const details: any[] = [];
+                                          let correct = 0;
+                                          questions.forEach((qItem) => {
+                                            const sel = newAnswers[qItem.id];
+                                            const correctOpt = qItem.options.find((opt: any) => opt.isCorrect);
+                                            const selectedOpt = qItem.options.find((opt: any) => opt.id === sel);
+                                            const isCorrect = sel === correctOpt?.id;
+                                            if (isCorrect) correct++;
+                                            details.push({
+                                              id: qItem.id,
+                                              text: qItem.text,
+                                              isCorrect,
+                                              selectedOption: selectedOpt,
+                                              correctOption: correctOpt,
+                                              explanation: qItem.explanation || "لم يتم توفير شرح لهذا السؤال",
+                                              reference: qItem.reference || "لم يتم توفير مرجع",
+                                            });
+                                          });
+                                          const percentage = Number(((correct / questions.length) * 100).toFixed(1));
+                                          setQuestionsDetails(details);
+                                          setResultSummary({ correct, total: questions.length, percentage });
+                                          setShowResultsModal(true);
+                                        }, 700);
+                                      } else {
+                                        // Move to next question after brief delay
+                                        setTimeout(() => {
+                                          setCurrentQuizIndex((prev) => prev + 1);
+                                        }, 350);
+                                      }
+                                    }}
+                                    className={`w-full rounded-2xl border-2 p-3.5 text-right font-bold transition-colors duration-300 sm:p-4 sm:text-lg ${
+                                      isSelected
+                                        ? "border-cyan-500 bg-gradient-to-l from-cyan-50 to-emerald-50 text-cyan-900 shadow-[0_10px_30px_rgba(6,182,212,0.28)] dark:border-cyan-400 dark:from-cyan-950/40 dark:to-emerald-950/25 dark:text-cyan-100"
+                                        : "border-slate-200 bg-white text-slate-700 hover:border-cyan-300 hover:bg-cyan-50/40 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:border-cyan-400/40 dark:hover:bg-white/[0.07]"
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-3">
+                                      <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-black transition-colors ${
+                                        isSelected
+                                          ? "bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-[0_6px_16px_rgba(6,182,212,0.45)]"
+                                          : "bg-slate-100 text-slate-500 dark:bg-white/[0.07] dark:text-slate-400"
+                                      }`}>
+                                        {String.fromCharCode(65 + optIndex)}
+                                      </span>
+                                      <span className="min-w-0 flex-1 text-sm leading-relaxed sm:text-base">{option.text}</span>
+                                      {isSelected && (
+                                        <motion.span
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-[0_4px_12px_rgba(6,182,212,0.5)]"
+                                        >
+                                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                                        </motion.span>
+                                      )}
+                                    </span>
+                                  </motion.button>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="completed"
+                            initial={{ opacity: 0, scale: 0.92 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.92 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="relative overflow-hidden rounded-3xl border-2 border-emerald-300/70 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 px-6 py-12 text-center dark:border-emerald-500/40 dark:from-emerald-950/40 dark:via-slate-900 dark:to-cyan-950/30"
+                          >
+                            <motion.div aria-hidden className="pointer-events-none absolute inset-x-0 -bottom-20 mx-auto h-40 w-40 rounded-full bg-emerald-400/30 blur-[70px]" animate={{ opacity: [0.4, 0.85, 0.4] }} transition={{ repeat: Infinity, duration: 3 }} />
+                            <div className="relative mb-5 inline-flex">
+                              <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/40" />
+                              <motion.div
+                                initial={{ scale: 0, rotate: -120 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ type: "spring", stiffness: 220, damping: 14 }}
+                                className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-[0_18px_50px_rgba(16,185,129,0.45)]"
+                              >
+                                <CheckCircle2 className="h-10 w-10" />
+                              </motion.div>
+                            </div>
+                            <h3 className="relative mb-2 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">أنهيت هذه الجولة!</h3>
+                            <p className="relative mb-6 text-slate-500 dark:text-slate-400">أجبت على جميع الأسئلة — راجع نتائجك الآن</p>
+                            <motion.button
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => setShowResultsModal(true)}
+                              className="relative inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-3.5 text-sm font-black text-white shadow-[0_16px_40px_rgba(16,185,129,0.4)] hover:shadow-[0_20px_50px_rgba(16,185,129,0.5)] transition-all"
+                            >
+                              <Trophy className="h-5 w-5" />
+                              عرض النتيجة
+                            </motion.button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -748,7 +851,7 @@ export default function QuizPage() {
             </div>
 
             <div className="space-y-4">
-              {(attempt.exam.questions || []).map((item: any, index: number) => {
+              {((attempt as any)?.exam?.questions || []).map((item: any, index: number) => {
                 const answer = attempt.answers.find((ans: any) => ans.questionId === item.questionId);
                 const selectedOption = item.question.options.find((option: any) => option.id === answer?.selectedOptionId);
                 const correctOption = item.question.options.find((option: any) => option.isCorrect);
@@ -774,21 +877,22 @@ export default function QuizPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowResultsModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center sm:p-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              initial={{ y: "100%", opacity: 0.7 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0.7 }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-lg overflow-hidden rounded-[28px] border-2 shadow-2xl ${
+              className={`flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[26px] border-2 shadow-2xl [@supports(height:100dvh)]:max-h-[90dvh] sm:max-h-[86vh] sm:rounded-[28px] ${
                 resultSummary.percentage >= 50
                   ? "border-emerald-200/50 bg-gradient-to-br from-emerald-50/95 via-green-50/80 to-teal-50/60 dark:border-emerald-800/50 dark:from-emerald-950/80 dark:via-slate-900/80 dark:to-teal-950/60"
                   : "border-red-200/50 bg-gradient-to-br from-red-50/95 via-orange-50/80 to-rose-50/60 dark:border-red-800/50 dark:from-red-950/80 dark:via-slate-900/80 dark:to-rose-950/60"
               }`}
             >
               {/* الرأس */}
-              <div className={`px-5 py-4 sm:px-8 sm:py-6 ${
+              <div className={`shrink-0 px-4 py-3.5 sm:px-8 sm:py-6 ${
                 resultSummary.percentage >= 50
                   ? "bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500"
                   : "bg-gradient-to-r from-red-500 via-orange-500 to-rose-500"
@@ -799,7 +903,7 @@ export default function QuizPage() {
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ duration: 0.6, type: "spring" }}
-                      className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 sm:h-16 sm:w-16"
+                      className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 sm:h-16 sm:w-16"
                     >
                       {resultSummary.percentage >= 50 ? (
                         <Trophy className="h-6 w-6 text-white sm:h-8 sm:w-8" />
@@ -820,7 +924,7 @@ export default function QuizPage() {
                   </div>
                   <button
                     onClick={() => setShowResultsModal(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition sm:h-10 sm:w-10"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-base text-white transition hover:bg-white/30 active:scale-90 sm:h-10 sm:w-10"
                   >
                     ✕
                   </button>
@@ -828,9 +932,9 @@ export default function QuizPage() {
               </div>
 
               {/* محتوى النتائج */}
-              <div className="max-h-[65vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-4 sm:px-8 sm:py-8 sm:space-y-6 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 scrollbar-thin sm:space-y-6 sm:px-8 sm:py-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
                 {/* الإحصائيات الرئيسية */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -838,7 +942,7 @@ export default function QuizPage() {
                     className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-emerald-200 dark:border-emerald-700 sm:p-6"
                   >
                     <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-400 sm:text-xs">الصحيحة</p>
-                    <p className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 sm:mt-4 sm:text-5xl">
+                    <p className="mt-1.5 text-xl font-black text-emerald-600 dark:text-emerald-400 sm:mt-4 sm:text-5xl">
                       {resultSummary.correct}
                     </p>
                     <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 sm:text-sm sm:mt-2">من {resultSummary.total}</p>
@@ -851,7 +955,7 @@ export default function QuizPage() {
                     className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-sky-200 dark:border-sky-700 sm:p-6"
                   >
                     <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-sky-700 dark:text-sky-400 sm:text-xs">النسبة</p>
-                    <p className="mt-2 text-2xl font-black bg-gradient-to-r from-medical-600 to-sky-500 bg-clip-text text-transparent sm:mt-4 sm:text-5xl">
+                    <p className="mt-1.5 whitespace-nowrap text-xl font-black bg-gradient-to-r from-medical-600 to-sky-500 bg-clip-text text-transparent sm:mt-4 sm:text-5xl">
                       {resultSummary.percentage}%
                     </p>
                     <motion.div
@@ -869,7 +973,7 @@ export default function QuizPage() {
                     className="rounded-2xl bg-white/70 p-3 shadow-lg dark:bg-slate-800/70 border-2 border-red-200 dark:border-red-700 sm:p-6"
                   >
                     <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-red-700 dark:text-red-400 sm:text-xs">الخاطئة</p>
-                    <p className="mt-2 text-2xl font-black text-red-600 dark:text-red-400 sm:mt-4 sm:text-5xl">
+                    <p className="mt-1.5 text-xl font-black text-red-600 dark:text-red-400 sm:mt-4 sm:text-5xl">
                       {resultSummary.total - resultSummary.correct}
                     </p>
                     <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 sm:text-sm sm:mt-2">حاول مجددًا</p>
@@ -880,7 +984,7 @@ export default function QuizPage() {
                 {questionsDetails.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="text-sm font-black text-slate-900 dark:text-white sm:text-lg">تفاصيل الإجابات</h4>
-                    <div className="max-h-48 overflow-y-auto space-y-2 pr-1 sm:max-h-64 sm:pr-2">
+                    <div className="max-h-44 space-y-2 overflow-y-auto overscroll-contain pr-1 sm:max-h-64 sm:pr-2">
                       {questionsDetails.map((detail, index) => (
                         <motion.button
                           key={detail.id}
@@ -888,17 +992,17 @@ export default function QuizPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                           onClick={() => openQuestionDetail(detail)}
-                          className={`w-full rounded-xl p-2.5 text-right transition-all duration-300 border-2 sm:rounded-2xl sm:p-3.5 ${
+                          className={`w-full rounded-xl border-2 p-3 text-right transition-all duration-300 active:scale-[0.98] sm:rounded-2xl sm:p-3.5 ${
                             detail.isCorrect
                               ? "bg-emerald-100/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600 hover:shadow-[0_8px_20px_rgba(16,185,129,0.2)]"
                               : "bg-red-100/70 dark:bg-red-950/30 border-red-300 dark:border-red-600 hover:shadow-[0_8px_20px_rgba(239,68,68,0.2)]"
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className={`text-xs font-black sm:text-sm ${detail.isCorrect ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span className={`shrink-0 text-xs font-black sm:text-sm ${detail.isCorrect ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}>
                               {detail.isCorrect ? "✅" : "❌"}
                             </span>
-                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate flex-1 sm:text-xs">
+                            <span className="min-w-0 flex-1 truncate text-[11px] font-bold text-slate-700 dark:text-slate-300 sm:text-xs">
                               السؤال {index + 1}: {detail.text}
                             </span>
                           </div>
@@ -910,7 +1014,9 @@ export default function QuizPage() {
               </div>
 
               {/* الأزرار */}
-              <div className="border-t border-emerald-200 dark:border-emerald-700 px-5 py-3 flex gap-2 sm:px-8 sm:py-5 sm:gap-3">
+              <div
+                className="flex shrink-0 gap-2 border-t border-emerald-200 px-3 pt-3 pb-[max(5.25rem,env(safe-area-inset-bottom))] dark:border-emerald-700 sm:gap-3 sm:px-8 sm:pt-4 sm:pb-4"
+              >
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -923,7 +1029,7 @@ export default function QuizPage() {
                     setCurrentQuizIndex(0);
                     setQuestions((prev) => shuffleQuestions(prev));
                   }}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 px-3 py-2.5 font-black text-xs text-white shadow-[0_12px_30px_rgba(14,165,233,0.3)] hover:shadow-[0_16px_40px_rgba(14,165,233,0.4)] transition-all sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+                  className="min-w-0 flex-1 rounded-xl bg-gradient-to-r from-medical-600 via-sky-500 to-indigo-600 px-3 py-3 text-xs font-black text-white shadow-[0_12px_30px_rgba(14,165,233,0.3)] transition-all hover:shadow-[0_16px_40px_rgba(14,165,233,0.4)] active:scale-[0.98] sm:rounded-2xl sm:px-4 sm:text-sm"
                 >
                   حاول مرة أخرى
                 </motion.button>
@@ -931,115 +1037,10 @@ export default function QuizPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowResultsModal(false)}
-                  className="flex-1 rounded-xl border-2 border-slate-300 bg-white px-3 py-2.5 font-black text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-all sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
+                  className="min-w-0 flex-1 rounded-xl border-2 border-slate-300 bg-white px-3 py-3 text-xs font-black text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98] dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 sm:rounded-2xl sm:px-4 sm:text-sm"
                 >
                   ✓ حسناً
                 </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* نافذة تفاصيل الاختبار المحلول */}
-        {showCompletedAttemptModal && selectedCompletedAttempt && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowCompletedAttemptModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg overflow-hidden rounded-[24px] border-2 border-slate-200 bg-white shadow-[0_25px_60px_rgba(15,23,42,0.14)] dark:border-slate-700 dark:bg-slate-900 sm:max-w-3xl sm:rounded-[30px]"
-            >
-              <div className="bg-gradient-to-r from-medical-600 to-sky-500 px-5 py-4 sm:px-6 sm:py-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">محاولة مكتملة</p>
-                    <h3 className="mt-1 text-lg font-black text-white sm:mt-2 sm:text-2xl">{selectedCompletedAttempt.exam.title}</h3>
-                  </div>
-                  <button
-                    onClick={() => setShowCompletedAttemptModal(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 sm:h-10 sm:w-10"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-[70vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-3 sm:max-h-[75vh] sm:px-6 sm:py-6 sm:space-y-5 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600">
-                <div className="grid grid-cols-1 gap-2 sm:gap-3 md:grid-cols-3">
-                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">السنة</p>
-                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{selectedCompletedAttempt.exam.studyYear || "-"}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">المادة</p>
-                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{selectedCompletedAttempt.exam.subject?.name || "-"}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800 sm:rounded-2xl sm:p-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-[10px]">النسبة</p>
-                    <p className="mt-1 text-sm font-black text-slate-900 dark:text-white sm:mt-2 sm:text-lg">{Number(selectedCompletedAttempt.percentage || 0).toFixed(1)}%</p>
-                  </div>
-                </div>
-
-                {(selectedCompletedAttempt.exam.questions || []).map((item: any, index: number) => {
-                  const answer = selectedCompletedAttempt.answers.find((ans: any) => ans.questionId === item.questionId);
-                  const selectedOption = item.question.options.find((option: any) => option.id === answer?.selectedOptionId);
-                  const correctOption = item.question.options.find((option: any) => option.isCorrect);
-                  const isCorrect = answer?.isCorrect ?? false;
-
-                  return (
-                    <div
-                      key={item.questionId}
-                      className={`rounded-xl border-2 p-3 sm:rounded-[24px] sm:p-4 ${
-                        isCorrect
-                          ? "border-emerald-300 bg-emerald-50/80 dark:border-emerald-600 dark:bg-emerald-950/20"
-                          : "border-red-300 bg-red-50/80 dark:border-red-600 dark:bg-red-950/20"
-                      }`}
-                    >
-                      <div className="mb-2 flex items-center justify-between gap-2 sm:mb-3 sm:gap-3">
-                        <p className="text-xs font-black text-slate-800 dark:text-slate-100 sm:text-sm">السؤال {index + 1}</p>
-                        <span className={`rounded-full px-2 py-1 text-[10px] font-black ${isCorrect ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300" : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300"}`}>
-                          {isCorrect ? "صح" : "خطأ"}
-                        </span>
-                      </div>
-
-                      <p className="text-sm font-bold text-slate-900 dark:text-white sm:text-base">{item.question.text}</p>
-
-                      <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-3">
-                        <div className="rounded-xl border border-slate-200 bg-white/70 p-2.5 dark:border-slate-700 dark:bg-slate-800/60 sm:rounded-2xl sm:p-3">
-                          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sm:text-[10px]">اختياري</p>
-                          <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-100 sm:text-sm">{selectedOption?.text || "لم تجب"}</p>
-                        </div>
-
-                        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-2.5 dark:border-emerald-700 dark:bg-emerald-950/20 sm:rounded-2xl sm:p-3">
-                          <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300 sm:text-[10px]">الإجابة الصحيحة</p>
-                          <p className="mt-0.5 text-xs font-bold text-emerald-900 dark:text-emerald-200 sm:text-sm">{correctOption?.text}</p>
-                        </div>
-
-                        {item.question.explanation && (
-                          <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-2.5 dark:border-blue-700 dark:bg-blue-950/20 sm:rounded-2xl sm:p-3">
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300 sm:text-[10px]">الشرح</p>
-                            <p className="mt-0.5 text-xs text-blue-900 dark:text-blue-200 sm:text-sm">{item.question.explanation}</p>
-                          </div>
-                        )}
-
-                        {item.question.reference && (
-                          <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 p-2.5 dark:border-indigo-700 dark:bg-indigo-950/20 sm:rounded-2xl sm:p-3">
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-indigo-700 dark:text-indigo-300 sm:text-[10px]">المرجع العلمي</p>
-                            <p className="mt-0.5 text-xs text-indigo-900 dark:text-indigo-200 sm:text-sm">{item.question.reference}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </motion.div>
           </motion.div>
@@ -1052,15 +1053,15 @@ export default function QuizPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowDetailModal(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4"
           >
             <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 340, damping: 34 }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full max-w-lg overflow-hidden rounded-[24px] border-2 shadow-[0_25px_60px_rgba(15,23,42,0.14)] sm:max-w-2xl sm:rounded-[30px] ${
+              className={`flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-[26px] border-2 shadow-[0_25px_60px_rgba(15,23,42,0.14)] [@supports(height:100dvh)]:max-h-[90dvh] sm:max-h-[84vh] sm:max-w-2xl sm:rounded-[30px] ${
                 selectedQuestionDetail.isCorrect
                   ? "border-emerald-300/60 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:border-emerald-700/50 dark:from-emerald-950/40 dark:via-slate-900 dark:to-teal-950/40"
                   : "border-red-300/60 bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:border-red-700/50 dark:from-red-950/40 dark:via-slate-900 dark:to-rose-950/40"
@@ -1068,7 +1069,7 @@ export default function QuizPage() {
             >
               {/* الرأس */}
               <div
-                className={`px-5 py-4 sm:px-6 sm:py-5 ${
+                className={`shrink-0 px-4 py-3.5 sm:px-6 sm:py-5 ${
                   selectedQuestionDetail.isCorrect
                     ? "bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500"
                     : "bg-gradient-to-r from-red-500 via-orange-500 to-red-500"
@@ -1076,7 +1077,7 @@ export default function QuizPage() {
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 sm:h-12 sm:w-12">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 sm:h-12 sm:w-12">
                       {selectedQuestionDetail.isCorrect ? (
                         <CheckCircle2 className="h-5 w-5 text-white sm:h-7 sm:w-7" />
                       ) : (
@@ -1094,7 +1095,7 @@ export default function QuizPage() {
                   </div>
                   <button
                     onClick={() => setShowDetailModal(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition sm:h-10 sm:w-10"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-base text-white transition hover:bg-white/30 active:scale-90 sm:h-10 sm:w-10"
                   >
                     ✕
                   </button>
@@ -1104,29 +1105,29 @@ export default function QuizPage() {
               {/* المحتوى */}
               <div
                 style={{ WebkitOverflowScrolling: "touch" }}
-                className="max-h-[60vh] overflow-y-auto overscroll-contain px-5 py-5 space-y-3 sm:max-h-[70vh] sm:px-6 sm:py-6 sm:space-y-5 scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600"
+                className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 scrollbar-thin [overflow-wrap:anywhere] sm:space-y-4 sm:px-6 sm:py-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600"
               >
                 {/* السؤال */}
-                <div className="rounded-xl border border-slate-200/80 bg-white/60 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:rounded-2xl sm:p-4">
+                <div className="rounded-xl border border-slate-200/80 bg-white/60 p-3.5 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:rounded-2xl sm:p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-1.5 sm:text-xs sm:mb-2">السؤال</p>
-                  <p className="text-sm font-bold text-slate-900 leading-relaxed dark:text-white sm:text-base">
+                  <p className="text-[15px] font-bold text-slate-900 leading-relaxed dark:text-white sm:text-base">
                     {selectedQuestionDetail.text}
                   </p>
                 </div>
 
                 {/* إجابتك */}
-                <div className="rounded-xl bg-white/70 p-3 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 shadow-sm sm:rounded-2xl sm:p-4">
+                <div className="rounded-xl bg-white/70 p-3.5 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 shadow-sm sm:rounded-2xl sm:p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 mb-1.5 sm:text-xs sm:mb-2">
                     إجابتك
                   </p>
-                  <p className={`text-xs font-bold sm:text-sm ${selectedQuestionDetail.selectedOption ? "text-slate-900 dark:text-white" : "text-red-600 dark:text-red-400"}`}>
+                  <p className={`text-[13px] font-bold leading-relaxed sm:text-sm ${selectedQuestionDetail.selectedOption ? "text-slate-900 dark:text-white" : "text-red-600 dark:text-red-400"}`}>
                     {selectedQuestionDetail.selectedOption?.text || "لم تجب على هذا السؤال"}
                   </p>
                 </div>
 
                 {/* الإجابة الصحيحة */}
                 <div
-                  className={`rounded-xl p-3 border-2 shadow-sm sm:rounded-2xl sm:p-4 ${
+                  className={`rounded-xl p-3.5 border-2 shadow-sm sm:rounded-2xl sm:p-4 ${
                     selectedQuestionDetail.isCorrect
                       ? "bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600"
                       : "bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-600"
@@ -1135,39 +1136,41 @@ export default function QuizPage() {
                   <p className="text-[10px] font-black uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400 mb-1.5 sm:text-xs sm:mb-2">
                     الإجابة الصحيحة
                   </p>
-                  <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 sm:text-sm">
+                  <p className="text-[13px] font-bold leading-relaxed text-emerald-900 dark:text-emerald-200 sm:text-sm">
                     {selectedQuestionDetail.correctOption?.text}
                   </p>
                 </div>
 
                 {/* الشرح */}
-                <div className="rounded-xl bg-blue-100/60 dark:bg-blue-950/30 p-3 border-2 border-blue-300 dark:border-blue-600 shadow-sm sm:rounded-2xl sm:p-4">
+                <div className="rounded-xl bg-blue-100/60 dark:bg-blue-950/30 p-3.5 border-2 border-blue-300 dark:border-blue-600 shadow-sm sm:rounded-2xl sm:p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.1em] text-blue-700 dark:text-blue-400 mb-1.5 sm:text-xs sm:mb-2">
                     الشرح التفصيلي
                   </p>
-                  <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed sm:text-sm">
+                  <p className="text-[13px] leading-relaxed text-blue-900 dark:text-blue-200 sm:text-sm">
                     {selectedQuestionDetail.explanation}
                   </p>
                 </div>
 
                 {/* المرجع العلمي */}
-                <div className="rounded-xl bg-indigo-100/60 dark:bg-indigo-950/30 p-3 border-2 border-indigo-300 dark:border-indigo-600 shadow-sm sm:rounded-2xl sm:p-4">
+                <div className="rounded-xl bg-indigo-100/60 dark:bg-indigo-950/30 p-3.5 border-2 border-indigo-300 dark:border-indigo-600 shadow-sm sm:rounded-2xl sm:p-4">
                   <p className="text-[10px] font-black uppercase tracking-[0.1em] text-indigo-700 dark:text-indigo-400 mb-1.5 sm:text-xs sm:mb-2">
                     المرجع العلمي
                   </p>
-                  <p className="text-xs text-indigo-900 dark:text-indigo-200 leading-relaxed sm:text-sm">
+                  <p className="text-[13px] leading-relaxed text-indigo-900 dark:text-indigo-200 sm:text-sm">
                     {selectedQuestionDetail.reference}
                   </p>
                 </div>
               </div>
 
               {/* الزر */}
-              <div className="border-t border-slate-200 dark:border-slate-700 px-5 py-3 sm:px-6 sm:py-4">
+              <div
+                className="shrink-0 border-t border-slate-200 px-4 pt-3 pb-[max(5.25rem,env(safe-area-inset-bottom))] dark:border-slate-700 sm:px-6 sm:pt-4 sm:pb-4"
+              >
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowDetailModal(false)}
-                  className={`w-full rounded-xl px-4 py-2.5 font-black text-sm text-white transition-all sm:rounded-2xl sm:py-3 ${
+                  className={`w-full rounded-xl px-4 py-3 text-sm font-black text-white transition-all active:scale-[0.98] sm:rounded-2xl ${
                     selectedQuestionDetail.isCorrect
                       ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-[0_12px_30px_rgba(16,185,129,0.3)]"
                       : "bg-gradient-to-r from-red-500 to-orange-500 hover:shadow-[0_12px_30px_rgba(239,68,68,0.3)]"
