@@ -25,6 +25,24 @@ function mulberry32(seed: number) {
   };
 }
 
+const HINT_CHIP_STYLES: Record<string, string> = {
+  Anatomie:
+    "border-rose-300/80 bg-rose-50 text-rose-700 shadow-[0_4px_14px_rgba(244,63,94,0.18)] dark:border-rose-400/30 dark:bg-rose-950/40 dark:text-rose-300",
+  Histologie:
+    "border-violet-300/80 bg-violet-50 text-violet-700 shadow-[0_4px_14px_rgba(139,92,246,0.18)] dark:border-violet-400/30 dark:bg-violet-950/40 dark:text-violet-300",
+  Physiologie:
+    "border-emerald-300/80 bg-emerald-50 text-emerald-700 shadow-[0_4px_14px_rgba(16,185,129,0.18)] dark:border-emerald-400/30 dark:bg-emerald-950/40 dark:text-emerald-300",
+  Biophysique:
+    "border-amber-300/80 bg-amber-50 text-amber-700 shadow-[0_4px_14px_rgba(245,158,11,0.18)] dark:border-amber-400/30 dark:bg-amber-950/40 dark:text-amber-300",
+};
+
+const HINT_ICONS: Record<string, string> = {
+  Anatomie: "🦴",
+  Histologie: "🔬",
+  Physiologie: "❤️",
+  Biophysique: "🧪",
+};
+
 export default function QuizPage() {
   const [studyYears, setStudyYears] = useState<string[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -605,9 +623,22 @@ export default function QuizPage() {
                                 <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 text-sm font-black text-white shadow-[0_8px_20px_rgba(16,185,129,0.4)] sm:h-10 sm:w-10">
                                   {currentQuizIndex + 1}
                                 </div>
-                                <p className="text-[17px] font-bold leading-relaxed text-slate-900 dark:text-white sm:text-xl">
-                                  {questions[currentQuizIndex].text}
-                                </p>
+                                <div className="min-w-0 flex-1">
+                                  {questions[currentQuizIndex].hint && HINT_CHIP_STYLES[questions[currentQuizIndex].hint] && (
+                                    <motion.span
+                                      initial={{ opacity: 0, y: -8, scale: 0.85 }}
+                                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                                      transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 22 }}
+                                      className={`mb-2 inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-[10px] font-black tracking-wide sm:text-xs ${HINT_CHIP_STYLES[questions[currentQuizIndex].hint]}`}
+                                    >
+                                      <span className="text-xs leading-none sm:text-sm">{HINT_ICONS[questions[currentQuizIndex].hint]}</span>
+                                      سؤال خاص بـ {questions[currentQuizIndex].hint}
+                                    </motion.span>
+                                  )}
+                                  <p className="text-[17px] font-bold leading-relaxed text-slate-900 dark:text-white sm:text-xl">
+                                    {questions[currentQuizIndex].text}
+                                  </p>
+                                </div>
                               </div>
                             </div>
 
